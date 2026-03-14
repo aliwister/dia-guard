@@ -1,0 +1,62 @@
+# DIA-GUARD PEFT Config — tiny-aya-global (3B) with LoRA
+# Usage: python train_ce_lora.py --config configs/aya_3b_lora.yaml
+
+model_name: CohereLabs/tiny-aya-global
+trust_remote_code: true
+attn_implementation: eager
+
+use_qlora: false
+load_in_4bit: false
+bnb_4bit_quant_type: nf4
+bnb_4bit_compute_dtype: bfloat16
+bnb_4bit_use_double_quant: true
+
+lora_r: 64
+lora_alpha: 128
+lora_dropout: 0.05
+lora_bias: none
+use_rslora: true          # Rank-Stabilized LoRA: alpha/sqrt(r), recommended for r>=16
+lora_target_modules:
+  - q_proj
+  - k_proj
+  - v_proj
+  - o_proj
+  - gate_proj
+  - up_proj
+  - down_proj
+task_type: CAUSAL_LM
+
+train_data: null
+eval_data: null
+max_seq_length: 2048
+
+output_dir: ../../../models/FT/peft/aya-3b-lora
+run_name: aya-3b-lora
+
+num_epochs: 3
+per_device_train_batch_size: 4
+per_device_eval_batch_size: 4
+gradient_accumulation_steps: 4
+learning_rate: 2.0e-4
+warmup_ratio: 0.03
+weight_decay: 0.01
+lr_scheduler_type: cosine
+max_grad_norm: 1.0
+
+bf16: true
+tf32: true
+gradient_checkpointing: true
+
+logging_steps: 10
+eval_strategy: steps
+eval_steps: 200
+save_strategy: steps
+save_steps: 500
+save_total_limit: 3
+load_best_model_at_end: true
+
+alpha: 0.7
+margin: 0.3
+temperature: 0.05
+
+report_to: wandb

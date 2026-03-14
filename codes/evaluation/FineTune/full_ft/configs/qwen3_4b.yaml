@@ -1,0 +1,50 @@
+# DIA-GUARD Full FT Config — Qwen3-4B-SafeRL (Teacher)
+# Usage: python train_ce.py --config configs/qwen3_4b.yaml
+
+# Model
+model_name: Qwen/Qwen3-4B-SafeRL
+trust_remote_code: true
+attn_implementation: flash_attention_2  # set to "eager" if flash-attn unavailable
+
+# Data
+train_data: null          # override with --train_data /path/to/train.jsonl
+eval_data: null           # override with --eval_data /path/to/eval.jsonl
+max_seq_length: 2048
+
+# Output
+output_dir: ../../../models/FT/full_ft/qwen3-4b-ft
+run_name: qwen3-4b-ce-ft
+
+# Training
+num_epochs: 3
+per_device_train_batch_size: 2
+per_device_eval_batch_size: 2
+gradient_accumulation_steps: 8
+learning_rate: 2.0e-5
+warmup_ratio: 0.03
+weight_decay: 0.01
+lr_scheduler_type: cosine
+max_grad_norm: 1.0
+
+# Precision & memory
+bf16: true
+tf32: true
+gradient_checkpointing: true
+
+# Logging & evaluation
+logging_steps: 10
+eval_strategy: steps
+eval_steps: 200
+save_strategy: steps
+save_steps: 500
+save_total_limit: 3
+load_best_model_at_end: true
+metric_for_best_model: eval_loss
+
+# Contrastive loss weights (used only in train_contrastive.py)
+alpha: 0.7          # weight for CE loss; (1-alpha) for contrastive
+margin: 0.3         # triplet margin
+temperature: 0.05   # SimCSE temperature
+
+# W&B logging (optional)
+report_to: wandb    # set to "none" to disable

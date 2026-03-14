@@ -1,0 +1,26 @@
+name: dia_gkd
+channels:
+  - pytorch
+  - nvidia
+  - conda-forge
+  - defaults
+dependencies:
+  - python=3.10
+  - pip
+  - pip:
+    - torch==2.4.0
+    - transformers==4.51.0
+    - trl==0.17.0              # optional: GKDTrainer available in trl>=0.9
+    - accelerate==1.0.0
+    - datasets==3.0.0
+    - bitsandbytes==0.43.3
+    - sentencepiece==0.2.0
+    - tokenizers==0.21.0
+    - safetensors==0.4.3
+    - numpy==1.26.4
+    - pandas==2.2.2
+    - tqdm==4.66.4
+    - pyyaml==6.0.1
+    - wandb==0.17.5
+    - huggingface_hub==0.24.5
+    - einops==0.8.0

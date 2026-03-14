@@ -1,0 +1,50 @@
+# DIA-GUARD Full FT Config — tiny-aya-global 3B (Teacher)
+# Usage: python train_ce.py --config configs/aya_3b.yaml
+
+# Model
+model_name: CohereLabs/tiny-aya-global
+trust_remote_code: true
+attn_implementation: eager   # aya uses custom attention; use eager for safety
+
+# Data
+train_data: null
+eval_data: null
+max_seq_length: 2048
+
+# Output
+output_dir: ../../../models/FT/full_ft/aya-3b-ft
+run_name: aya-3b-ce-ft
+
+# Training
+num_epochs: 3
+per_device_train_batch_size: 2
+per_device_eval_batch_size: 2
+gradient_accumulation_steps: 8
+learning_rate: 1.5e-5
+warmup_ratio: 0.03
+weight_decay: 0.01
+lr_scheduler_type: cosine
+max_grad_norm: 1.0
+
+# Precision & memory
+bf16: true
+tf32: true
+gradient_checkpointing: true
+
+# Logging & evaluation
+logging_steps: 10
+eval_strategy: steps
+eval_steps: 200
+save_strategy: steps
+save_steps: 500
+save_total_limit: 3
+load_best_model_at_end: true
+metric_for_best_model: eval_loss
+
+# Contrastive loss weights
+alpha: 0.7
+margin: 0.3
+temperature: 0.05
+
+# W&B
+report_to: wandb

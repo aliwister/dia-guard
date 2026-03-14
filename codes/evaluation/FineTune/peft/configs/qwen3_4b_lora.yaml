@@ -1,0 +1,72 @@
+# DIA-GUARD PEFT Config — Qwen3-4B-SafeRL with LoRA
+# Usage: python train_ce_lora.py --config configs/qwen3_4b_lora.yaml
+
+# Model
+model_name: Qwen/Qwen3-4B-SafeRL
+trust_remote_code: true
+attn_implementation: flash_attention_2  # set to "eager" if flash-attn unavailable
+
+# QLoRA (4-bit quantization) — set to false for standard LoRA (bf16)
+use_qlora: false
+load_in_4bit: false
+bnb_4bit_quant_type: nf4
+bnb_4bit_compute_dtype: bfloat16
+bnb_4bit_use_double_quant: true
+
+# LoRA Config
+lora_r: 64
+lora_alpha: 128
+lora_dropout: 0.05
+lora_bias: none
+use_rslora: true          # Rank-Stabilized LoRA: alpha/sqrt(r), recommended for r>=16
+lora_target_modules:
+  - q_proj
+  - k_proj
+  - v_proj
+  - o_proj
+  - gate_proj
+  - up_proj
+  - down_proj
+task_type: CAUSAL_LM
+
+# Data
+train_data: null
+eval_data: null
+max_seq_length: 2048
+
+# Output
+output_dir: ../../../models/FT/peft/qwen3-4b-lora
+run_name: qwen3-4b-lora
+
+# Training
+num_epochs: 3
+per_device_train_batch_size: 4
+per_device_eval_batch_size: 4
+gradient_accumulation_steps: 4
+learning_rate: 2.0e-4   # LoRA typically uses higher LR than full FT
+warmup_ratio: 0.03
+weight_decay: 0.01
+lr_scheduler_type: cosine
+max_grad_norm: 1.0
+
+# Precision
+bf16: true
+tf32: true
+gradient_checkpointing: true
+
+# Logging
+logging_steps: 10
+eval_strategy: steps
+eval_steps: 200
+save_strategy: steps
+save_steps: 500
+save_total_limit: 3
+load_best_model_at_end: true
+
+# Contrastive loss (used by train_contrastive_lora.py only)
+alpha: 0.7
+margin: 0.3
+temperature: 0.05
+
+# W&B
+report_to: wandb

@@ -1,0 +1,31 @@
+name: dia_peft
+channels:
+  - pytorch
+  - nvidia
+  - conda-forge
+  - defaults
+dependencies:
+  - python=3.10
+  - pip
+  - pip:
+    - torch==2.4.0
+    - transformers==4.51.0       # Qwen3 support from 4.51; Gemma-3 from 4.50
+    - trl==0.17.0                # SFTConfig standalone + completion_only_loss param
+    - accelerate==1.0.0
+    - peft==0.14.0               # use_rslora stable; LoRA-GA support
+    - bitsandbytes==0.43.3
+    - datasets==3.0.0
+    - sentencepiece==0.2.0
+    - tokenizers==0.21.0
+    - safetensors==0.4.3
+    - scipy==1.13.0
+    - scikit-learn==1.5.0
+    - numpy==1.26.4
+    - pandas==2.2.2
+    - tqdm==4.66.4
+    - pyyaml==6.0.1
+    - wandb==0.17.5
+    - huggingface_hub==0.24.5
+    - einops==0.8.0
+    # flash-attn>=2.6.0: install separately (requires CUDA 11.8+, sm_80+)
+    # pip install flash-attn --no-build-isolation
