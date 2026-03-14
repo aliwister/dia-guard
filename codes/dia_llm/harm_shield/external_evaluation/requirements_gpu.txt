@@ -1,0 +1,27 @@
+# GPU-optimized requirements for T4 16GB
+# Install with: pip install -r requirements_gpu.txt
+
+# PyTorch with CUDA support
+--extra-index-url https://download.pytorch.org/whl/cu121
+torch>=2.0.0
+
+# Transformers for BERT/BART models
+transformers>=4.36.0
+accelerate>=0.25.0
+
+# BERTScore - semantic similarity
+bert-score>=0.3.13
+
+# AlignScore - factual consistency
+alignscore>=1.0.0
+
+# METEOR - translation quality
+nltk>=3.8.0
+
+# Data handling
+numpy>=1.24.0
+pandas>=2.0.0
+tqdm>=4.65.0
+
+# Memory optimization
+bitsandbytes>=0.41.0

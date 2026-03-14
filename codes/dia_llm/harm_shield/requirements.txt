@@ -1,0 +1,42 @@
+# Dialect Transformer - Requirements
+# Install based on your chosen backend:
+
+# ═══════════════════════════════════════════════════════════════
+# OPTION 1: OpenAI API (Recommended for best quality)
+# ═══════════════════════════════════════════════════════════════
+# pip install openai
+openai>=1.0.0
+
+# ═══════════════════════════════════════════════════════════════
+# OPTION 2: Anthropic Claude API
+# ═══════════════════════════════════════════════════════════════
+# pip install anthropic
+anthropic>=0.18.0
+
+# ═══════════════════════════════════════════════════════════════
+# OPTION 3: Ollama (Local models - easiest local setup)
+# ═══════════════════════════════════════════════════════════════
+# First install Ollama: https://ollama.ai
+# Then: pip install ollama
+ollama>=0.1.0
+
+# ═══════════════════════════════════════════════════════════════
+# OPTION 4: HuggingFace Transformers (Local models)
+# ═══════════════════════════════════════════════════════════════
+# pip install transformers torch accelerate bitsandbytes
+transformers>=4.36.0
+torch>=2.0.0
+accelerate>=0.25.0
+bitsandbytes>=0.41.0  # For quantization (Linux/Windows with CUDA)
+
+# ═══════════════════════════════════════════════════════════════
+# OPTION 5: vLLM (High-performance local inference)
+# ═══════════════════════════════════════════════════════════════
+# pip install vllm
+# vllm>=0.4.0  # Requires CUDA
+
+# ═══════════════════════════════════════════════════════════════
+# MINIMAL INSTALL (just core functionality)
+# ═══════════════════════════════════════════════════════════════
+# No additional requirements - just Python 3.8+
+# You'll need to install at least one backend above
