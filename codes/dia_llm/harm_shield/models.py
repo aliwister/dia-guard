@@ -405,6 +405,118 @@ class GeminiBackend(BaseLLM):
 
 
 # ═══════════════════════════════════════════════════════════════════
+# OPTION 1D: AWS Bedrock (Converse API)
+# ═══════════════════════════════════════════════════════════════════
+
+class BedrockBackend(BaseLLM):
+    """AWS Bedrock backend using the Converse API.
+
+    Supports all text-based foundation models on Bedrock via a unified
+    interface (DeepSeek, Llama, Mistral, Qwen, OpenAI GPT-OSS, etc.).
+
+    Usage:
+        # Using env vars (recommended)
+        # export AWS_ACCESS_KEY_ID=...
+        # export AWS_SECRET_ACCESS_KEY=...
+        llm = BedrockBackend(model_id="deepseek.v3.2", region="us-east-1")
+
+        # Passing credentials directly
+        llm = BedrockBackend(
+            model_id="meta.llama4-scout-17b-instruct-v1:0",
+            region="us-east-1",
+            aws_access_key_id="your-key",
+            aws_secret_access_key="your-secret"
+        )
+    """
+
+    # Thread-safe rate limiter
+    _rate_lock = None
+    _last_call_time = 0
+    _MIN_INTERVAL = 1.0  # Conservative default; adjust per model limits
+
+    def __init__(
+        self,
+        model_id: str = "deepseek.v3.2",
+        region: str = "us-east-1",
+        aws_access_key_id: Optional[str] = None,
+        aws_secret_access_key: Optional[str] = None,
+    ):
+        import threading
+        if BedrockBackend._rate_lock is None:
+            BedrockBackend._rate_lock = threading.Lock()
+        self.model_id = model_id
+        self.region = region
+        self.aws_access_key_id = aws_access_key_id or os.getenv("AWS_ACCESS_KEY_ID")
+        self.aws_secret_access_key = aws_secret_access_key or os.getenv("AWS_SECRET_ACCESS_KEY")
+        self._client = None
+
+    @property
+    def client(self):
+        if self._client is None:
+            try:
+                import boto3
+            except ImportError:
+                raise ImportError("boto3 not installed. Run: pip install boto3")
+
+            kwargs = {"region_name": self.region}
+            if self.aws_access_key_id and self.aws_secret_access_key:
+                kwargs["aws_access_key_id"] = self.aws_access_key_id
+                kwargs["aws_secret_access_key"] = self.aws_secret_access_key
+
+            self._client = boto3.client("bedrock-runtime", **kwargs)
+            print(f"[Bedrock] Connected to {self.region} for model {self.model_id}")
+        return self._client
+
+    def _wait_for_rate_limit(self):
+        """Enforce rate limit by waiting if needed."""
+        import time
+        with BedrockBackend._rate_lock:
+            now = time.time()
+            elapsed = now - BedrockBackend._last_call_time
+            if elapsed < self._MIN_INTERVAL:
+                wait = self._MIN_INTERVAL - elapsed
+                time.sleep(wait)
+            BedrockBackend._last_call_time = time.time()
+
+    def generate(
+        self,
+        system: str,
+        user: str,
+        temperature: float = 0.3,
+        max_tokens: int = 2048
+    ) -> str:
+        self._wait_for_rate_limit()
+
+        response = self.client.converse(
+            modelId=self.model_id,
+            system=[{"text": system}],
+            messages=[{"role": "user", "content": [{"text": user}]}],
+            inferenceConfig={
+                "maxTokens": max_tokens,
+                "temperature": temperature,
+            },
+        )
+
+        out_blocks = (
+            response.get("output", {}).get("message", {}).get("content", []) or []
+        )
+        return "".join(
+            b.get("text", "") for b in out_blocks if isinstance(b, dict)
+        ).strip()
+
+    def is_available(self) -> bool:
+        try:
+            import boto3
+            return self.aws_access_key_id is not None and self.aws_secret_access_key is not None
+        except ImportError:
+            return False
+
+    @property
+    def name(self) -> str:
+        return f"Bedrock ({self.model_id})"
+
+
+# ═══════════════════════════════════════════════════════════════════
 # OPTION 2A: Ollama (Local Models)
 # ═══════════════════════════════════════════════════════════════════
 
@@ -774,6 +886,7 @@ class ModelFactory:
         "azure": AzureOpenAIBackend,
         "azure_openai": AzureOpenAIBackend,
         "gemini": GeminiBackend,
+        "bedrock": BedrockBackend,
         "ollama": OllamaBackend,
         "huggingface": HuggingFaceBackend,
         "vllm": VLLMBackend,
@@ -977,4 +1090,26 @@ def get_azure_openai_backend(
         base_url=base_url,
         api_key=api_key,
         api_version=api_version
+    )
+
+
+def get_bedrock_backend(
+    model_id: str = "deepseek.v3.2",
+    region: str = "us-east-1",
+    aws_access_key_id: Optional[str] = None,
+    aws_secret_access_key: Optional[str] = None,
+) -> BedrockBackend:
+    """Create an AWS Bedrock backend.
+
+    Args:
+        model_id: Bedrock model ID (e.g., "deepseek.v3.2")
+        region: AWS region (default: us-east-1)
+        aws_access_key_id: AWS access key (or set AWS_ACCESS_KEY_ID env var)
+        aws_secret_access_key: AWS secret key (or set AWS_SECRET_ACCESS_KEY env var)
+    """
+    return BedrockBackend(
+        model_id=model_id,
+        region=region,
+        aws_access_key_id=aws_access_key_id,
+        aws_secret_access_key=aws_secret_access_key,
     )

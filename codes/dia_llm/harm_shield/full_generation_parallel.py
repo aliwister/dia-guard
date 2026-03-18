@@ -18,7 +18,7 @@ from queue import Queue
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
-from models import AzureOpenAIBackend
+from models import AzureOpenAIBackend, BedrockBackend
 from transformer import DialectTransformer
 from coi_transformation import CoIDialectTransformer
 from feature_validator import LLMComprehensiveValidator
@@ -139,6 +139,43 @@ MODEL_CONFIGS = {
         "project_id": "diaguard-new-project",
         "location": "us-central1",
     },
+    # ── AWS Bedrock models ──
+    "bedrock-deepseek": {
+        "model_id": "deepseek.v3.2",
+        "region": "us-east-1",
+    },
+    "bedrock-llama3-8b": {
+        "model_id": "meta.llama3-8b-instruct-v1:0",
+        "region": "us-east-1",
+    },
+    "bedrock-llama4-maverick": {
+        "model_id": "meta.llama4-maverick-17b-instruct-v1:0",
+        "region": "us-east-1",
+    },
+    "bedrock-llama4-scout": {
+        "model_id": "meta.llama4-scout-17b-instruct-v1:0",
+        "region": "us-east-1",
+    },
+    "bedrock-mistral-large3": {
+        "model_id": "mistral.mistral-large-3-675b-instruct",
+        "region": "us-east-1",
+    },
+    "bedrock-safeguard-120b": {
+        "model_id": "openai.gpt-oss-safeguard-120b",
+        "region": "us-east-1",
+    },
+    "bedrock-safeguard-20b": {
+        "model_id": "openai.gpt-oss-safeguard-20b",
+        "region": "us-east-1",
+    },
+    "bedrock-gpt-oss-120b": {
+        "model_id": "openai.gpt-oss-120b-1:0",
+        "region": "us-east-1",
+    },
+    "bedrock-qwen3-32b": {
+        "model_id": "qwen.qwen3-32b-v1:0",
+        "region": "us-east-1",
+    },
 }
 
 
@@ -154,6 +191,11 @@ def create_llm(model_key: str = "gpt4.1"):
             use_vertex=True,
             project_id=config["project_id"],
             location=config["location"],
+        )
+    if model_key.startswith("bedrock-"):
+        return BedrockBackend(
+            model_id=config["model_id"],
+            region=config["region"],
         )
     return AzureOpenAIBackend(
         deployment_name=config["deployment_name"],
