@@ -225,44 +225,95 @@ class AzureOpenAIBackend(BaseLLM):
 # ═══════════════════════════════════════════════════════════════════
 
 class GeminiBackend(BaseLLM):
-    """Google Gemini backend via Google AI Studio.
+    """Google Gemini backend via Vertex AI or Google AI Studio.
 
-    Uses the google-genai SDK (pip install google-genai).
-    Falls back to OpenAI-compatible endpoint if google-genai is not installed.
+    Uses the google-genai SDK (pip install google-genai) with Vertex AI
+    for production workloads (higher rate limits, safety settings control).
+    Falls back to AI Studio (API key) or OpenAI-compatible endpoint.
 
     Usage:
+        # Vertex AI (recommended - requires: gcloud auth application-default login)
         llm = GeminiBackend(
             model="gemini-3.1-flash-lite-preview",
-            api_key="your-google-ai-studio-api-key"
+            use_vertex=True,
+            project_id="diaguard-new-project",
+            location="us-central1"
+        )
+
+        # AI Studio (API key)
+        llm = GeminiBackend(
+            model="gemini-3.1-flash-lite-preview",
+            api_key="your-api-key"
         )
     """
 
-    # Thread-safe rate limiter: ~6 RPM to stay safely under free tier limit
+    # Thread-safe rate limiter
     _rate_lock = None
     _last_call_time = 0
-    _MIN_INTERVAL = 1.0  # 1 second between calls (Tier 1: 4K RPM)
+    _MIN_INTERVAL = 0.5  # 0.5 seconds between calls (Vertex AI has higher limits)
 
     def __init__(
         self,
         model: str = "gemini-3.1-flash-lite-preview",
-        api_key: Optional[str] = None
+        api_key: Optional[str] = None,
+        use_vertex: bool = True,
+        project_id: str = "diaguard-new-project",
+        location: str = "us-central1"
     ):
-        import threading, time
+        import threading
         if GeminiBackend._rate_lock is None:
             GeminiBackend._rate_lock = threading.Lock()
         self.model = model
         self.api_key = api_key or os.getenv("GEMINI_API_KEY") or os.getenv("GOOGLE_API_KEY")
+        self.use_vertex = use_vertex
+        self.project_id = project_id
+        self.location = location
         self._client = None
-        self._use_native = None  # Will be set on first use
+        self._use_native = None
+        self._safety_settings = None
+
+    def _build_safety_settings(self):
+        """Build safety settings with BLOCK_NONE for all categories."""
+        from google.genai import types
+        return [
+            types.SafetySetting(
+                category=types.HarmCategory.HARM_CATEGORY_HATE_SPEECH,
+                threshold=types.HarmBlockThreshold.BLOCK_NONE
+            ),
+            types.SafetySetting(
+                category=types.HarmCategory.HARM_CATEGORY_DANGEROUS_CONTENT,
+                threshold=types.HarmBlockThreshold.BLOCK_NONE
+            ),
+            types.SafetySetting(
+                category=types.HarmCategory.HARM_CATEGORY_HARASSMENT,
+                threshold=types.HarmBlockThreshold.BLOCK_NONE
+            ),
+            types.SafetySetting(
+                category=types.HarmCategory.HARM_CATEGORY_SEXUALLY_EXPLICIT,
+                threshold=types.HarmBlockThreshold.BLOCK_NONE
+            ),
+        ]
 
     @property
     def client(self):
         if self._client is None:
-            # Try native google-genai SDK first
             try:
                 from google import genai
-                self._client = genai.Client(api_key=self.api_key)
-                self._use_native = True
+                if self.use_vertex:
+                    # Vertex AI: uses gcloud auth application-default login
+                    self._client = genai.Client(
+                        vertexai=True,
+                        project=self.project_id,
+                        location=self.location
+                    )
+                    self._use_native = True
+                    self._safety_settings = self._build_safety_settings()
+                    print(f"[Gemini] Connected via Vertex AI (Project: {self.project_id}, Location: {self.location})")
+                else:
+                    # AI Studio: uses API key
+                    self._client = genai.Client(api_key=self.api_key)
+                    self._use_native = True
+                    self._safety_settings = self._build_safety_settings()
             except ImportError:
                 # Fall back to OpenAI-compatible endpoint
                 try:
@@ -301,17 +352,20 @@ class GeminiBackend(BaseLLM):
         self._wait_for_rate_limit()
 
         if self._use_native:
-            # Native google-genai SDK
+            # Native google-genai SDK (Vertex AI or AI Studio)
             from google.genai import types
+            config_kwargs = {
+                "system_instruction": system,
+                "temperature": temperature,
+                "max_output_tokens": max_tokens,
+            }
+            if self._safety_settings:
+                config_kwargs["safety_settings"] = self._safety_settings
+
             response = self._client.models.generate_content(
                 model=self.model,
                 contents=user,
-                config=types.GenerateContentConfig(
-                    system_instruction=system,
-                    temperature=temperature,
-                    max_output_tokens=max_tokens,
-                    response_mime_type="application/json",
-                )
+                config=types.GenerateContentConfig(**config_kwargs)
             )
             return response.text
         else:
@@ -328,6 +382,12 @@ class GeminiBackend(BaseLLM):
             return response.choices[0].message.content
 
     def is_available(self) -> bool:
+        if self.use_vertex:
+            try:
+                from google import genai
+                return True  # Vertex AI uses gcloud auth, no API key needed
+            except ImportError:
+                return False
         try:
             from google import genai
             return self.api_key is not None
@@ -340,7 +400,8 @@ class GeminiBackend(BaseLLM):
 
     @property
     def name(self) -> str:
-        return f"Gemini ({self.model})"
+        mode = "Vertex AI" if self.use_vertex else "AI Studio"
+        return f"Gemini ({self.model}) [{mode}]"
 
 
 # ═══════════════════════════════════════════════════════════════════
@@ -863,10 +924,19 @@ def get_anthropic_backend(
 
 def get_gemini_backend(
     model: str = "gemini-3.1-flash-lite-preview",
-    api_key: Optional[str] = None
+    api_key: Optional[str] = None,
+    use_vertex: bool = True,
+    project_id: str = "diaguard-new-project",
+    location: str = "us-central1"
 ) -> GeminiBackend:
-    """Create a Google Gemini backend via AI Studio."""
-    return GeminiBackend(model=model, api_key=api_key)
+    """Create a Google Gemini backend via Vertex AI or AI Studio."""
+    return GeminiBackend(
+        model=model,
+        api_key=api_key,
+        use_vertex=use_vertex,
+        project_id=project_id,
+        location=location,
+    )
 
 
 def get_azure_openai_backend(

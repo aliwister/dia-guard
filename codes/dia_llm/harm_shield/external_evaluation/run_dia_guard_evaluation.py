@@ -38,7 +38,7 @@ if script_dir not in sys.path:
 
 
 # Default paths
-DIA_GUARD_PATH = "/home/azureuser/cloudfiles/code/Users/jsl5710/DIA-LLM/DIA-Guard Dataset"
+DIA_GUARD_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "..", "..", "..", "dataset", "dia_guard")
 
 # Batch sizes optimized for T4 16GB - maximized for faster processing
 BATCH_SIZES = {

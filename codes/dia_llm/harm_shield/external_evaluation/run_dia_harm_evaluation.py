@@ -37,7 +37,7 @@ if script_dir not in sys.path:
 
 
 # Default paths
-DIA_HARM_PATH = "/home/azureuser/cloudfiles/code/Users/jsl5710/DIA-LLM/DIA-HARM Dataset"
+DIA_HARM_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "..", "..", "..", "dataset", "dia_harm")
 
 # Batch sizes optimized for T4 16GB
 BATCH_SIZES = {

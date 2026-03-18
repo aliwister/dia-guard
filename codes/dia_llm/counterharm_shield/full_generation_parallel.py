@@ -112,32 +112,32 @@ MODEL_CONFIGS = {
     "gpt4.1": {
         "deployment_name": "gpt-4.1",
         "base_url": "https://jsl-diaguard.openai.azure.com/openai/v1",
-        "api_key": "YOUR_AZURE_OPENAI_API_KEY",
+        "api_key": os.getenv("AZURE_OPENAI_API_KEY", ""),
     },
     "deepseek": {
         "deployment_name": "DeepSeek-V3.2",
         "base_url": "https://ai-jsl57102192ai462716477695.services.ai.azure.com/openai/v1/",
-        "api_key": "YOUR_AZURE_AI_API_KEY",
+        "api_key": os.getenv("AZURE_AI_API_KEY", ""),
     },
     "kimi": {
         "deployment_name": "Kimi-K2.5",
         "base_url": "https://ai-jsl57102192ai462716477695.services.ai.azure.com/openai/v1/",
-        "api_key": "YOUR_AZURE_AI_API_KEY",
+        "api_key": os.getenv("AZURE_AI_API_KEY", ""),
     },
     "gemini": {
-        "deployment_name": "gemini-3.1-flash-lite-preview",
-        "base_url": "https://generativelanguage.googleapis.com/v1beta/openai/",
-        "api_key": "YOUR_GEMINI_API_KEY",
-    },
-    "gemini3.1": {
-        "deployment_name": "gemini-3.1-flash-lite-preview",
-        "base_url": "https://generativelanguage.googleapis.com/v1beta/openai/",
-        "api_key": "YOUR_GEMINI_API_KEY",
+        "deployment_name": "gemini-2.5-flash-lite",
+        "project_id": "diaguard-new-project",
+        "location": "us-central1",
     },
     "gemini2.5": {
         "deployment_name": "gemini-2.5-flash-lite",
-        "base_url": "https://generativelanguage.googleapis.com/v1beta/openai/",
-        "api_key": "YOUR_GEMINI_API_KEY",
+        "project_id": "diaguard-new-project",
+        "location": "us-central1",
+    },
+    "gemini2.5flash": {
+        "deployment_name": "gemini-2.5-flash",
+        "project_id": "diaguard-new-project",
+        "location": "us-central1",
     },
 }
 
@@ -147,11 +147,13 @@ def create_llm(model_key: str = "gpt4.1"):
     if model_key not in MODEL_CONFIGS:
         raise ValueError(f"Unknown model: {model_key}. Available: {list(MODEL_CONFIGS.keys())}")
     config = MODEL_CONFIGS[model_key]
-    if model_key in ("gemini", "gemini3.1", "gemini2.5"):
+    if model_key in ("gemini", "gemini2.5", "gemini2.5flash"):
         from models import GeminiBackend
         return GeminiBackend(
             model=config["deployment_name"],
-            api_key=config["api_key"],
+            use_vertex=True,
+            project_id=config["project_id"],
+            location=config["location"],
         )
     return AzureOpenAIBackend(
         deployment_name=config["deployment_name"],
@@ -172,6 +174,9 @@ def row_already_processed(row: Dict[str, Any]) -> bool:
         # Skip check if source is empty or a policy violation
         if not src_val or src_val == POLICY_VIOLATION:
             continue
+        # Treat [FAILED] as done (permanently failed — don't retry)
+        if out_val == "[FAILED]":
+            continue
         if not out_val:
             return False
     return True
@@ -190,10 +195,10 @@ def process_row(
     all_validated = True
 
     for src_col, out_col in SOURCE_TO_OUTPUT.items():
-        # Skip columns that already have results (partial resume)
+        # Skip columns that already have results or permanently failed (partial resume)
         existing_val = row.get(out_col, "").strip()
         if existing_val:
-            continue
+            continue  # Includes [FAILED] — don't retry permanently failed cells
 
         text = row.get(src_col, "").strip()
 
@@ -204,10 +209,16 @@ def process_row(
 
         try:
             state = pipeline.run(harmful_seed=text, dialect=dialect_key)
-            result[out_col] = state.refined_text or ""
-            scores.append(state.harmlessness_score)
-            if not state.validated:
+            output = state.refined_text or ""
+            if not output:
+                # Pipeline exhausted retries without producing output
+                result[out_col] = "[FAILED]"
                 all_validated = False
+            else:
+                result[out_col] = output
+                scores.append(state.harmlessness_score)
+                if not state.validated:
+                    all_validated = False
         except Exception as e:
             result[out_col] = "[FAILED]"
             all_validated = False
@@ -370,7 +381,7 @@ def process_csv(
 
 
 def main(
-    data_dir: str = "/home/azureuser/cloudfiles/code/Users/jsl5710/DIA-LLM/LLM_Data",
+    data_dir: str = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "..", "..", "dataset", "dia_llm"),
     max_workers: int = 4,
     test_mode: bool = False,
     test_rows: int = 1,
@@ -472,7 +483,7 @@ if __name__ == "__main__":
     parser.add_argument("--dialect", type=str, help="Specific dialect folder to process")
     parser.add_argument("--dataset", type=str, help="Specific dataset name pattern to process")
     parser.add_argument("--data-dir", type=str,
-                        default="/home/azureuser/cloudfiles/code/Users/jsl5710/DIA-LLM/LLM_Data")
+                        default=os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "..", "..", "dataset", "dia_llm"))
     parser.add_argument("--model", type=str, default="gpt4.1",
                         choices=list(MODEL_CONFIGS.keys()),
                         help="Model to use for generation (default: gpt4.1)")
