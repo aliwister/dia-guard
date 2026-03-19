@@ -172,6 +172,10 @@ MODEL_CONFIGS = {
         "model_id": "openai.gpt-oss-120b-1:0",
         "region": "us-east-1",
     },
+    "bedrock-gpt-oss-20b": {
+        "model_id": "openai.gpt-oss-20b-1:0",
+        "region": "us-east-1",
+    },
     "bedrock-qwen3-32b": {
         "model_id": "qwen.qwen3-32b-v1:0",
         "region": "us-east-1",

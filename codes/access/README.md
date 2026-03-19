@@ -107,7 +107,7 @@ export AWS_SECRET_ACCESS_KEY="your-secret-access-key"
 | `gemini2.5` | gemini-2.5-flash-lite | diaguard-new-project | us-central1 |
 | `gemini2.5flash` | gemini-2.5-flash | diaguard-new-project | us-central1 |
 
-### AWS Bedrock (9 models)
+### AWS Bedrock (10 models)
 
 | `--model` key | Provider | Model | Bedrock Model ID | Region |
 |---------------|----------|-------|-------------------|--------|
@@ -119,9 +119,10 @@ export AWS_SECRET_ACCESS_KEY="your-secret-access-key"
 | `bedrock-safeguard-120b` | OpenAI | GPT OSS Safeguard 120B | `openai.gpt-oss-safeguard-120b` | us-east-1 |
 | `bedrock-safeguard-20b` | OpenAI | GPT OSS Safeguard 20B | `openai.gpt-oss-safeguard-20b` | us-east-1 |
 | `bedrock-gpt-oss-120b` | OpenAI | gpt-oss-120b | `openai.gpt-oss-120b-1:0` | us-east-1 |
+| `bedrock-gpt-oss-20b` | OpenAI | gpt-oss-20b | `openai.gpt-oss-20b-1:0` | us-east-1 |
 | `bedrock-qwen3-32b` | Qwen | Qwen3 32B (dense) | `qwen.qwen3-32b-v1:0` | us-east-1 |
 
-**Total: 15 models across 3 providers**
+**Total: 16 models across 3 providers**
 
 ---
 
