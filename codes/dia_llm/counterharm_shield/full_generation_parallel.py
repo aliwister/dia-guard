@@ -19,7 +19,7 @@ from concurrent.futures import ThreadPoolExecutor, as_completed
 
 # Add parent dir so we can import from Harm_Shield
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
-sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "Harm_Shield"))
+sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "harm_shield"))
 
 from models import AzureOpenAIBackend, BedrockBackend
 from counterharm_pipeline import CounterHarmSHIELD
@@ -148,8 +148,12 @@ MODEL_CONFIGS = {
         "model_id": "meta.llama3-8b-instruct-v1:0",
         "region": "us-east-1",
     },
+    "bedrock-llama3.3-70b": {
+        "model_id": "us.meta.llama3-3-70b-instruct-v1:0",
+        "region": "us-east-1",
+    },
     "bedrock-llama4-maverick": {
-        "model_id": "meta.llama4-maverick-17b-instruct-v1:0",
+        "model_id": "us.meta.llama4-maverick-17b-instruct-v1:0",
         "region": "us-east-1",
     },
     "bedrock-llama4-scout": {
@@ -158,6 +162,14 @@ MODEL_CONFIGS = {
     },
     "bedrock-mistral-large3": {
         "model_id": "mistral.mistral-large-3-675b-instruct",
+        "region": "us-east-1",
+    },
+    "bedrock-claude-opus-4.6": {
+        "model_id": "us.anthropic.claude-opus-4-6-v1",
+        "region": "us-east-1",
+    },
+    "bedrock-claude-sonnet-4.6": {
+        "model_id": "us.anthropic.claude-sonnet-4-6",
         "region": "us-east-1",
     },
     "bedrock-safeguard-120b": {
