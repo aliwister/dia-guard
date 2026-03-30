@@ -79,11 +79,11 @@ from pathlib import Path
 
 # ─── Path constants ───────────────────────────────────────────────────────────
 
-REPO_ROOT = Path(__file__).resolve().parent.parent  # DIA-LLM/
-EVAL_ROOT = Path(__file__).resolve().parent          # DIA-LLM/Evaluation/
+REPO_ROOT = Path(__file__).resolve().parent.parent.parent  # dia-guard/
+EVAL_ROOT = Path(__file__).resolve().parent                # dia-guard/codes/evaluation/
 
 MODELS_DIR   = REPO_ROOT / "models"
-SPLITS_DIR   = REPO_ROOT / "DIA_Splits"
+SPLITS_DIR   = REPO_ROOT / "dataset" / "dia_splits"
 RESULTS_DIR  = EVAL_ROOT / "results"
 
 FT_SCRIPTS = {
@@ -316,7 +316,7 @@ def run_ft(args, state: dict, dry_run: bool = False) -> bool:
         "--model_name", args.teacher_model,
         "--output_dir", str(out_dir),
         "--train_data", str(SPLITS_DIR / "train.jsonl"),
-        "--val_data",   str(SPLITS_DIR / "val.jsonl"),
+        "--eval_data",  str(SPLITS_DIR / "val.jsonl"),
         *config_arg,
         *resume_arg,
     ]
@@ -438,9 +438,21 @@ def run_kd(args, state: dict, dry_run: bool = False) -> bool:
 
 # ─── Evaluation ───────────────────────────────────────────────────────────────
 
+def is_eval_ft_complete(ft_method: str, loss: str, model_id: str, group: int) -> bool:
+    """Eval is complete when metrics.json exists in the results directory."""
+    return (results_dir_ft(ft_method, loss, model_id, group) / "metrics.json").exists()
+
+
+def is_eval_kd_complete(kd_method: str, teacher_id: str, student_id: str) -> bool:
+    return (results_dir_kd(kd_method, teacher_id, student_id) / "metrics.json").exists()
+
+
 def run_eval_ft(args, state: dict, dry_run: bool = False) -> bool:
-    if state.get("eval_ft_done"):
-        print("[EVAL-FT] Already done.")
+    if state.get("eval_ft_done") or is_eval_ft_complete(
+        args.ft_method, args.loss, args.teacher_model, args.group
+    ):
+        print("[EVAL-FT] Already done (metrics.json found).")
+        state["eval_ft_done"] = True
         return True
 
     group = args.group
@@ -478,8 +490,11 @@ def run_eval_ft(args, state: dict, dry_run: bool = False) -> bool:
 
 
 def run_eval_kd(args, state: dict, dry_run: bool = False) -> bool:
-    if state.get("eval_kd_done"):
-        print("[EVAL-KD] Already done.")
+    if state.get("eval_kd_done") or is_eval_kd_complete(
+        args.kd_method, args.teacher_model, args.student_model
+    ):
+        print("[EVAL-KD] Already done (metrics.json found).")
+        state["eval_kd_done"] = True
         return True
 
     model_path = kd_model_dir(args.kd_method, args.teacher_model, args.student_model)
@@ -536,6 +551,70 @@ def print_summary(state: dict) -> None:
             print(f"\n  Results: {state[key]}")
 
     print()
+
+
+# ─── Status dashboard ─────────────────────────────────────────────────────────
+
+G3_STUDENTS = [
+    "meta-llama/Llama-3.2-1B-Instruct",
+    "google/gemma-3-1b-it",
+    "Qwen/Qwen3Guard-Gen-0.6B",
+    "Qwen/Qwen3.5-0.8B",
+    "google/gemma-3-270m-it",
+    "HuggingFaceTB/SmolLM2-1.7B-Instruct",
+    "Qwen/Qwen3-1.7B",
+]
+
+G1_TEACHERS = [
+    "Qwen/Qwen3-4B-SafeRL",
+    "CohereLabs/tiny-aya-global",
+]
+
+
+def print_status():
+    """Print a dashboard of all experiment statuses across all groups."""
+    col = {"done": "✓", "partial": "~", "none": "·"}
+
+    def ft_row(model_id, method, loss, group):
+        trained  = "✓" if is_ft_complete(method, model_id, group) else "·"
+        evald    = "✓" if is_eval_ft_complete(method, loss, model_id, group) else "·"
+        ckpt     = "~" if find_latest_ft_checkpoint(method, model_id, group) else " "
+        name     = model_shortname(model_id)
+        return f"  {name:<40} {method:<8} {loss:<12} {trained}  {ckpt}  {evald}"
+
+    print("\n" + "=" * 85)
+    print("DIA-GUARD EXPERIMENT STATUS DASHBOARD")
+    print("=" * 85)
+    hdr = f"  {'Model':<40} {'Method':<8} {'Loss':<12} {'Trained':<3} {'Ckpt':<4} {'Evald'}"
+    sep = "  " + "-" * 81
+
+    print("\n── Group 1: Teacher FT ────────────────────────────────────────────────────────")
+    print(hdr); print(sep)
+    for model in G1_TEACHERS:
+        for method in ["full_ft", "peft"]:
+            for loss in ["ce", "contrastive"]:
+                print(ft_row(model, method, loss, group=1))
+
+    print("\n── Group 3: Student FT Baseline ───────────────────────────────────────────────")
+    print(hdr); print(sep)
+    for model in G3_STUDENTS:
+        for method in ["full_ft", "peft"]:
+            for loss in ["ce", "contrastive"]:
+                print(ft_row(model, method, loss, group=3))
+
+    print("\n── Group 2: KD Students ───────────────────────────────────────────────────────")
+    print(f"  {'Pair':<55} {'KD Method':<10} {'Trained':<3}  {'Evald'}")
+    print("  " + "-" * 81)
+    for teacher in G1_TEACHERS:
+        for student in G3_STUDENTS:
+            for kd_method in ["minillm", "gkd", "ted"]:
+                trained = "✓" if is_kd_complete(kd_method, teacher, student) else "·"
+                evald   = "✓" if is_eval_kd_complete(kd_method, teacher, student) else "·"
+                pair = f"{model_shortname(teacher)} → {model_shortname(student)}"
+                print(f"  {pair:<55} {kd_method:<10} {trained}    {evald}")
+
+    print("\n  Legend: ✓ done  ~ checkpoint exists (in progress/interrupted)  · not started")
+    print("=" * 85 + "\n")
 
 
 # ─── Argument parsing ─────────────────────────────────────────────────────────
@@ -611,6 +690,11 @@ def parse_args():
         action="store_true",
         help="Ignore saved state and re-run all steps",
     )
+    parser.add_argument(
+        "--status",
+        action="store_true",
+        help="Print experiment status dashboard and exit",
+    )
 
     return parser.parse_args()
 
@@ -619,6 +703,10 @@ def parse_args():
 
 def main():
     args = parse_args()
+
+    if args.status:
+        print_status()
+        sys.exit(0)
 
     # ── Validate arguments ────────────────────────────────────────────────────
     if args.stage in ("full", "kd"):

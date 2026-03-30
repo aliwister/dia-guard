@@ -80,11 +80,21 @@ def build_prompt(prompt: str, response: str, tokenizer) -> str:
 
 def load_jsonl(path: str) -> List[Dict]:
     records = []
+    skipped = 0
     with open(path) as f:
         for line in f:
             line = line.strip()
-            if line:
-                records.append(json.loads(line))
+            if not line:
+                continue
+            rec = json.loads(line)
+            # Contrastive training requires a paired neg_text (dia_llm records only).
+            # multi_value records have neg_text="" — skip them.
+            if "neg_text" in rec and not rec["neg_text"]:
+                skipped += 1
+                continue
+            records.append(rec)
+    if skipped:
+        print(f"[contrastive] Skipped {skipped:,} records with no neg_text (multi_value).")
     return records
 
 
@@ -107,9 +117,16 @@ class TripletDataset(torch.utils.data.Dataset):
 
     def __getitem__(self, idx):
         rec = self.records[idx]
-        prompt = rec["prompt"]
-        safe_resp = rec["response"]
-        unsafe_resp = rec.get("neg_response", "")
+        # Support both dia_splits format {"text": ..., "label": ..., "neg_text": ...}
+        # and legacy format {"prompt": ..., "response": ..., "neg_response": ...}
+        prompt = rec.get("prompt", rec.get("text", ""))
+        label  = rec.get("label", 0)
+        if "response" in rec:
+            safe_resp   = rec["response"]
+            unsafe_resp = rec.get("neg_response", "safe" if label == 1 else "unsafe")
+        else:
+            safe_resp   = "safe"   if label == 0 else "unsafe"
+            unsafe_resp = "unsafe" if label == 0 else "safe"
 
         # Tokenize anchor (prompt only, for representation)
         anchor_text = f"<|system|>{SYSTEM_PROMPT}</s>\n<|user|>{prompt}</s>\n<|assistant|>"

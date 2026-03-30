@@ -178,8 +178,27 @@ def train(cfg: dict):
     train_dataset = load_jsonl(train_path)
     eval_dataset = load_jsonl(eval_path) if eval_path and Path(eval_path).exists() else None
 
+    # Build formatted text using local vars only — do NOT add "prompt" or
+    # "completion" keys to the example dict, or trl will switch to the
+    # prompt+completion tokenisation path and crash (KeyError: 'completion').
     def format_dataset(example):
-        example["text"] = format_prompt(example, tokenizer)
+        prompt_text   = example.get("text", example.get("prompt", ""))
+        response_text = "unsafe" if example.get("label", 0) == 1 else "safe"
+        messages = [
+            {"role": "system", "content": SYSTEM_PROMPT},
+            {"role": "user",   "content": prompt_text},
+            {"role": "assistant", "content": response_text},
+        ]
+        if hasattr(tokenizer, "apply_chat_template"):
+            example["text"] = tokenizer.apply_chat_template(
+                messages, tokenize=False, add_generation_prompt=False
+            )
+        else:
+            example["text"] = (
+                f"<|system|>{SYSTEM_PROMPT}</s>\n"
+                f"<|user|>{prompt_text}</s>\n"
+                f"<|assistant|>{response_text}</s>"
+            )
         return example
 
     train_dataset = train_dataset.map(format_dataset)
@@ -215,10 +234,10 @@ def train(cfg: dict):
         save_total_limit=cfg.get("save_total_limit", 3),
         load_best_model_at_end=cfg.get("load_best_model_at_end", True) if eval_dataset else False,
         report_to=cfg.get("report_to", "none"),
-        max_seq_length=cfg.get("max_seq_length", 2048),
+        max_length=cfg.get("max_seq_length", 2048),
         dataset_text_field="text",
         packing=False,
-        completion_only_loss=True,
+        completion_only_loss=False,
     )
 
     # NOTE: trl >= 0.12 uses `processing_class` instead of `tokenizer`
