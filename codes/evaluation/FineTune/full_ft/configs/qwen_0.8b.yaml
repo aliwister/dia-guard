@@ -1,10 +1,10 @@
-# DIA-GUARD Full FT Config — tiny-aya-global 3B (Teacher)
-# Usage: python train_ce.py --config configs/aya_3b.yaml
+# DIA-GUARD Full FT Config — Qwen3.5-0.8B (Student Baseline)
+# Usage: python train_ce.py --config configs/qwen_0.8b.yaml
 
 # Model
-model_name: CohereLabs/tiny-aya-global
+model_name: Qwen/Qwen3.5-0.8B
 trust_remote_code: true
-attn_implementation: eager   # aya uses custom attention; use eager for safety
+attn_implementation: flash_attention_2  # set to "eager" if flash-attn unavailable
 
 # Data
 train_data: null
@@ -12,15 +12,15 @@ eval_data: null
 max_seq_length: 2048
 
 # Output
-output_dir: ../../../models/group1_teacher_ft/full_ft/tiny-aya-global
-run_name: aya-3b-ce-ft
+output_dir: ../../../models/group3_student_ft_baseline/full_ft/qwen3_5-0_8b
+run_name: qwen3.5-0.8b-ce-ft
 
 # Training
 num_epochs: 3
-per_device_train_batch_size: 2
-per_device_eval_batch_size: 2
-gradient_accumulation_steps: 8
-learning_rate: 1.5e-5
+per_device_train_batch_size: 8
+per_device_eval_batch_size: 8
+gradient_accumulation_steps: 2
+learning_rate: 3.0e-5
 warmup_ratio: 0.03
 weight_decay: 0.01
 lr_scheduler_type: cosine
@@ -41,10 +41,10 @@ save_total_limit: 3
 load_best_model_at_end: true
 metric_for_best_model: eval_loss
 
-# Contrastive loss weights
+# Contrastive loss weights (used only in train_contrastive.py)
 alpha: 0.7
 margin: 0.3
 temperature: 0.05
 
-# W&B
+# W&B logging (optional)
 report_to: wandb

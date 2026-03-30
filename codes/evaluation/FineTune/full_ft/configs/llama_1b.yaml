@@ -1,9 +1,9 @@
-# DIA-GUARD Full FT Config — Qwen3-4B-SafeRL (Teacher)
-# Usage: python train_ce.py --config configs/qwen3_4b.yaml
+# DIA-GUARD Full FT Config — Llama-3.2-1B-Instruct (Student Baseline)
+# Usage: python train_ce.py --config configs/llama_1b.yaml
 
 # Model
-model_name: Qwen/Qwen3-4B-SafeRL
-trust_remote_code: true
+model_name: meta-llama/Llama-3.2-1B-Instruct
+trust_remote_code: false
 attn_implementation: flash_attention_2  # set to "eager" if flash-attn unavailable
 
 # Data
@@ -12,15 +12,15 @@ eval_data: null           # override with --eval_data /path/to/eval.jsonl
 max_seq_length: 2048
 
 # Output
-output_dir: ../../../models/group1_teacher_ft/full_ft/qwen3-4b-saferl
-run_name: qwen3-4b-ce-ft
+output_dir: ../../../models/group3_student_ft_baseline/full_ft/llama-3_2-1b-instruct
+run_name: llama-3.2-1b-ce-ft
 
 # Training
 num_epochs: 3
-per_device_train_batch_size: 2
-per_device_eval_batch_size: 2
-gradient_accumulation_steps: 8
-learning_rate: 2.0e-5
+per_device_train_batch_size: 4
+per_device_eval_batch_size: 4
+gradient_accumulation_steps: 4
+learning_rate: 3.0e-5
 warmup_ratio: 0.03
 weight_decay: 0.01
 lr_scheduler_type: cosine
