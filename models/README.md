@@ -1,8 +1,8 @@
 # DIA-GUARD Model Weights
 
-This directory stores all trained model weights for the DIA-GUARD pipeline, organized by training method.
+This directory stores all trained model weights for the DIA-GUARD pipeline, organized by experiment group and training method.
 
-Models are saved in HuggingFace format and can be loaded directly with `transformers` or uploaded to HuggingFace Hub.
+Models are saved in HuggingFace format and can be uploaded to the Hub with `upload_all_models.py`.
 
 ---
 
@@ -10,42 +10,57 @@ Models are saved in HuggingFace format and can be loaded directly with `transfor
 
 ```
 models/
-├── README.md                        ← you are here
-├── upload_to_hub.py                 ← script to push any model to HuggingFace Hub
+├── README.md                        <- you are here
+├── upload_to_hub.py                 <- single model upload to HuggingFace
+├── upload_all_models.py             <- batch upload all groups to HuggingFace
 │
-├── FT/                              ← Fine-tuned teacher models (>2B params)
-│   ├── README.md
-│   ├── full_ft/                     ← Full fine-tuning weights
-│   │   ├── README.md
-│   │   ├── qwen3-4b-ft/             ← Dia-Guard-4B (Qwen3-4B teacher, CE loss)
-│   │   ├── qwen3-4b-contrastive-ft/ ← Dia-Guard-4B (Qwen3-4B teacher, contrastive loss)
-│   │   ├── aya-3b-ft/               ← Dia-Guard-3B (Aya teacher, CE loss)
-│   │   └── aya-3b-contrastive-ft/   ← Dia-Guard-3B (Aya teacher, contrastive loss)
-│   └── peft/                        ← LoRA adapter weights
-│       ├── README.md
-│       ├── qwen3-4b-lora/           ← LoRA adapters only (~50MB)
-│       ├── qwen3-4b-lora-merged/    ← Merged full model (used as teacher for KD)
-│       ├── aya-3b-lora/
-│       └── aya-3b-lora-merged/
+├── FT/                              <- Group 1: Teacher FT (>2B params)
+│   ├── full_ft/                     <- Full fine-tuning weights
+│   │   ├── qwen3_4b_saferl/
+│   │   └── tiny_aya_global/
+│   └── peft/                        <- LoRA adapter weights
+│       ├── qwen3_4b_saferl/
+│       └── tiny_aya_global/
 │
-└── KD/                              ← Distilled student models (<2B params)
-    ├── README.md
-    ├── minillm/                     ← MINILLM-distilled students
-    │   ├── README.md
-    │   ├── qwen3-guard-0.6b/
-    │   ├── llama-1b/
-    │   └── gemma-270m/
-    ├── gkd/                         ← GKD-distilled students
-    │   ├── README.md
-    │   ├── qwen3-guard-0.6b/
-    │   ├── llama-1b/
-    │   └── smollm2-1.7b/
-    └── ted/                         ← TED-distilled students
-        ├── README.md
-        ├── qwen3-guard-0.6b/
-        ├── gemma-270m/
-        └── gemma-1b/
+├── KD/                              <- Group 2: KD Students (<2B params)
+│   ├── minillm/                     <- MINILLM-distilled
+│   ├── gkd/                         <- GKD-distilled
+│   └── ted/                         <- TED-distilled
+│
+└── group3_student_ft_baseline/      <- Group 3: Student FT Baseline (<2B params)
+    ├── peft/                        <- LoRA adapters
+    │   ├── gemma_3_270m_it/
+    │   ├── qwen3guard_gen_0_6b/
+    │   ├── qwen3_5_0_8b/
+    │   ├── gemma_3_1b_it/
+    │   ├── llama_3_2_1b_instruct/
+    │   ├── smollm2_1_7b_instruct/
+    │   └── qwen3_1_7b/
+    └── full_ft/                     <- Full fine-tuning weights
+        └── (same 7 models)
 ```
+
+---
+
+## Experiment Groups
+
+| Group | Directory | Description | Models |
+|-------|-----------|-------------|--------|
+| **G1** | `FT/` | Teacher FT — fine-tune large models on safety data | Qwen3-4B-SafeRL, Aya-3B |
+| **G2** | `KD/` | KD Students — distill from G1 teachers | 7 student models x 3 KD methods |
+| **G3** | `group3_student_ft_baseline/` | Student FT Baseline — direct fine-tuning (no KD) | 7 student models x 2 FT methods |
+
+### Student Models (G2 & G3)
+
+| Model | Size | HuggingFace ID | Slug |
+|-------|------|----------------|------|
+| Gemma-3-270M | 270M | `google/gemma-3-270m-it` | `gemma_3_270m_it` |
+| Qwen3Guard-0.6B | 0.6B | `Qwen/Qwen3Guard-Gen-0.6B` | `qwen3guard_gen_0_6b` |
+| Qwen3.5-0.8B | 0.8B | `Qwen/Qwen3.5-0.8B` | `qwen3_5_0_8b` |
+| Gemma-3-1B | 1B | `google/gemma-3-1b-it` | `gemma_3_1b_it` |
+| Llama-3.2-1B | 1B | `meta-llama/Llama-3.2-1B-Instruct` | `llama_3_2_1b_instruct` |
+| SmolLM2-1.7B | 1.7B | `HuggingFaceTB/SmolLM2-1.7B-Instruct` | `smollm2_1_7b_instruct` |
+| Qwen3-1.7B | 1.7B | `Qwen/Qwen3-1.7B` | `qwen3_1_7b` |
 
 ---
 
@@ -54,81 +69,94 @@ models/
 ```python
 from transformers import AutoModelForCausalLM, AutoTokenizer
 
-# Load a distilled student
+# Load a full fine-tuned model
 model = AutoModelForCausalLM.from_pretrained(
-    "models/KD/minillm/qwen3-guard-0.6b",
+    "models/KD/minillm/qwen3guard_gen_0_6b",
     torch_dtype="bfloat16",
     device_map="auto",
 )
-tokenizer = AutoTokenizer.from_pretrained("models/KD/minillm/qwen3-guard-0.6b")
+tokenizer = AutoTokenizer.from_pretrained("models/KD/minillm/qwen3guard_gen_0_6b")
 
-# Load a LoRA adapter
+# Load a LoRA adapter (Group 3)
 from peft import PeftModel
-base = AutoModelForCausalLM.from_pretrained("Qwen/Qwen3-4B-SafeRL", torch_dtype="bfloat16")
-model = PeftModel.from_pretrained(base, "models/FT/peft/qwen3-4b-lora")
+base = AutoModelForCausalLM.from_pretrained("google/gemma-3-270m-it", torch_dtype="bfloat16")
+model = PeftModel.from_pretrained(base, "models/group3_student_ft_baseline/peft/gemma_3_270m_it")
 ```
 
 ---
 
 ## Uploading to HuggingFace Hub
 
+### Batch upload (recommended)
+
 ```bash
-# Single model
-python upload_to_hub.py \
-    --model_dir models/KD/minillm/qwen3-guard-0.6b \
-    --repo_id your-org/Dia-Guard-0.6B-MINILLM \
-    --private false
+# Check status — see which models are complete
+python upload_all_models.py --dry_run
 
-# All KD models at once
-python upload_to_hub.py --upload_all_kd --org your-org
+# Upload all completed models across all groups
+python upload_all_models.py --hf_token YOUR_HF_TOKEN
 
-# Dry run (shows what would be uploaded)
-python upload_to_hub.py --model_dir models/KD/ted/gemma-270m --dry_run
+# Upload only Group 3
+python upload_all_models.py --hf_token YOUR_HF_TOKEN --group 3
+
+# Upload a specific model
+python upload_all_models.py --hf_token YOUR_HF_TOKEN --only gemma_3_270m_it
 ```
 
-See `upload_to_hub.py --help` for full options.
+### HuggingFace Repo Naming
+
+Models are uploaded with this naming convention:
+```
+{org}/DIA-Guard-{Group}-{ModelShort}-{Method}
+```
+
+Examples:
+- `jsl5710/DIA-Guard-Teacher-Qwen-4B-LoRA`
+- `jsl5710/DIA-Guard-Student-Gemma-270M-LoRA`
+- `jsl5710/DIA-Guard-Student-Llama-1B-FullFT`
+- `jsl5710/DIA-Guard-KD-QwenGuard-0.6B-MiniLLM`
+
+### Single model upload
+
+```bash
+python upload_to_hub.py \
+    --model_dir KD/minillm/qwen3guard_gen_0_6b \
+    --repo_id jsl5710/Dia-Guard-0.6B-MINILLM
+```
 
 ---
 
 ## Expected Checkpoint Contents
 
-Each saved model directory contains:
+**PEFT (LoRA) adapters:**
 ```
-<model-name>/
-├── config.json
+<model-slug>/
+├── adapter_config.json
+├── adapter_model.safetensors
 ├── tokenizer.json
 ├── tokenizer_config.json
-├── special_tokens_map.json
-├── model.safetensors                       ← for models <5GB
-├── model-00001-of-0000N.safetensors        ← for sharded models
-├── model.safetensors.index.json            ← shard index
-└── training_config.yaml                    ← hyperparameters used
+└── special_tokens_map.json
 ```
 
-For TED distillation, additionally:
+**Full fine-tuning:**
 ```
-├── task_aware_filters.pt     ← saved filter weights
-└── alignment_metadata.json   ← layer alignment info
+<model-slug>/
+├── config.json
+├── model.safetensors (or sharded: model-00001-of-0000N.safetensors)
+├── model.safetensors.index.json
+├── tokenizer.json
+├── tokenizer_config.json
+└── special_tokens_map.json
 ```
 
-For PEFT adapters:
+**TED distillation (additionally):**
 ```
-├── adapter_config.json       ← LoRA config
-└── adapter_model.safetensors ← adapter weights only
+├── task_aware_filters.pt
+└── alignment_metadata.json
 ```
 
 ---
 
-## Model Naming Convention
+## Training
 
-When uploading to HuggingFace, use this naming convention:
-
-```
-{org}/Dia-Guard-{size}-{method}
-```
-
-Examples:
-- `jsl5710/Dia-Guard-0.6B-MINILLM`
-- `jsl5710/Dia-Guard-270M-TED`
-- `jsl5710/Dia-Guard-1B-GKD`
-- `jsl5710/Dia-Guard-4B-FT`         ← fine-tuned teacher
+See [codes/evaluation/FineTune/README.md](../codes/evaluation/FineTune/README.md) for training instructions, GPU setup, and hyperparameters.

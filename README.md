@@ -33,13 +33,23 @@ dia-guard/
 │   ├── d_purify/                   # Quality evaluation (similarity, neural, eWAVE, LLM-judge)
 │   ├── splits_generator/           # Stratified train/val/test split generation
 │   └── evaluation/                 # Training pipeline
-│       ├── FineTune/               # Teacher model fine-tuning (Full FT + LoRA/QLoRA)
-│       └── Knowledge_Distillation/ # Student distillation (MINILLM, GKD, TED)
+│       ├── FineTune/               # Fine-tuning (Full FT + LoRA/QLoRA)
+│       │   ├── launch_ft.sh        # Training launcher (GPU assignment, tmux)
+│       │   ├── setup_gpu.sh        # Auto-configure for A100/H100/T4
+│       │   ├── peft/               # LoRA training scripts + configs
+│       │   ├── full_ft/            # Full FT training scripts + configs
+│       │   └── configs/            # Accelerate multi-GPU configs
+│       ├── Knowledge_Distillation/ # Student distillation (MINILLM, GKD, TED)
+│       └── run_experiment.py       # Experiment orchestrator + status tracking
 ├── dataset/
 │   ├── dia_llm/                    # LLM-generated data (48 dialects × 15 datasets)
 │   ├── multi_value/                # Rule-based dialect data
-│   └── dia_splits/                 # Train/val/test JSONL splits
-└── models/                         # Trained checkpoints + HuggingFace upload utility
+│   └── dia_splits/                 # Train/val/test splits (hosted on HF: jsl5710/Shield)
+└── models/                         # Trained checkpoints
+    ├── upload_all_models.py        # Batch upload to HuggingFace Hub
+    ├── FT/                         # Group 1: Teacher FT
+    ├── KD/                         # Group 2: KD Students
+    └── group3_student_ft_baseline/ # Group 3: Student FT Baseline
 ```
 
 ---
@@ -87,26 +97,42 @@ Automatic evaluation framework assessing dialect transformation quality via text
 
 ### Evaluation Pipeline — Training & Distillation
 
-Two-stage training system:
-1. **Fine-tune** large teacher models (>2B params) on DIA-GUARD safety data
-2. **Distill** into compact student models (<2B params)
+Three experiment groups across 9 models:
+
+| Group | Name | Models | Description |
+|-------|------|--------|-------------|
+| **G1** | Teacher FT | 2 teachers (3B, 4B) | Fine-tune large models on safety data |
+| **G2** | KD Students | 7 students (<2B) | Distill from G1 teachers (MINILLM, GKD, TED) |
+| **G3** | Student FT Baseline | 7 students (<2B) | Direct fine-tuning without KD |
 
 | Method | Type | Description |
 |--------|------|-------------|
 | Full FT | Fine-tune | Full fine-tuning with CE or contrastive loss |
-| PEFT | Fine-tune | LoRA/QLoRA with rank-stabilized scaling |
+| PEFT | Fine-tune | LoRA/QLoRA with rank-stabilized scaling (r=64, alpha=128) |
 | MINILLM | Distillation | Reverse KL via REINFORCE + EMA baseline |
 | GKD | Distillation | On-policy mixing (FKL/RKL/JSD/TVD) |
 | TED | Distillation | Task-aware embedding distillation |
 
 ```bash
-# Full pipeline: fine-tune then distill
+# Configure for your GPU (A100/H100/T4)
+bash codes/evaluation/FineTune/setup_gpu.sh a100
+
+# Launch Group 3 student training with tmux
+bash codes/evaluation/FineTune/launch_ft.sh peft ce google/gemma-3-270m-it 0
+
+# Full pipeline: fine-tune teacher then distill
 python codes/evaluation/run_experiment.py --stage full \
   --ft_method full_ft --kd_method minillm \
   --teacher_model Qwen/Qwen3-4B-SafeRL \
   --student_model meta-llama/Llama-3.2-1B-Instruct \
   --train_file dataset/dia_splits/train.jsonl \
   --val_file dataset/dia_splits/val.jsonl
+
+# Check experiment status
+python codes/evaluation/run_experiment.py --status
+
+# Upload completed models to HuggingFace
+python models/upload_all_models.py --hf_token YOUR_TOKEN
 ```
 
 ---
@@ -157,7 +183,11 @@ gcloud auth application-default login
 ### 3. Install dependencies
 
 ```bash
+# For data generation
 pip install openai google-genai
+
+# For training
+pip install trl peft transformers datasets accelerate huggingface_hub wandb
 ```
 
 ### 4. Continue CounterHarm-SHIELD generation
@@ -180,21 +210,36 @@ python codes/splits_generator/generate_splits.py \
   --output_dir dataset/dia_splits
 ```
 
+Or download pre-built splits from HuggingFace:
+```bash
+huggingface-cli download jsl5710/Shield --repo-type dataset --local-dir dataset/dia_splits
+```
+
 ### 6. Train models
 
 ```bash
-# Fine-tune teacher
-python codes/evaluation/run_experiment.py --stage ft \
-  --ft_method full_ft --loss ce \
-  --teacher_model Qwen/Qwen3-4B-SafeRL \
-  --train_file dataset/dia_splits/train.jsonl \
-  --val_file dataset/dia_splits/val.jsonl
+# Login (required for gated models: Gemma, Llama)
+huggingface-cli login
+wandb login
 
-# Distill to student
-python codes/evaluation/run_experiment.py --stage kd \
-  --kd_method minillm \
-  --teacher_model Qwen/Qwen3-4B-SafeRL \
-  --student_model meta-llama/Llama-3.2-1B-Instruct
+# Configure for your GPU
+bash codes/evaluation/FineTune/setup_gpu.sh a100   # or h100, t4
+
+# Launch Group 3 student FT (PEFT with CE loss)
+bash codes/evaluation/FineTune/launch_ft.sh peft ce google/gemma-3-270m-it 0
+
+# Check experiment status
+python codes/evaluation/run_experiment.py --status
+```
+
+### 7. Upload trained models to HuggingFace
+
+```bash
+# See which models are complete
+python models/upload_all_models.py --dry_run
+
+# Upload all completed models
+python models/upload_all_models.py --hf_token YOUR_HF_TOKEN
 ```
 
 ---
