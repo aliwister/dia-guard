@@ -1,3 +1,19 @@
+---
+license: cc-by-4.0
+language:
+  - en
+task_categories:
+  - text-classification
+tags:
+  - safety
+  - dialect
+  - llm-safety
+  - adversarial
+  - knowledge-distillation
+size_categories:
+  - 1M<n<10M
+---
+
 # DIA-GUARD — dia_splits
 
 Canonical train/val/test splits for the DIA-GUARD safety-guard training pipeline.
@@ -143,61 +159,63 @@ Whole rows are skipped only if `original_input` itself is a refusal.
 | `counterharm_basic` | 68,012 | 14,363 | 15,424 | 97,799 | dia_llm |
 | `counterharm_coi` | 74,036 | 16,473 | 14,410 | 104,919 | dia_llm |
 
-### By Dialect (unsafe / safe per split)
+### By Dialect — Contamination-Safe Splits
 
-| Dialect | Train (u/s) | Val (u/s) | Test (u/s) | Total |
-|---------|-------------|-----------|------------|-------|
-| aboriginal_english | 9,385 / 6,954 | 1,981 / 1,452 | 2,038 / 1,514 | 23,324 |
-| acrolectal_fiji_english | 9,338 / 6,907 | 1,979 / 1,449 | 2,029 / 1,506 | 23,208 |
-| appalachian_english | 9,377 / 6,947 | 1,995 / 1,466 | 2,038 / 1,514 | 23,337 |
-| australian_english | 9,277 / 6,864 | 1,976 / 1,450 | 2,024 / 1,501 | 23,092 |
-| australian_vernacular_english | 9,350 / 2,337 | 1,980 / 482 | 2,035 / 498 | 16,682 |
-| bahamian_english ⚠ | 9,392 / 0 | 1,988 / 0 | 2,044 / 0 | 13,424 |
-| black_south_african_english ⚠ | 9,332 / 0 | 1,991 / 0 | 2,031 / 0 | 13,354 |
-| cameroon_english ⚠ | 9,363 / 0 | 1,984 / 0 | 2,035 / 0 | 13,382 |
-| cape_flats_english ⚠ | 9,336 / 0 | 1,995 / 0 | 2,017 / 0 | 13,348 |
-| channel_islands_english ⚠ | 9,354 / 0 | 1,995 / 0 | 2,030 / 0 | 13,379 |
-| chicano_english | 9,314 / 6,884 | 1,982 / 1,453 | 2,026 / 1,502 | 23,161 |
-| colloquial_american_english | 9,381 / 6,951 | 2,003 / 1,474 | 2,036 / 1,512 | 23,357 |
-| colloquial_singapore_english_singlish | 9,367 / 6,936 | 2,002 / 1,473 | 2,031 / 1,507 | 23,316 |
-| earlier_african_american_vernacular_english | 9,286 / 6,856 | 1,976 / 1,447 | 2,016 / 1,492 | 23,073 |
-| east_anglian_english | 9,337 / 6,907 | 1,982 / 1,453 | 2,037 / 1,512 | 23,228 |
-| english_dialects_in_the_north_of_england | 9,356 / 6,925 | 1,995 / 1,466 | 2,042 / 1,518 | 23,302 |
-| english_dialects_in_the_southeast_of_england | 9,352 / 5,840 | 1,984 / 1,256 | 2,035 / 1,280 | 21,747 |
-| english_dialects_in_the_southwest_of_england | 9,324 / 6,893 | 1,987 / 1,457 | 2,033 / 1,508 | 23,202 |
-| falkland_islands_english | 9,326 / 6,897 | 1,984 / 1,453 | 2,029 / 1,505 | 23,194 |
-| ghanaian_english | 9,372 / 6,942 | 1,995 / 1,465 | 2,037 / 1,513 | 23,324 |
-| hong_kong_english | 9,526 / 7,095 | 2,020 / 1,491 | 2,069 / 1,545 | 23,746 |
-| indian_english | 9,552 / 7,121 | 2,033 / 1,503 | 2,073 / 1,549 | 23,831 |
-| indian_south_african_english | 9,457 / 7,026 | 2,019 / 1,489 | 2,058 / 1,534 | 23,583 |
-| irish_english | 9,546 / 7,116 | 2,029 / 1,497 | 2,072 / 1,548 | 23,808 |
-| jamaican_english | 9,466 / 7,035 | 2,004 / 1,475 | 2,061 / 1,537 | 23,578 |
-| kenyan_english | 9,565 / 7,135 | 2,035 / 1,505 | 2,079 / 1,555 | 23,874 |
-| liberian_settler_english | 9,518 / 7,089 | 2,028 / 1,499 | 2,059 / 1,536 | 23,729 |
-| malaysian_english | 9,520 / 7,089 | 2,027 / 1,498 | 2,064 / 1,540 | 23,738 |
-| maltese_english | 9,513 / 7,082 | 2,023 / 1,493 | 2,071 / 1,547 | 23,729 |
-| manx_english | 9,521 / 7,091 | 2,023 / 1,494 | 2,070 / 1,546 | 23,745 |
-| new_zealand_english | 9,459 / 7,047 | 2,006 / 1,480 | 2,059 / 1,538 | 23,589 |
-| newfoundland_english | 9,483 / 7,052 | 2,016 / 1,489 | 2,068 / 1,544 | 23,652 |
-| nigerian_english | 9,525 / 7,095 | 2,019 / 1,491 | 2,073 / 1,550 | 23,753 |
-| orkney_and_shetland_english | 9,497 / 7,083 | 2,018 / 1,492 | 2,069 / 1,547 | 23,706 |
-| ozark_english | 9,410 / 6,982 | 2,009 / 1,480 | 2,049 / 1,525 | 23,455 |
-| pakistani_english | 9,521 / 7,091 | 2,023 / 1,493 | 2,068 / 1,544 | 23,740 |
-| philippine_english | 9,512 / 7,081 | 2,017 / 1,486 | 2,053 / 1,529 | 23,678 |
-| pure_fiji_english_basilectal_fijie | 9,530 / 7,099 | 2,028 / 1,499 | 2,068 / 1,544 | 23,768 |
-| rural_african_american_vernacular_english | 9,476 / 7,045 | 2,006 / 1,477 | 2,059 / 1,535 | 23,598 |
-| scottish_english | 9,550 / 7,119 | 2,027 / 1,498 | 2,073 / 1,549 | 23,816 |
-| southeast_american_enclave_dialects | 9,519 / 7,089 | 2,020 / 1,491 | 2,065 / 1,541 | 23,725 |
-| sri_lankan_english | 9,538 / 7,107 | 2,035 / 1,506 | 2,071 / 1,547 | 23,804 |
-| st_helena_english | 9,551 / 7,120 | 2,030 / 1,501 | 2,068 / 1,544 | 23,814 |
-| tanzanian_english | 9,472 / 7,041 | 2,011 / 1,482 | 2,062 / 1,538 | 23,606 |
-| tristan_da_cunha_english | 9,525 / 7,094 | 2,012 / 1,483 | 2,074 / 1,550 | 23,738 |
-| ugandan_english | 9,387 / 6,957 | 1,992 / 1,463 | 2,042 / 1,518 | 23,359 |
-| urban_african_american_vernacular_english | 9,445 / 7,015 | 2,005 / 1,476 | 2,060 / 1,536 | 23,537 |
-| welsh_english | 9,038 / 6,607 | 1,924 / 1,395 | 1,966 / 1,442 | 22,372 |
-| white_south_african_english ⚠ | 840 / 0 | 186 / 0 | 184 / 0 | 1,210 |
-| white_zimbabwean_english ⚠ | 840 / 0 | 186 / 0 | 184 / 0 | 1,210 |
-| **TOTAL** | **454,221 / 295,643** | **96,565 / 62,322** | **98,734 / 64,440** | **1,071,925** |
+> Format: **unsafe/safe** per split. ⚠ = harmful-only dialect (no benign counterpart available).
+
+| Dialect | Train (unsafe/safe) | Val (unsafe/safe) | Test (unsafe/safe) | Total |
+|---|---|---|---|---|
+| Aboriginal English | 9,385/6,954 | 1,981/1,452 | 2,038/1,514 | 23,324 |
+| Acrolectal Fiji English | 9,338/6,907 | 1,979/1,449 | 2,029/1,506 | 23,208 |
+| Appalachian English | 9,377/6,947 | 1,995/1,466 | 2,038/1,514 | 23,337 |
+| Australian English | 9,277/6,864 | 1,976/1,450 | 2,024/1,501 | 23,092 |
+| Australian Vernacular English | 9,350/2,337 | 1,980/482 | 2,035/498 | 16,682 |
+| Bahamian English ⚠ | 9,392/0 | 1,988/0 | 2,044/0 | 13,424 |
+| Black South African English ⚠ | 9,332/0 | 1,991/0 | 2,031/0 | 13,354 |
+| Cameroon English ⚠ | 9,363/0 | 1,984/0 | 2,035/0 | 13,382 |
+| Cape Flats English ⚠ | 9,336/0 | 1,995/0 | 2,017/0 | 13,348 |
+| Channel Islands English ⚠ | 9,354/0 | 1,995/0 | 2,030/0 | 13,379 |
+| Chicano English | 9,314/6,884 | 1,982/1,453 | 2,026/1,502 | 23,161 |
+| Colloquial American English | 9,381/6,951 | 2,003/1,474 | 2,036/1,512 | 23,357 |
+| Colloquial Singapore English (Singlish) | 9,367/6,936 | 2,002/1,473 | 2,031/1,507 | 23,316 |
+| Earlier African American Vernacular English | 9,286/6,856 | 1,976/1,447 | 2,016/1,492 | 23,073 |
+| East Anglian English | 9,337/6,907 | 1,982/1,453 | 2,037/1,512 | 23,228 |
+| English Dialects in the North of England | 9,356/6,925 | 1,995/1,466 | 2,042/1,518 | 23,302 |
+| English Dialects in the Southeast of England | 9,352/5,840 | 1,984/1,256 | 2,035/1,280 | 21,747 |
+| English Dialects in the Southwest of England | 9,324/6,893 | 1,987/1,457 | 2,033/1,508 | 23,202 |
+| Falkland Islands English | 9,326/6,897 | 1,984/1,453 | 2,029/1,505 | 23,194 |
+| Ghanaian English | 9,372/6,942 | 1,995/1,465 | 2,037/1,513 | 23,324 |
+| Hong Kong English | 9,526/7,095 | 2,020/1,491 | 2,069/1,545 | 23,746 |
+| Indian English | 9,552/7,121 | 2,033/1,503 | 2,073/1,549 | 23,831 |
+| Indian South African English | 9,457/7,026 | 2,019/1,489 | 2,058/1,534 | 23,583 |
+| Irish English | 9,546/7,116 | 2,029/1,497 | 2,072/1,548 | 23,808 |
+| Jamaican English | 9,466/7,035 | 2,004/1,475 | 2,061/1,537 | 23,578 |
+| Kenyan English | 9,565/7,135 | 2,035/1,505 | 2,079/1,555 | 23,874 |
+| Liberian Settler English | 9,518/7,089 | 2,028/1,499 | 2,059/1,536 | 23,729 |
+| Malaysian English | 9,520/7,089 | 2,027/1,498 | 2,064/1,540 | 23,738 |
+| Maltese English | 9,513/7,082 | 2,023/1,493 | 2,071/1,547 | 23,729 |
+| Manx English | 9,521/7,091 | 2,023/1,494 | 2,070/1,546 | 23,745 |
+| New Zealand English | 9,459/7,047 | 2,006/1,480 | 2,059/1,538 | 23,589 |
+| Newfoundland English | 9,483/7,052 | 2,016/1,489 | 2,068/1,544 | 23,652 |
+| Nigerian English | 9,525/7,095 | 2,019/1,491 | 2,073/1,550 | 23,753 |
+| Orkney and Shetland English | 9,497/7,083 | 2,018/1,492 | 2,069/1,547 | 23,706 |
+| Ozark English | 9,410/6,982 | 2,009/1,480 | 2,049/1,525 | 23,455 |
+| Pakistani English | 9,521/7,091 | 2,023/1,493 | 2,068/1,544 | 23,740 |
+| Philippine English | 9,512/7,081 | 2,017/1,486 | 2,053/1,529 | 23,678 |
+| Pure Fiji English — Basilectal (FijiE) | 9,530/7,099 | 2,028/1,499 | 2,068/1,544 | 23,768 |
+| Rural African American Vernacular English | 9,476/7,045 | 2,006/1,477 | 2,059/1,535 | 23,598 |
+| Scottish English | 9,550/7,119 | 2,027/1,498 | 2,073/1,549 | 23,816 |
+| Southeast American Enclave Dialects | 9,519/7,089 | 2,020/1,491 | 2,065/1,541 | 23,725 |
+| Sri Lankan English | 9,538/7,107 | 2,035/1,506 | 2,071/1,547 | 23,804 |
+| St Helena English | 9,551/7,120 | 2,030/1,501 | 2,068/1,544 | 23,814 |
+| Tanzanian English | 9,472/7,041 | 2,011/1,482 | 2,062/1,538 | 23,606 |
+| Tristan da Cunha English | 9,525/7,094 | 2,012/1,483 | 2,074/1,550 | 23,738 |
+| Ugandan English | 9,387/6,957 | 1,992/1,463 | 2,042/1,518 | 23,359 |
+| Urban African American Vernacular English | 9,445/7,015 | 2,005/1,476 | 2,060/1,536 | 23,537 |
+| Welsh English | 9,038/6,607 | 1,924/1,395 | 1,966/1,442 | 22,372 |
+| White South African English ⚠ | 840/0 | 186/0 | 184/0 | 1,210 |
+| White Zimbabwean English ⚠ | 840/0 | 186/0 | 184/0 | 1,210 |
+| **Total** | **454,221/295,643** | **96,565/62,322** | **98,734/64,440** | **1,071,925** |
 
 > **⚠ Harmful-only dialects (7):** bahamian_english, black_south_african_english, cameroon_english,
 > cape_flats_english, channel_islands_english, white_south_african_english, white_zimbabwean_english.
