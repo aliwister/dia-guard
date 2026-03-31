@@ -1,13 +1,20 @@
 #!/usr/bin/env bash
 # ─────────────────────────────────────────────────────────────────────────────
-# launch_ft.sh  —  DIA-GUARD Group 3 fine-tuning launcher
+# launch_ft.sh  —  DIA-GUARD fine-tuning launcher (Groups 1 & 3)
 #
 # Usage:
 #   bash launch_ft.sh <ft_method> <loss> <model_id> <gpus> [num_gpus]
 #
 # Examples:
-#   bash launch_ft.sh peft ce google/gemma-3-270m-it 0         # 1 GPU
-#   bash launch_ft.sh peft ce HuggingFaceTB/SmolLM2-1.7B-Instruct 0,1 2  # 2 GPU
+#   # Group 3 — Student FT Baseline (single GPU)
+#   bash launch_ft.sh peft ce google/gemma-3-270m-it 0
+#
+#   # Group 3 — Student FT Baseline (multi-GPU for 1.7B)
+#   bash launch_ft.sh peft ce HuggingFaceTB/SmolLM2-1.7B-Instruct 0,1 2
+#
+#   # Group 1 — Teacher FT
+#   bash launch_ft.sh peft ce Qwen/Qwen3-4B-SafeRL 0,1 2
+#   bash launch_ft.sh full_ft ce CohereLabs/tiny-aya-global 0,1,2,3 4
 # ─────────────────────────────────────────────────────────────────────────────
 
 set -euo pipefail
@@ -18,8 +25,15 @@ MODEL_ID="${3:?}"
 GPUS="${4:?}"
 NUM_GPUS="${5:-1}"
 
-PYTHON=/anaconda/envs/azureml_py38_PT_TF/bin/python
-ACCELERATE=/anaconda/envs/azureml_py38_PT_TF/bin/accelerate
+# Auto-detect python — use conda env if available, else system python
+if [[ -x /anaconda/envs/azureml_py38_PT_TF/bin/python ]]; then
+    PYTHON=/anaconda/envs/azureml_py38_PT_TF/bin/python
+    ACCELERATE=/anaconda/envs/azureml_py38_PT_TF/bin/accelerate
+else
+    PYTHON=$(which python3)
+    ACCELERATE=$(which accelerate)
+fi
+
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 ACCEL_CFG="${SCRIPT_DIR}/configs/accel_2gpu.yaml"
 
@@ -49,6 +63,7 @@ MODEL_SLUG=$(echo "${MODEL_ID}" | awk -F'/' '{print $NF}' | tr '[:upper:]' '[:lo
 
 # Map model slug to config filename
 declare -A CFG_MAP=(
+    # Students
     ["gemma_3_270m_it"]="gemma_270m"
     ["gemma_3_1b_it"]="gemma_1b"
     ["llama_3_2_1b_instruct"]="llama_1b"
@@ -56,8 +71,15 @@ declare -A CFG_MAP=(
     ["qwen3_5_0_8b"]="qwen_0.8b"
     ["smollm2_1_7b_instruct"]="smollm_1.7b"
     ["qwen3_1_7b"]="qwen_1.7b"
+    # Teachers
     ["qwen3_4b_saferl"]="qwen3_4b"
     ["tiny_aya_global"]="aya_3b"
+)
+
+# Teacher model slugs — used to determine output group
+declare -A TEACHERS=(
+    ["qwen3_4b_saferl"]=1
+    ["tiny_aya_global"]=1
 )
 
 CFG_KEY="${CFG_MAP[$MODEL_SLUG]:-}"
@@ -76,16 +98,25 @@ SPLITS_DIR="$(cd "${SPLITS_DIR}" && pwd)/dataset/dia_splits"
 TRAIN_DATA="${SPLITS_DIR}/train.jsonl"
 EVAL_DATA="${SPLITS_DIR}/val.jsonl"
 
-# Output dir mirrors run_experiment.py structure
+# Output dir — Group 1 (teachers) vs Group 3 (students)
 MODEL_SHORT=$(echo "${MODEL_ID}" | awk -F'/' '{print $NF}' | tr '[:upper:]' '[:lower:]' | tr '-' '_' | tr '.' '_')
 MODELS_DIR="${SCRIPT_DIR}/../../.."
 MODELS_DIR="$(cd "${MODELS_DIR}" && pwd)/models"
-OUTPUT_DIR="${MODELS_DIR}/group3_student_ft_baseline/${FT_METHOD}/${MODEL_SHORT}"
+
+if [[ -n "${TEACHERS[$MODEL_SLUG]:-}" ]]; then
+    GROUP="1"
+    GROUP_LABEL="Teacher FT"
+    OUTPUT_DIR="${MODELS_DIR}/FT/${FT_METHOD}/${MODEL_SHORT}"
+else
+    GROUP="3"
+    GROUP_LABEL="Student FT Baseline"
+    OUTPUT_DIR="${MODELS_DIR}/group3_student_ft_baseline/${FT_METHOD}/${MODEL_SHORT}"
+fi
 
 mkdir -p "${OUTPUT_DIR}"
 
 echo "========================================================"
-echo "DIA-GUARD Group 3 — Student FT Baseline"
+echo "DIA-GUARD Group ${GROUP} — ${GROUP_LABEL}"
 echo "  Model    : ${MODEL_ID}"
 echo "  Method   : ${FT_METHOD} | Loss: ${LOSS}"
 echo "  GPUs     : ${GPUS} (${NUM_GPUS} process(es))"

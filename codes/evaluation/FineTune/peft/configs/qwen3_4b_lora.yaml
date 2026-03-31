@@ -4,11 +4,11 @@
 # Model
 model_name: Qwen/Qwen3-4B-SafeRL
 trust_remote_code: true
-attn_implementation: flash_attention_2  # set to "eager" if flash-attn unavailable
+attn_implementation: eager  # set to "flash_attention_2" on A100/H100
 
-# QLoRA (4-bit quantization) — set to false for standard LoRA (bf16)
-use_qlora: false
-load_in_4bit: false
+# QLoRA (4-bit quantization) — required for T4 16GB, optional on A100/H100
+use_qlora: true
+load_in_4bit: true
 bnb_4bit_quant_type: nf4
 bnb_4bit_compute_dtype: bfloat16
 bnb_4bit_use_double_quant: true
@@ -35,7 +35,7 @@ eval_data: null
 max_seq_length: 2048
 
 # Output
-output_dir: ../../../models/group1_teacher_ft/peft/qwen3-4b-saferl
+output_dir: ../../../models/FT/peft/qwen3_4b_saferl
 run_name: qwen3-4b-lora
 
 # Training
@@ -44,14 +44,14 @@ per_device_train_batch_size: 1
 per_device_eval_batch_size: 1
 gradient_accumulation_steps: 16
 learning_rate: 2.0e-4   # LoRA typically uses higher LR than full FT
-warmup_ratio: 0.03
+warmup_steps: 4218
 weight_decay: 0.01
 lr_scheduler_type: cosine
 max_grad_norm: 1.0
 
 # Precision
-bf16: true
-tf32: true
+bf16: false
+tf32: false
 gradient_checkpointing: true
 
 # Logging
@@ -59,7 +59,7 @@ logging_steps: 10
 eval_strategy: steps
 eval_steps: 200
 save_strategy: steps
-save_steps: 500
+save_steps: 400
 save_total_limit: 3
 load_best_model_at_end: true
 

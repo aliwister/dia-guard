@@ -83,6 +83,10 @@ done
 for cfg in gemma_1b.yaml llama_1b.yaml smollm_1.7b.yaml qwen_1.7b.yaml; do
   update_config "$FULL_CONFIGS/$cfg" "$MED_BS" "$MED_GA"
 done
+# Large (teachers)
+for cfg in aya_3b.yaml qwen3_4b.yaml; do
+  update_config "$FULL_CONFIGS/$cfg" "$LARGE_BS" "$LARGE_GA"
+done
 
 echo ""
 echo "Done! Configs updated for $GPU."
