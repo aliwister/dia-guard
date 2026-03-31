@@ -27,17 +27,29 @@ models/
 │   ├── gkd/                         <- GKD-distilled
 │   └── ted/                         <- TED-distilled
 │
-└── group3_student_ft_baseline/      <- Group 3: Student FT Baseline (<2B params)
-    ├── peft/                        <- LoRA adapters
-    │   ├── gemma_3_270m_it/
-    │   ├── qwen3guard_gen_0_6b/
-    │   ├── qwen3_5_0_8b/
-    │   ├── gemma_3_1b_it/
-    │   ├── llama_3_2_1b_instruct/
-    │   ├── smollm2_1_7b_instruct/
-    │   └── qwen3_1_7b/
-    └── full_ft/                     <- Full fine-tuning weights
-        └── (same 7 models)
+├── group3_student_ft_baseline/      <- Group 3: Student FT Baseline (<2B params)
+│   ├── peft/                        <- LoRA adapters
+│   │   ├── gemma_3_270m_it/
+│   │   ├── qwen3guard_gen_0_6b/
+│   │   ├── qwen3_5_0_8b/
+│   │   ├── gemma_3_1b_it/
+│   │   ├── llama_3_2_1b_instruct/
+│   │   ├── smollm2_1_7b_instruct/
+│   │   └── qwen3_1_7b/
+│   └── full_ft/                     <- Full fine-tuning weights
+│       └── (same 7 models)
+│
+└── Quantized/                       <- Group 4: Post-Training Quantization
+    ├── KD/                          <- Quantized KD models
+    │   ├── minillm/
+    │   │   └── {model_slug}/
+    │   │       ├── fp16/            <- Float16 baseline
+    │   │       ├── int8/            <- LLM.int8() (1 byte/param)
+    │   │       └── nf4/             <- NF4 4-bit (0.5 bytes/param)
+    │   ├── gkd/
+    │   └── ted/
+    └── group3_student_ft_baseline/  <- Quantized Student FT models (optional)
+        └── ...
 ```
 
 ---
@@ -47,8 +59,9 @@ models/
 | Group | Directory | Description | Models |
 |-------|-----------|-------------|--------|
 | **G1** | `FT/` | Teacher FT — fine-tune large models on safety data | Qwen3-4B-SafeRL, Aya-3B |
-| **G2** | `KD/` | KD Students — distill from G1 teachers | 7 student models x 3 KD methods |
-| **G3** | `group3_student_ft_baseline/` | Student FT Baseline — direct fine-tuning (no KD) | 7 student models x 2 FT methods |
+| **G2** | `KD/` | KD Students — distill from G1 teachers | 7 students x 3 KD methods |
+| **G3** | `group3_student_ft_baseline/` | Student FT Baseline — direct fine-tuning (no KD) | 7 students x 2 FT methods |
+| **G4** | `Quantized/` | Post-training quantization of G2 + G3 models | fp16, int8, nf4 per model |
 
 ### Student Models (G2 & G3)
 
@@ -154,6 +167,37 @@ python upload_to_hub.py \
 ├── task_aware_filters.pt
 └── alignment_metadata.json
 ```
+
+---
+
+## Quantization (Group 4)
+
+After Groups 2 and 3 complete, quantize models at fp16/int8/nf4:
+
+```bash
+# See what's ready to quantize
+python ../codes/evaluation/Quantization/quantize_models.py --dry_run
+
+# Quantize all KD models at all 3 precisions
+python ../codes/evaluation/Quantization/quantize_models.py
+
+# Also include Group 3
+python ../codes/evaluation/Quantization/quantize_models.py --include_group3
+
+# Only 4-bit
+python ../codes/evaluation/Quantization/quantize_models.py --bits 4
+
+# Quantize and push to HuggingFace
+python ../codes/evaluation/Quantization/quantize_models.py --push_to_hub --hf_org jsl5710 --hf_token YOUR_TOKEN
+```
+
+| Precision | Method | Bytes/Param | Size vs fp16 |
+|-----------|--------|-------------|--------------|
+| fp16 | Float16 baseline | 2.0 | 1x |
+| int8 | LLM.int8() | 1.0 | 2x smaller |
+| nf4 | NF4 + double quant | 0.5 | 4x smaller |
+
+See [codes/evaluation/Quantization/README.md](../codes/evaluation/Quantization/README.md) for details.
 
 ---
 
