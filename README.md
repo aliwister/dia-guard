@@ -40,6 +40,7 @@ dia-guard/
 │       │   ├── full_ft/            # Full FT training scripts + configs
 │       │   └── configs/            # Accelerate multi-GPU configs
 │       ├── Knowledge_Distillation/ # Student distillation (MINILLM, GKD, TED)
+│       ├── Quantization/          # Post-training quantization (fp16, int8, nf4)
 │       └── run_experiment.py       # Experiment orchestrator + status tracking
 ├── dataset/
 │   ├── dia_llm/                    # LLM-generated data (48 dialects × 15 datasets)
@@ -49,7 +50,8 @@ dia-guard/
     ├── upload_all_models.py        # Batch upload to HuggingFace Hub
     ├── FT/                         # Group 1: Teacher FT
     ├── KD/                         # Group 2: KD Students
-    └── group3_student_ft_baseline/ # Group 3: Student FT Baseline
+    ├── group3_student_ft_baseline/ # Group 3: Student FT Baseline
+    └── Quantized/                  # Group 4: Quantized models (fp16/int8/nf4)
 ```
 
 ---
@@ -104,6 +106,7 @@ Three experiment groups across 9 models:
 | **G1** | Teacher FT | 2 teachers (3B, 4B) | Fine-tune large models on safety data |
 | **G2** | KD Students | 7 students (<2B) | Distill from G1 teachers (MINILLM, GKD, TED) |
 | **G3** | Student FT Baseline | 7 students (<2B) | Direct fine-tuning without KD |
+| **G4** | Quantization | G2 + G3 models | Post-training quantization at fp16/int8/nf4 |
 
 | Method | Type | Description |
 |--------|------|-------------|
@@ -112,6 +115,7 @@ Three experiment groups across 9 models:
 | MINILLM | Distillation | Reverse KL via REINFORCE + EMA baseline |
 | GKD | Distillation | On-policy mixing (FKL/RKL/JSD/TVD) |
 | TED | Distillation | Task-aware embedding distillation |
+| Quantization | Compression | fp16 / LLM.int8() / NF4 4-bit via bitsandbytes |
 
 ```bash
 # Configure for your GPU (A100/H100/T4)
