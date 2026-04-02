@@ -311,7 +311,8 @@ def load_rule_data(rule_data_dir: str) -> list[dict]:
     """
     Load rule-based (multi-value) transformation data.
     Expected structure: {rule_data_dir}/{dialect}/*.csv
-    Each row must have at least: dialect, dataset, mv_transform (text), label_str
+    Each CSV row has: prompt, prompt_transformed, target, transformation_tool
+    All records are treated as harmful (label=1); neg_text is empty (CE-only, no benign counterparts).
     """
     rule_path = Path(rule_data_dir)
     if not rule_path.exists():
@@ -323,31 +324,37 @@ def load_rule_data(rule_data_dir: str) -> list[dict]:
         try:
             with open(csv_file, encoding="utf-8", newline="") as f:
                 reader = csv.DictReader(f)
-                for row in reader:
-                    text = row.get("mv_transform", row.get("transformed_text", ""))
+                for row_idx, row in enumerate(reader):
+                    # Bug 1 fix: actual column is prompt_transformed (not mv_transform/transformed_text)
+                    text = row.get("prompt_transformed", row.get("mv_transform", row.get("transformed_text", "")))
                     if not _is_valid_text(text):
                         continue
                     label_str = row.get("label_str", row.get("label", "unsafe")).strip().lower()
                     label = 0 if label_str == "safe" else 1
                     dialect = row.get("dialect", csv_file.parent.name)
-                    dataset = row.get("dataset", csv_file.stem)
-                    row_id  = row.get("sample_id", row.get("id", ""))
+                    # Bug 3 fix: strip dialect suffix from filename to get clean dataset name
+                    # e.g. "advbench_aboriginal_english" → "advbench"
+                    raw_stem = csv_file.stem
+                    dataset = row.get("dataset", raw_stem.replace(f"_{dialect}", "", 1))
+                    # Bug 4 fix: use row index since CSV has no sample_id column
+                    row_id = row.get("sample_id", row.get("id", str(row_idx)))
 
                     records.append({
-                        "sample_id":        f"{dataset}__{dialect}__{row_id}__mv_transform",
-                        "source_sample_id": str(row_id),
-                        "dataset":          dataset,
-                        "dialect":          dialect,
-                        "text":             text.strip(),
-                        "text_type":        "mv_transform",
-                        "label":            label,
-                        "label_str":        "safe" if label == 0 else "unsafe",
-                        "neg_text":         "",
-                        "original_input":   row.get("original_input", ""),
-                        "transformed_input": row.get("transformed_input", ""),
-                        "basic_transform":  "",
-                        "coi_transform":    "",
-                        "model":            row.get("model", ""),
+                        "sample_id":         f"{dataset}__{dialect}__{row_id}__mv_transform",
+                        "source_sample_id":  str(row_id),
+                        "dataset":           dataset,
+                        "dialect":           dialect,
+                        "text":              text.strip(),
+                        "text_type":         "mv_transform",
+                        "label":             label,
+                        "label_str":         "safe" if label == 0 else "unsafe",
+                        "neg_text":          "",
+                        # Bug 2 fix: actual column is prompt (not original_input)
+                        "original_input":    row.get("prompt", row.get("original_input", "")),
+                        "transformed_input": row.get("prompt_transformed", row.get("transformed_input", "")),
+                        "basic_transform":   "",
+                        "coi_transform":     "",
+                        "model":             row.get("model", ""),
                     })
         except Exception as exc:
             print(f"  Warning: could not read {csv_file}: {exc}")
@@ -365,9 +372,21 @@ def stratified_split(
     seed: int = 42,
 ) -> tuple[list[dict], list[dict], list[dict]]:
     """
-    Stratify by (dialect × label) so that every dialect and both label classes
-    appear in each split in proportion to their size.
-    Assigns the 'split' field in-place.
+    Contamination-safe stratified split.
+
+    Groups records by (dataset, source_sample_id) — the unique source prompt key —
+    so that ALL variants of a source row (every dialect, every text_type) are
+    confined to exactly one split.  This prevents two forms of leakage:
+
+      1. Within-dialect: different text_type variants of the same row (original,
+         basic_transform, counterharm_*, …) landing in different splits.
+      2. Cross-dialect: the same underlying harmful prompt appearing in both
+         train and test under different dialect transformations.
+
+    Stratification is performed at the source-group level by (dataset) stratum,
+    preserving benchmark balance across splits.
+
+    Assigns the 'split' field in-place on every record.
     Returns (train, val, test) lists.
     """
     assert abs(train_ratio + val_ratio + test_ratio - 1.0) < 1e-6, \
@@ -375,40 +394,62 @@ def stratified_split(
 
     rng = random.Random(seed)
 
-    # Group by (dialect, label) stratum
-    strata: dict[tuple, list[dict]] = defaultdict(list)
+    # ── Step 1: group all records by their source prompt key ──────────────────
+    # Key = (dataset, source_sample_id) uniquely identifies one original prompt
+    # across all its dialect × text_type expansions.
+    source_groups: dict[tuple, list[dict]] = defaultdict(list)
     for rec in records:
-        key = (rec["dialect"], rec["label"])
-        strata[key].append(rec)
+        key = (rec["dataset"], rec["source_sample_id"])
+        source_groups[key].append(rec)
 
-    train_set, val_set, test_set = [], [], []
+    # ── Step 2: stratify source-group keys by dataset ─────────────────────────
+    # Stratifying by dataset keeps each benchmark proportionally represented
+    # in every split regardless of how many rows it contributes.
+    dataset_strata: dict[str, list[tuple]] = defaultdict(list)
+    for key in source_groups:
+        dataset_strata[key[0]].append(key)
 
-    for key, group in sorted(strata.items()):
-        rng.shuffle(group)
-        n = len(group)
+    train_keys: set[tuple] = set()
+    val_keys:   set[tuple] = set()
+    test_keys:  set[tuple] = set()
+
+    for dataset, keys in sorted(dataset_strata.items()):
+        rng.shuffle(keys)
+        n = len(keys)
         n_train = max(1, round(n * train_ratio))
         n_val   = max(1, round(n * val_ratio))
-        # remainder goes to test
         n_test  = n - n_train - n_val
         if n_test < 0:
-            # Very small stratum: put at least 1 in each split
             n_train = max(1, n - 2)
             n_val   = 1 if n >= 2 else 0
             n_test  = max(0, n - n_train - n_val)
 
-        t_records = group[:n_train]
-        v_records = group[n_train:n_train + n_val]
-        s_records = group[n_train + n_val:]
+        for k in keys[:n_train]:
+            train_keys.add(k)
+        for k in keys[n_train : n_train + n_val]:
+            val_keys.add(k)
+        for k in keys[n_train + n_val :]:
+            test_keys.add(k)
 
-        for r in t_records: r["split"] = "train"
-        for r in v_records: r["split"] = "val"
-        for r in s_records: r["split"] = "test"
+    # ── Step 3: assign every record to its split via the group key ────────────
+    train_set, val_set, test_set = [], [], []
 
-        train_set.extend(t_records)
-        val_set.extend(v_records)
-        test_set.extend(s_records)
+    for key, group in source_groups.items():
+        if key in train_keys:
+            split_name = "train"
+            target = train_set
+        elif key in val_keys:
+            split_name = "val"
+            target = val_set
+        else:
+            split_name = "test"
+            target = test_set
 
-    # Shuffle within each final set for good measure
+        for r in group:
+            r["split"] = split_name
+        target.extend(group)
+
+    # Shuffle within each final set
     rng.shuffle(train_set)
     rng.shuffle(val_set)
     rng.shuffle(test_set)

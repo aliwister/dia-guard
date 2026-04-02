@@ -1,14 +1,14 @@
-# DIA-GUARD PEFT Config — Qwen3-4B-SafeRL with LoRA
-# Usage: python train_ce_lora.py --config configs/qwen3_4b_lora.yaml
+# DIA-GUARD PEFT Config — Llama-3.2-1B-Instruct with LoRA (Student Baseline)
+# Usage: python train_ce_lora.py --config configs/llama_1b_lora.yaml
 
 # Model
-model_name: Qwen/Qwen3-4B-SafeRL
-trust_remote_code: true
-attn_implementation: eager  # set to "flash_attention_2" on A100/H100
+model_name: meta-llama/Llama-3.2-1B-Instruct
+trust_remote_code: false
+attn_implementation: eager  # set to "eager" if flash-attn unavailable
 
-# QLoRA (4-bit quantization) — required for T4 16GB, optional on A100/H100
-use_qlora: true
-load_in_4bit: true
+# QLoRA (4-bit quantization) — set to false for standard LoRA (bf16)
+use_qlora: false
+load_in_4bit: false
 bnb_4bit_quant_type: nf4
 bnb_4bit_compute_dtype: bfloat16
 bnb_4bit_use_double_quant: true
@@ -18,7 +18,7 @@ lora_r: 64
 lora_alpha: 128
 lora_dropout: 0.05
 lora_bias: none
-use_rslora: true          # Rank-Stabilized LoRA: alpha/sqrt(r), recommended for r>=16
+use_rslora: true
 lora_target_modules:
   - q_proj
   - k_proj
@@ -35,22 +35,22 @@ eval_data: null
 max_seq_length: 2048
 
 # Output
-output_dir: ../../../models/FT/peft/qwen3_4b_saferl
-run_name: qwen3-4b-lora
+output_dir: ../../../models/group3_student_ft_baseline/peft/llama-3_2-1b-instruct
+run_name: llama-3.2-1b-lora
 
 # Training
 num_epochs: 3
-per_device_train_batch_size: 1
-per_device_eval_batch_size: 1
-gradient_accumulation_steps: 16
-learning_rate: 2.0e-4   # LoRA typically uses higher LR than full FT
+per_device_train_batch_size: 2
+per_device_eval_batch_size: 2
+gradient_accumulation_steps: 8
+learning_rate: 2.0e-4
 warmup_steps: 4218
 weight_decay: 0.01
 lr_scheduler_type: cosine
 max_grad_norm: 1.0
 
 # Precision
-bf16: false
+bf16: true
 tf32: false
 gradient_checkpointing: true
 

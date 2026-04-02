@@ -5,38 +5,48 @@ Runs fine-tuning and/or knowledge distillation experiments with full
 resumeability. Checkpoints are detected automatically so interrupted
 runs continue from where they left off.
 
-Pipeline
---------
-  full  → FT (teacher) then KD (student)
-  ft    → FT only
-  kd    → KD only (requires FT model to already exist)
+Experiment Groups
+-----------------
+  Group 1  → Teacher FT   (fine-tune Qwen3-4B-SafeRL or tiny-aya-global)
+  Group 2  → KD Students  (distil fine-tuned teacher into a student; implicit with --stage kd/full)
+  Group 3  → Student FT Baseline (fine-tune student directly, no teacher)
+
+Pipeline Stages
+---------------
+  full  → Group 1 FT then Group 2 KD  (--group not needed; always teacher → student)
+  ft    → FT only; requires --group 1 (teacher) or --group 3 (student baseline)
+  kd    → Group 2 KD only (teacher FT model must already exist)
+
+Output layout
+-------------
+  models/
+    group1_teacher_ft/{full_ft|peft}/{model}/
+    group2_kd_students/{minillm|gkd|ted}/{teacher}_to_{student}/
+    group3_student_ft_baseline/{full_ft|peft}/{model}/
+
+  results/
+    group1_teacher_ft/{full_ft|peft}/{ce|contrastive}/{model}/
+    group2_kd_students/{minillm|gkd|ted}/{teacher}_to_{student}/
+    group3_student_ft_baseline/{full_ft|peft}/{ce|contrastive}/{model}/
 
 Usage Examples
 --------------
-# Full pipeline: fine-tune Qwen3-4B then distill to SmolLM2 via MINILLM
+# Group 1 — Teacher full fine-tune, CE loss
+python run_experiment.py \\
+    --stage ft --group 1 \\
+    --ft_method full_ft \\
+    --teacher_model Qwen/Qwen3-4B-SafeRL \\
+    --loss ce
+
+# Group 1 → Group 2 — Teacher FT then distil to student (full pipeline)
 python run_experiment.py \\
     --stage full \\
-    --ft_method full_ft \\
-    --kd_method minillm \\
+    --ft_method full_ft --kd_method minillm \\
     --teacher_model Qwen/Qwen3-4B-SafeRL \\
     --student_model HuggingFaceTB/SmolLM2-1.7B-Instruct \\
     --loss ce
 
-# Fine-tune only (both teachers, CE loss)
-python run_experiment.py \\
-    --stage ft \\
-    --ft_method full_ft \\
-    --teacher_model Qwen/Qwen3-4B-SafeRL \\
-    --loss ce
-
-# PEFT fine-tune with contrastive loss
-python run_experiment.py \\
-    --stage ft \\
-    --ft_method peft \\
-    --teacher_model CohereLabs/tiny-aya-global \\
-    --loss contrastive
-
-# KD only (teacher FT model must already exist in models/FT/)
+# Group 2 — KD only (teacher must already be in group1_teacher_ft/)
 python run_experiment.py \\
     --stage kd \\
     --kd_method ted \\
@@ -44,13 +54,16 @@ python run_experiment.py \\
     --student_model google/gemma-3-1b-it \\
     --ft_method full_ft
 
-# Resume: re-running any stage automatically skips completed steps
-python run_experiment.py --stage full --ft_method peft --kd_method gkd \\
-    --teacher_model Qwen/Qwen3-4B-SafeRL \\
-    --student_model meta-llama/Llama-3.2-1B-Instruct
+# Group 3 — Student FT baseline, contrastive loss
+python run_experiment.py \\
+    --stage ft --group 3 \\
+    --ft_method peft \\
+    --teacher_model meta-llama/Llama-3.2-1B-Instruct \\
+    --loss contrastive
 
 # Dry run (print plan, do nothing)
-python run_experiment.py --stage full --ft_method full_ft --kd_method minillm \\
+python run_experiment.py \\
+    --stage full --ft_method full_ft --kd_method minillm \\
     --teacher_model Qwen/Qwen3-4B-SafeRL \\
     --student_model HuggingFaceTB/SmolLM2-1.7B-Instruct \\
     --dry_run
@@ -66,11 +79,11 @@ from pathlib import Path
 
 # ─── Path constants ───────────────────────────────────────────────────────────
 
-REPO_ROOT = Path(__file__).resolve().parent.parent  # DIA-LLM/
-EVAL_ROOT = Path(__file__).resolve().parent          # DIA-LLM/Evaluation/
+REPO_ROOT = Path(__file__).resolve().parent.parent.parent  # dia-guard/
+EVAL_ROOT = Path(__file__).resolve().parent                # dia-guard/codes/evaluation/
 
 MODELS_DIR   = REPO_ROOT / "models"
-SPLITS_DIR   = REPO_ROOT / "DIA_Splits"
+SPLITS_DIR   = REPO_ROOT / "dataset" / "dia_splits"
 RESULTS_DIR  = EVAL_ROOT / "results"
 
 FT_SCRIPTS = {
@@ -87,10 +100,26 @@ KD_SCRIPTS = {
 }
 
 FT_CONFIGS = {
-    ("full_ft", "Qwen/Qwen3-4B-SafeRL"):       EVAL_ROOT / "FineTune/full_ft/configs/qwen3_4b.yaml",
-    ("full_ft", "CohereLabs/tiny-aya-global"):  EVAL_ROOT / "FineTune/full_ft/configs/aya_3b.yaml",
-    ("peft",    "Qwen/Qwen3-4B-SafeRL"):        EVAL_ROOT / "FineTune/peft/configs/qwen3_4b_lora.yaml",
-    ("peft",    "CohereLabs/tiny-aya-global"):  EVAL_ROOT / "FineTune/peft/configs/aya_3b_lora.yaml",
+    # ── Teacher models (Group 1) ──────────────────────────────────────────────
+    ("full_ft", "Qwen/Qwen3-4B-SafeRL"):                    EVAL_ROOT / "FineTune/full_ft/configs/qwen3_4b.yaml",
+    ("full_ft", "CohereLabs/tiny-aya-global"):               EVAL_ROOT / "FineTune/full_ft/configs/aya_3b.yaml",
+    ("peft",    "Qwen/Qwen3-4B-SafeRL"):                    EVAL_ROOT / "FineTune/peft/configs/qwen3_4b_lora.yaml",
+    ("peft",    "CohereLabs/tiny-aya-global"):               EVAL_ROOT / "FineTune/peft/configs/aya_3b_lora.yaml",
+    # ── Student models — FT baseline (Group 3) ───────────────────────────────
+    ("full_ft", "meta-llama/Llama-3.2-1B-Instruct"):        EVAL_ROOT / "FineTune/full_ft/configs/llama_1b.yaml",
+    ("full_ft", "google/gemma-3-1b-it"):                    EVAL_ROOT / "FineTune/full_ft/configs/gemma_1b.yaml",
+    ("full_ft", "Qwen/Qwen3Guard-Gen-0.6B"):                EVAL_ROOT / "FineTune/full_ft/configs/qwen_guard_0.6b.yaml",
+    ("full_ft", "Qwen/Qwen3.5-0.8B"):                       EVAL_ROOT / "FineTune/full_ft/configs/qwen_0.8b.yaml",
+    ("full_ft", "google/gemma-3-270m-it"):                  EVAL_ROOT / "FineTune/full_ft/configs/gemma_270m.yaml",
+    ("full_ft", "HuggingFaceTB/SmolLM2-1.7B-Instruct"):    EVAL_ROOT / "FineTune/full_ft/configs/smollm_1.7b.yaml",
+    ("full_ft", "Qwen/Qwen3-1.7B"):                         EVAL_ROOT / "FineTune/full_ft/configs/qwen_1.7b.yaml",
+    ("peft",    "meta-llama/Llama-3.2-1B-Instruct"):        EVAL_ROOT / "FineTune/peft/configs/llama_1b_lora.yaml",
+    ("peft",    "google/gemma-3-1b-it"):                    EVAL_ROOT / "FineTune/peft/configs/gemma_1b_lora.yaml",
+    ("peft",    "Qwen/Qwen3Guard-Gen-0.6B"):                EVAL_ROOT / "FineTune/peft/configs/qwen_guard_0.6b_lora.yaml",
+    ("peft",    "Qwen/Qwen3.5-0.8B"):                       EVAL_ROOT / "FineTune/peft/configs/qwen_0.8b_lora.yaml",
+    ("peft",    "google/gemma-3-270m-it"):                  EVAL_ROOT / "FineTune/peft/configs/gemma_270m_lora.yaml",
+    ("peft",    "HuggingFaceTB/SmolLM2-1.7B-Instruct"):    EVAL_ROOT / "FineTune/peft/configs/smollm_1.7b_lora.yaml",
+    ("peft",    "Qwen/Qwen3-1.7B"):                         EVAL_ROOT / "FineTune/peft/configs/qwen_1.7b_lora.yaml",
 }
 
 EVALUATE_SCRIPT = EVAL_ROOT / "evaluate.py"
@@ -112,38 +141,54 @@ def timestamp() -> str:
 
 # ─── Path resolution ──────────────────────────────────────────────────────────
 
-def ft_model_dir(ft_method: str, model_id: str) -> Path:
-    """Expected save path for a fine-tuned model."""
+def ft_model_dir(ft_method: str, model_id: str, group: int = 1) -> Path:
+    """Expected save path for a fine-tuned model.
+
+    group=1 → group1_teacher_ft/
+    group=3 → group3_student_ft_baseline/
+    """
     sub = "full_ft" if ft_method == "full_ft" else "peft"
-    return MODELS_DIR / "FT" / sub / model_shortname(model_id)
+    if group == 3:
+        return MODELS_DIR / "group3_student_ft_baseline" / sub / model_shortname(model_id)
+    return MODELS_DIR / "group1_teacher_ft" / sub / model_shortname(model_id)
 
 
 def kd_model_dir(kd_method: str, teacher_id: str, student_id: str) -> Path:
-    """Expected save path for a distilled model."""
+    """Expected save path for a distilled model (always Group 2)."""
     name = f"{model_shortname(teacher_id)}_to_{model_shortname(student_id)}"
-    return MODELS_DIR / "KD" / kd_method / name
+    return MODELS_DIR / "group2_kd_students" / kd_method / name
 
 
-def results_dir_ft(ft_method: str, loss: str, model_id: str, ts: str) -> Path:
-    key = f"{ft_method}_{loss}-{model_shortname(model_id)}-{ts}"
-    return RESULTS_DIR / "FT" / ft_method / key
+def results_dir_ft(ft_method: str, loss: str, model_id: str, group: int = 1) -> Path:
+    """Results path for FT experiments.
+
+    Structure: results/group{N}_{label}/{ft_method}/{loss}/{model}/
+    No timestamp in path — reruns overwrite cleanly; timestamp is inside metrics.json.
+    """
+    if group == 3:
+        group_dir = "group3_student_ft_baseline"
+    else:
+        group_dir = "group1_teacher_ft"
+    return RESULTS_DIR / group_dir / ft_method / loss / model_shortname(model_id)
 
 
-def results_dir_kd(
-    kd_method: str, teacher_id: str, student_id: str, ts: str
-) -> Path:
-    name = f"{kd_method}-{model_shortname(teacher_id)}_to_{model_shortname(student_id)}-{ts}"
-    return RESULTS_DIR / "KD" / kd_method / name
+def results_dir_kd(kd_method: str, teacher_id: str, student_id: str) -> Path:
+    """Results path for KD experiments (always Group 2).
+
+    Structure: results/group2_kd_students/{kd_method}/{teacher}_to_{student}/
+    """
+    name = f"{model_shortname(teacher_id)}_to_{model_shortname(student_id)}"
+    return RESULTS_DIR / "group2_kd_students" / kd_method / name
 
 
 # ─── Checkpoint detection (resumeability) ─────────────────────────────────────
 
-def is_ft_complete(ft_method: str, model_id: str) -> bool:
+def is_ft_complete(ft_method: str, model_id: str, group: int = 1) -> bool:
     """
     A fine-tuning run is considered complete when the final model directory
     contains config.json (standard HuggingFace save).
     """
-    model_path = ft_model_dir(ft_method, model_id)
+    model_path = ft_model_dir(ft_method, model_id, group)
     return (model_path / "config.json").exists()
 
 
@@ -153,12 +198,12 @@ def is_kd_complete(kd_method: str, teacher_id: str, student_id: str) -> bool:
     return (model_path / "config.json").exists()
 
 
-def find_latest_ft_checkpoint(ft_method: str, model_id: str) -> Path | None:
+def find_latest_ft_checkpoint(ft_method: str, model_id: str, group: int = 1) -> Path | None:
     """
     Look for the latest 'checkpoint-*' subdirectory in the model save dir.
     Used to resume interrupted fine-tuning.
     """
-    model_path = ft_model_dir(ft_method, model_id)
+    model_path = ft_model_dir(ft_method, model_id, group)
     if not model_path.exists():
         return None
     checkpoints = sorted(model_path.glob("checkpoint-*"))
@@ -197,7 +242,8 @@ def save_state(experiment_key: str, state: dict) -> None:
 
 
 def experiment_key(args) -> str:
-    parts = [args.stage, args.ft_method or "noft"]
+    group = getattr(args, "group", None) or (2 if args.kd_method else 1)
+    parts = [f"g{group}", args.stage, args.ft_method or "noft"]
     if args.kd_method:
         parts.append(args.kd_method)
     parts.append(model_shortname(args.teacher_model))
@@ -232,8 +278,9 @@ def run_ft(args, state: dict, dry_run: bool = False) -> bool:
     Run fine-tuning. Returns True on success.
     Skips automatically if already complete.
     """
-    if state.get("ft_done") or is_ft_complete(args.ft_method, args.teacher_model):
-        print(f"[FT] Already complete: {ft_model_dir(args.ft_method, args.teacher_model)}")
+    group = args.group
+    if state.get("ft_done") or is_ft_complete(args.ft_method, args.teacher_model, group):
+        print(f"[FT] Already complete: {ft_model_dir(args.ft_method, args.teacher_model, group)}")
         state["ft_done"] = True
         return True
 
@@ -246,7 +293,7 @@ def run_ft(args, state: dict, dry_run: bool = False) -> bool:
         return False
 
     script = FT_SCRIPTS[script_key]
-    out_dir = ft_model_dir(args.ft_method, args.teacher_model)
+    out_dir = ft_model_dir(args.ft_method, args.teacher_model, group)
     out_dir.mkdir(parents=True, exist_ok=True)
 
     # Config file
@@ -257,24 +304,26 @@ def run_ft(args, state: dict, dry_run: bool = False) -> bool:
 
     # Resume from checkpoint if one exists
     resume_arg = []
-    ckpt = find_latest_ft_checkpoint(args.ft_method, args.teacher_model)
+    ckpt = find_latest_ft_checkpoint(args.ft_method, args.teacher_model, group)
     if ckpt:
         print(f"[FT] Resuming from checkpoint: {ckpt}")
         resume_arg = ["--resume_from_checkpoint", str(ckpt)]
 
+    group_label = "Teacher FT" if group == 1 else "Student FT Baseline"
     cmd = [
         sys.executable,
         str(script),
         "--model_name", args.teacher_model,
         "--output_dir", str(out_dir),
         "--train_data", str(SPLITS_DIR / "train.jsonl"),
-        "--val_data",   str(SPLITS_DIR / "val.jsonl"),
+        "--eval_data",  str(SPLITS_DIR / "val.jsonl"),
         *config_arg,
         *resume_arg,
     ]
 
     print(f"\n{'='*60}")
-    print(f"[FT] Stage: {args.ft_method.upper()} | Loss: {args.loss}")
+    print(f"[FT] Group {group}: {group_label}")
+    print(f"[FT] Method: {args.ft_method.upper()} | Loss: {args.loss}")
     print(f"[FT] Model: {args.teacher_model}")
     print(f"[FT] Output: {out_dir}")
     print(f"{'='*60}")
@@ -309,9 +358,10 @@ def run_ft(args, state: dict, dry_run: bool = False) -> bool:
 def get_teacher_path(args) -> Path:
     """
     Resolve the teacher model path for KD.
+    Always reads from group1_teacher_ft (KD depends on Group 1 output).
     Uses merged PEFT model if ft_method=peft, otherwise full_ft save.
     """
-    base = ft_model_dir(args.ft_method, args.teacher_model)
+    base = ft_model_dir(args.ft_method, args.teacher_model, group=1)
     if args.ft_method == "peft":
         merged = base / "merged"
         if merged.exists():
@@ -388,12 +438,25 @@ def run_kd(args, state: dict, dry_run: bool = False) -> bool:
 
 # ─── Evaluation ───────────────────────────────────────────────────────────────
 
-def run_eval_ft(args, state: dict, ts: str, dry_run: bool = False) -> bool:
-    if state.get("eval_ft_done"):
-        print("[EVAL-FT] Already done.")
+def is_eval_ft_complete(ft_method: str, loss: str, model_id: str, group: int) -> bool:
+    """Eval is complete when metrics.json exists in the results directory."""
+    return (results_dir_ft(ft_method, loss, model_id, group) / "metrics.json").exists()
+
+
+def is_eval_kd_complete(kd_method: str, teacher_id: str, student_id: str) -> bool:
+    return (results_dir_kd(kd_method, teacher_id, student_id) / "metrics.json").exists()
+
+
+def run_eval_ft(args, state: dict, dry_run: bool = False) -> bool:
+    if state.get("eval_ft_done") or is_eval_ft_complete(
+        args.ft_method, args.loss, args.teacher_model, args.group
+    ):
+        print("[EVAL-FT] Already done (metrics.json found).")
+        state["eval_ft_done"] = True
         return True
 
-    model_path = ft_model_dir(args.ft_method, args.teacher_model)
+    group = args.group
+    model_path = ft_model_dir(args.ft_method, args.teacher_model, group)
     if args.ft_method == "peft" and (model_path / "merged").exists():
         model_path = model_path / "merged"
 
@@ -401,7 +464,7 @@ def run_eval_ft(args, state: dict, ts: str, dry_run: bool = False) -> bool:
         print(f"[EVAL-FT] Model not found at {model_path}, skipping evaluation.")
         return False
 
-    out_dir = results_dir_ft(args.ft_method, args.loss, args.teacher_model, ts)
+    out_dir = results_dir_ft(args.ft_method, args.loss, args.teacher_model, group)
     out_dir.mkdir(parents=True, exist_ok=True)
 
     cmd = [
@@ -426,9 +489,12 @@ def run_eval_ft(args, state: dict, ts: str, dry_run: bool = False) -> bool:
     return True
 
 
-def run_eval_kd(args, state: dict, ts: str, dry_run: bool = False) -> bool:
-    if state.get("eval_kd_done"):
-        print("[EVAL-KD] Already done.")
+def run_eval_kd(args, state: dict, dry_run: bool = False) -> bool:
+    if state.get("eval_kd_done") or is_eval_kd_complete(
+        args.kd_method, args.teacher_model, args.student_model
+    ):
+        print("[EVAL-KD] Already done (metrics.json found).")
+        state["eval_kd_done"] = True
         return True
 
     model_path = kd_model_dir(args.kd_method, args.teacher_model, args.student_model)
@@ -437,9 +503,7 @@ def run_eval_kd(args, state: dict, ts: str, dry_run: bool = False) -> bool:
         print(f"[EVAL-KD] Model not found at {model_path}, skipping evaluation.")
         return False
 
-    out_dir = results_dir_kd(
-        args.kd_method, args.teacher_model, args.student_model, ts
-    )
+    out_dir = results_dir_kd(args.kd_method, args.teacher_model, args.student_model)
     out_dir.mkdir(parents=True, exist_ok=True)
 
     cmd = [
@@ -489,6 +553,70 @@ def print_summary(state: dict) -> None:
     print()
 
 
+# ─── Status dashboard ─────────────────────────────────────────────────────────
+
+G3_STUDENTS = [
+    "meta-llama/Llama-3.2-1B-Instruct",
+    "google/gemma-3-1b-it",
+    "Qwen/Qwen3Guard-Gen-0.6B",
+    "Qwen/Qwen3.5-0.8B",
+    "google/gemma-3-270m-it",
+    "HuggingFaceTB/SmolLM2-1.7B-Instruct",
+    "Qwen/Qwen3-1.7B",
+]
+
+G1_TEACHERS = [
+    "Qwen/Qwen3-4B-SafeRL",
+    "CohereLabs/tiny-aya-global",
+]
+
+
+def print_status():
+    """Print a dashboard of all experiment statuses across all groups."""
+    col = {"done": "✓", "partial": "~", "none": "·"}
+
+    def ft_row(model_id, method, loss, group):
+        trained  = "✓" if is_ft_complete(method, model_id, group) else "·"
+        evald    = "✓" if is_eval_ft_complete(method, loss, model_id, group) else "·"
+        ckpt     = "~" if find_latest_ft_checkpoint(method, model_id, group) else " "
+        name     = model_shortname(model_id)
+        return f"  {name:<40} {method:<8} {loss:<12} {trained}  {ckpt}  {evald}"
+
+    print("\n" + "=" * 85)
+    print("DIA-GUARD EXPERIMENT STATUS DASHBOARD")
+    print("=" * 85)
+    hdr = f"  {'Model':<40} {'Method':<8} {'Loss':<12} {'Trained':<3} {'Ckpt':<4} {'Evald'}"
+    sep = "  " + "-" * 81
+
+    print("\n── Group 1: Teacher FT ────────────────────────────────────────────────────────")
+    print(hdr); print(sep)
+    for model in G1_TEACHERS:
+        for method in ["full_ft", "peft"]:
+            for loss in ["ce", "contrastive"]:
+                print(ft_row(model, method, loss, group=1))
+
+    print("\n── Group 3: Student FT Baseline ───────────────────────────────────────────────")
+    print(hdr); print(sep)
+    for model in G3_STUDENTS:
+        for method in ["full_ft", "peft"]:
+            for loss in ["ce", "contrastive"]:
+                print(ft_row(model, method, loss, group=3))
+
+    print("\n── Group 2: KD Students ───────────────────────────────────────────────────────")
+    print(f"  {'Pair':<55} {'KD Method':<10} {'Trained':<3}  {'Evald'}")
+    print("  " + "-" * 81)
+    for teacher in G1_TEACHERS:
+        for student in G3_STUDENTS:
+            for kd_method in ["minillm", "gkd", "ted"]:
+                trained = "✓" if is_kd_complete(kd_method, teacher, student) else "·"
+                evald   = "✓" if is_eval_kd_complete(kd_method, teacher, student) else "·"
+                pair = f"{model_shortname(teacher)} → {model_shortname(student)}"
+                print(f"  {pair:<55} {kd_method:<10} {trained}    {evald}")
+
+    print("\n  Legend: ✓ done  ~ checkpoint exists (in progress/interrupted)  · not started")
+    print("=" * 85 + "\n")
+
+
 # ─── Argument parsing ─────────────────────────────────────────────────────────
 
 def parse_args():
@@ -535,6 +663,19 @@ def parse_args():
         help="Loss type for fine-tuning",
     )
     parser.add_argument(
+        "--group",
+        type=int,
+        choices=[1, 3],
+        default=None,
+        help=(
+            "Experiment group for FT stage: "
+            "1=Teacher FT (group1_teacher_ft/), "
+            "3=Student FT Baseline (group3_student_ft_baseline/). "
+            "Required when --stage is 'ft'. "
+            "Ignored for --stage 'full' (always group 1→2) and --stage 'kd' (always group 2)."
+        ),
+    )
+    parser.add_argument(
         "--skip_eval",
         action="store_true",
         help="Skip evaluation after training",
@@ -549,6 +690,11 @@ def parse_args():
         action="store_true",
         help="Ignore saved state and re-run all steps",
     )
+    parser.add_argument(
+        "--status",
+        action="store_true",
+        help="Print experiment status dashboard and exit",
+    )
 
     return parser.parse_args()
 
@@ -558,7 +704,11 @@ def parse_args():
 def main():
     args = parse_args()
 
-    # Validate arguments
+    if args.status:
+        print_status()
+        sys.exit(0)
+
+    # ── Validate arguments ────────────────────────────────────────────────────
     if args.stage in ("full", "kd"):
         if not args.kd_method:
             print(
@@ -573,8 +723,24 @@ def main():
             )
             sys.exit(1)
 
+    # Resolve effective group:
+    #   --stage full  → group 1 for FT portion, group 2 implicit for KD
+    #   --stage ft    → --group required (1 or 3)
+    #   --stage kd    → group 2 (no --group needed)
+    if args.stage == "ft" and args.group is None:
+        print(
+            "Error: --group is required when --stage is 'ft'. "
+            "Use --group 1 (Teacher FT) or --group 3 (Student FT Baseline).",
+            file=sys.stderr,
+        )
+        sys.exit(1)
+
+    if args.stage == "full":
+        args.group = 1   # full pipeline always fine-tunes the teacher first
+    elif args.stage == "kd":
+        args.group = 1   # KD reads teacher from group1; kd_model_dir always → group2
+
     exp_key = experiment_key(args)
-    ts = timestamp()
 
     # Load or reset state
     if args.reset:
@@ -588,8 +754,11 @@ def main():
     else:
         state = load_state(exp_key)
 
+    group_labels = {1: "Group 1 — Teacher FT", 2: "Group 2 — KD Students", 3: "Group 3 — Student FT Baseline"}
+    effective_group = args.group if args.stage != "kd" else 2
     print(f"\n{'='*60}")
     print(f"DIA-GUARD Experiment: {exp_key}")
+    print(f"Group     : {group_labels.get(effective_group, '')}")
     print(f"Stage     : {args.stage}")
     print(f"FT method : {args.ft_method} | Loss: {args.loss}")
     if args.kd_method:
@@ -600,8 +769,6 @@ def main():
     print(f"Dry run   : {args.dry_run}")
     print(f"{'='*60}\n")
 
-    success = True
-
     # ── Fine-Tuning ───────────────────────────────────────────────────────────
     if args.stage in ("full", "ft"):
         ok = run_ft(args, state, dry_run=args.dry_run)
@@ -611,9 +778,8 @@ def main():
             print_summary(state)
             sys.exit(1)
 
-        # Evaluate FT model
         if not args.skip_eval:
-            run_eval_ft(args, state, ts, dry_run=args.dry_run)
+            run_eval_ft(args, state, dry_run=args.dry_run)
             save_state(exp_key, state)
 
     # ── Knowledge Distillation ────────────────────────────────────────────────
@@ -625,9 +791,8 @@ def main():
             print_summary(state)
             sys.exit(1)
 
-        # Evaluate KD model
         if not args.skip_eval:
-            run_eval_kd(args, state, ts, dry_run=args.dry_run)
+            run_eval_kd(args, state, dry_run=args.dry_run)
             save_state(exp_key, state)
 
     print_summary(state)

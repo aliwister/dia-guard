@@ -1,21 +1,24 @@
-# DIA-GUARD PEFT Config — tiny-aya-global (3B) with LoRA
-# Usage: python train_ce_lora.py --config configs/aya_3b_lora.yaml
+# DIA-GUARD PEFT Config — Qwen3.5-0.8B with LoRA (Student Baseline)
+# Usage: python train_ce_lora.py --config configs/qwen_0.8b_lora.yaml
 
-model_name: CohereLabs/tiny-aya-global
+# Model
+model_name: Qwen/Qwen3.5-0.8B
 trust_remote_code: true
-attn_implementation: eager
+attn_implementation: eager  # set to "eager" if flash-attn unavailable
 
-use_qlora: true
-load_in_4bit: true
+# QLoRA (4-bit quantization) — set to false for standard LoRA (bf16)
+use_qlora: false
+load_in_4bit: false
 bnb_4bit_quant_type: nf4
 bnb_4bit_compute_dtype: bfloat16
 bnb_4bit_use_double_quant: true
 
+# LoRA Config
 lora_r: 64
 lora_alpha: 128
 lora_dropout: 0.05
 lora_bias: none
-use_rslora: true          # Rank-Stabilized LoRA: alpha/sqrt(r), recommended for r>=16
+use_rslora: true
 lora_target_modules:
   - q_proj
   - k_proj
@@ -26,27 +29,32 @@ lora_target_modules:
   - down_proj
 task_type: CAUSAL_LM
 
+# Data
 train_data: null
 eval_data: null
 max_seq_length: 2048
 
-output_dir: ../../../models/FT/peft/tiny_aya_global
-run_name: aya-3b-lora
+# Output
+output_dir: ../../../models/group3_student_ft_baseline/peft/qwen3_5-0_8b
+run_name: qwen3.5-0.8b-lora
 
+# Training
 num_epochs: 3
-per_device_train_batch_size: 1
-per_device_eval_batch_size: 1
-gradient_accumulation_steps: 16
+per_device_train_batch_size: 2
+per_device_eval_batch_size: 2
+gradient_accumulation_steps: 8
 learning_rate: 2.0e-4
 warmup_steps: 4218
 weight_decay: 0.01
 lr_scheduler_type: cosine
 max_grad_norm: 1.0
 
-bf16: false
+# Precision
+bf16: true
 tf32: false
 gradient_checkpointing: true
 
+# Logging
 logging_steps: 10
 eval_strategy: steps
 eval_steps: 200
@@ -55,8 +63,10 @@ save_steps: 400
 save_total_limit: 3
 load_best_model_at_end: true
 
+# Contrastive loss (used by train_contrastive_lora.py only)
 alpha: 0.7
 margin: 0.3
 temperature: 0.05
 
+# W&B
 report_to: wandb
