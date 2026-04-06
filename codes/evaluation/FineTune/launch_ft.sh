@@ -3,7 +3,7 @@
 # launch_ft.sh  —  DIA-GUARD fine-tuning launcher (Groups 1 & 3)
 #
 # Usage:
-#   bash launch_ft.sh <ft_method> <loss> <model_id> <gpus> [num_gpus]
+#   bash launch_ft.sh <ft_method> <loss> <model_id> <gpus> [num_gpus] [deepspeed]
 #
 # Examples:
 #   # Group 3 — Student FT Baseline (single GPU)
@@ -25,8 +25,12 @@ MODEL_ID="${3:?}"
 GPUS="${4:?}"
 NUM_GPUS="${5:-1}"
 
-# Auto-detect python — use conda env if available, else system python
-if [[ -x /anaconda/envs/azureml_py38_PT_TF/bin/python ]]; then
+# Auto-detect python — prefer /opt/pytorch (pre-installed PyTorch+CUDA),
+# then conda env, then system python
+if [[ -x /opt/pytorch/bin/python ]]; then
+    PYTHON=/opt/pytorch/bin/python
+    ACCELERATE=/opt/pytorch/bin/accelerate
+elif [[ -x /anaconda/envs/azureml_py38_PT_TF/bin/python ]]; then
     PYTHON=/anaconda/envs/azureml_py38_PT_TF/bin/python
     ACCELERATE=/anaconda/envs/azureml_py38_PT_TF/bin/accelerate
 else
@@ -39,7 +43,13 @@ ACCEL_CFG="${SCRIPT_DIR}/configs/accel_2gpu.yaml"
 
 export PYTHONNOUSERSITE=1
 export CUDA_VISIBLE_DEVICES="${GPUS}"
+export PYTORCH_CUDA_ALLOC_CONF="expandable_segments:True"
 export WANDB_PROJECT="dia-guard"
+export HF_HOME="/data/huggingface"
+export HF_TOKEN="${HF_TOKEN:-$(cat /data/huggingface/token 2>/dev/null)}"
+export TRANSFORMERS_CACHE="/data/huggingface/hub"
+export PIP_CACHE_DIR="/data/pip_cache"
+export TMPDIR="/data/tmp"
 # Set WANDB_API_KEY in your environment or run: wandb login
 
 # Pick training script
@@ -74,12 +84,14 @@ declare -A CFG_MAP=(
     # Teachers
     ["qwen3_4b_saferl"]="qwen3_4b"
     ["tiny_aya_global"]="aya_3b"
+    ["qwen3guard_gen_8b"]="qwen3guard_8b"
 )
 
 # Teacher model slugs — used to determine output group
 declare -A TEACHERS=(
     ["qwen3_4b_saferl"]=1
     ["tiny_aya_global"]=1
+    ["qwen3guard_gen_8b"]=1
 )
 
 CFG_KEY="${CFG_MAP[$MODEL_SLUG]:-}"
@@ -124,26 +136,64 @@ echo "  Output   : ${OUTPUT_DIR}"
 echo "  Config   : ${CONFIG:-<none>}"
 echo "========================================================"
 
+USE_DEEPSPEED="${6:-}"  # pass "deepspeed" as 6th arg to use DeepSpeed ZeRO-2
+
 EXTRA_ARGS=""
 [[ -n "${CONFIG}" ]] && EXTRA_ARGS="--config ${CONFIG}"
 
+# Auto-resume from latest checkpoint if one exists
+RESUME_ARGS=""
+if [[ "${LOSS}" != "contrastive" ]]; then
+    if ls "${OUTPUT_DIR}"/checkpoint-* &>/dev/null; then
+        RESUME_ARGS="--resume_from_checkpoint auto"
+        echo "  Checkpoint(s) found — will resume from latest"
+    fi
+fi
+
+# Contrastive scripts don't accept --eval_data
+EVAL_ARGS=""
+if [[ "${LOSS}" != "contrastive" ]]; then
+    EVAL_ARGS="--eval_data ${EVAL_DATA}"
+fi
+
 if [[ "${NUM_GPUS}" -gt 1 ]]; then
-    echo "Launching with accelerate (${NUM_GPUS} GPUs)..."
-    exec "${ACCELERATE}" launch \
-        --config_file "${ACCEL_CFG}" \
-        --num_processes "${NUM_GPUS}" \
-        "${SCRIPT}" \
-        --model_name "${MODEL_ID}" \
-        --train_data "${TRAIN_DATA}" \
-        --eval_data  "${EVAL_DATA}" \
-        --output_dir "${OUTPUT_DIR}" \
-        ${EXTRA_ARGS}
+    if [[ "${USE_DEEPSPEED}" == "deepspeed" ]]; then
+        DS_CFG="${SCRIPT_DIR}/configs/accel_ds_zero2.yaml"
+        # Pick a unique port based on first GPU ID to avoid conflicts
+        FIRST_GPU=$(echo "${GPUS}" | cut -d',' -f1)
+        DS_PORT=$((29500 + FIRST_GPU * 10))
+        echo "Launching with DeepSpeed ZeRO-2 (${NUM_GPUS} GPUs, port ${DS_PORT})..."
+        exec "${ACCELERATE}" launch \
+            --config_file "${DS_CFG}" \
+            --num_processes "${NUM_GPUS}" \
+            --main_process_port "${DS_PORT}" \
+            "${SCRIPT}" \
+            --model_name "${MODEL_ID}" \
+            --train_data "${TRAIN_DATA}" \
+            ${EVAL_ARGS} \
+            --output_dir "${OUTPUT_DIR}" \
+            ${RESUME_ARGS} \
+            ${EXTRA_ARGS}
+    else
+        echo "Launching with accelerate (${NUM_GPUS} GPUs)..."
+        exec "${ACCELERATE}" launch \
+            --config_file "${ACCEL_CFG}" \
+            --num_processes "${NUM_GPUS}" \
+            "${SCRIPT}" \
+            --model_name "${MODEL_ID}" \
+            --train_data "${TRAIN_DATA}" \
+            ${EVAL_ARGS} \
+            --output_dir "${OUTPUT_DIR}" \
+            ${RESUME_ARGS} \
+            ${EXTRA_ARGS}
+    fi
 else
     echo "Launching single-GPU..."
     exec "${PYTHON}" "${SCRIPT}" \
         --model_name "${MODEL_ID}" \
         --train_data "${TRAIN_DATA}" \
-        --eval_data  "${EVAL_DATA}" \
+        ${EVAL_ARGS} \
         --output_dir "${OUTPUT_DIR}" \
+        ${RESUME_ARGS} \
         ${EXTRA_ARGS}
 fi

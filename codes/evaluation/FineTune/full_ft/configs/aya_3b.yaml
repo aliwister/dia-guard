@@ -4,7 +4,7 @@
 # Model
 model_name: CohereLabs/tiny-aya-global
 trust_remote_code: true
-attn_implementation: eager   # aya uses custom attention; use eager for safety
+attn_implementation: flash_attention_2
 
 # Data
 train_data: null
@@ -17,9 +17,9 @@ run_name: aya-3b-ce-ft
 
 # Training
 num_epochs: 3
-per_device_train_batch_size: 2
-per_device_eval_batch_size: 2
-gradient_accumulation_steps: 8
+per_device_train_batch_size: 1
+per_device_eval_batch_size: 1
+gradient_accumulation_steps: 16
 learning_rate: 1.5e-5
 warmup_steps: 4218
 weight_decay: 0.01

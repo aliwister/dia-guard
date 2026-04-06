@@ -19,15 +19,26 @@ echo "Configuring all training configs for: $GPU"
 
 case "$GPU" in
   a100|h100)
+    # A100/H100 80GB
     ATTN="flash_attention_2"
     TF32="true"
-    # Batch sizes per model size tier
     SMALL_BS=16    # 270m, 0.6b, 0.8b
     SMALL_GA=1
     MED_BS=8       # 1b, 1.7b
     MED_GA=2
     LARGE_BS=4     # 3b, 4b
     LARGE_GA=4
+    ;;
+  a100_40gb)
+    # A100 40GB — half the batch of 80GB for full FT; PEFT fits comfortably
+    ATTN="flash_attention_2"
+    TF32="true"
+    SMALL_BS=16    # 270m, 0.6b, 0.8b — fits easily on 40GB
+    SMALL_GA=1
+    MED_BS=8       # 1b, 1.7b — ~8-15GB, still fits
+    MED_GA=2
+    LARGE_BS=2     # 3b, 4b — tight on 40GB for full FT, use DeepSpeed for multi-GPU
+    LARGE_GA=8
     ;;
   t4)
     ATTN="eager"
@@ -40,7 +51,7 @@ case "$GPU" in
     LARGE_GA=16
     ;;
   *)
-    echo "ERROR: Unknown GPU type '$GPU'. Use: a100, h100, or t4"
+    echo "ERROR: Unknown GPU type '$GPU'. Use: a100, h100, a100_40gb, or t4"
     exit 1
     ;;
 esac

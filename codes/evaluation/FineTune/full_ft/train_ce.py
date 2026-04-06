@@ -43,6 +43,10 @@ from transformers import (
 )
 from trl import SFTTrainer, SFTConfig
 
+# Add parent dir to path for data_utils
+sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
+from data_utils import load_and_format_dataset
+
 
 # ---------------------------------------------------------------------------
 # Prompt template helpers
@@ -135,7 +139,7 @@ def train(cfg: dict):
     )
     model.config.use_cache = False  # required when gradient_checkpointing=True
 
-    # --- Dataset ---
+    # --- Dataset (with disk caching) ---
     train_path = cfg.get("train_data")
     eval_path = cfg.get("eval_data")
     if not train_path or not Path(train_path).exists():
@@ -144,36 +148,14 @@ def train(cfg: dict):
             "Set it via --train_data or in the config YAML."
         )
 
-    print(f"Loading training data: {train_path}")
-    train_dataset = load_jsonl(train_path)
-    eval_dataset = load_jsonl(eval_path) if eval_path and Path(eval_path).exists() else None
-
-    # Build formatted text using local vars only — do NOT add "prompt" or
-    # "completion" keys to the example dict, or trl will switch to the
-    # prompt+completion tokenisation path and crash (KeyError: 'completion').
-    def format_dataset(example):
-        prompt_text   = example.get("text", example.get("prompt", ""))
-        response_text = "unsafe" if example.get("label", 0) == 1 else "safe"
-        messages = [
-            {"role": "system", "content": SYSTEM_PROMPT},
-            {"role": "user",   "content": prompt_text},
-            {"role": "assistant", "content": response_text},
-        ]
-        if hasattr(tokenizer, "apply_chat_template"):
-            example["text"] = tokenizer.apply_chat_template(
-                messages, tokenize=False, add_generation_prompt=False
-            )
-        else:
-            example["text"] = (
-                f"<|system|>{SYSTEM_PROMPT}</s>\n"
-                f"<|user|>{prompt_text}</s>\n"
-                f"<|assistant|>{response_text}</s>"
-            )
-        return example
-
-    train_dataset = train_dataset.map(format_dataset)
-    if eval_dataset:
-        eval_dataset = eval_dataset.map(format_dataset)
+    train_dataset = load_and_format_dataset(
+        train_path, tokenizer, cfg["model_name"], SYSTEM_PROMPT, split="train"
+    )
+    eval_dataset = None
+    if eval_path and Path(eval_path).exists():
+        eval_dataset = load_and_format_dataset(
+            eval_path, tokenizer, cfg["model_name"], SYSTEM_PROMPT, split="val"
+        )
 
     print(f"Train size: {len(train_dataset)}")
     if eval_dataset:

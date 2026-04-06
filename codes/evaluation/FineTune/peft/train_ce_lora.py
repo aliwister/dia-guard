@@ -29,6 +29,7 @@ Data format (JSONL):
 import argparse
 import json
 import os
+import sys
 from pathlib import Path
 
 import torch
@@ -42,6 +43,10 @@ from transformers import (
     set_seed,
 )
 from trl import SFTConfig, SFTTrainer
+
+# Add parent dir to path for data_utils
+sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
+from data_utils import load_and_format_dataset
 
 
 # ---------------------------------------------------------------------------
@@ -168,42 +173,20 @@ def train(cfg: dict):
     model = get_peft_model(model, lora_config)
     model.print_trainable_parameters()
 
-    # --- Dataset ---
+    # --- Dataset (with disk caching) ---
     train_path = cfg.get("train_data")
     eval_path = cfg.get("eval_data")
     if not train_path or not Path(train_path).exists():
         raise ValueError(f"train_data not found: {train_path}")
 
-    print(f"Loading training data: {train_path}")
-    train_dataset = load_jsonl(train_path)
-    eval_dataset = load_jsonl(eval_path) if eval_path and Path(eval_path).exists() else None
-
-    # Build formatted text using local vars only — do NOT add "prompt" or
-    # "completion" keys to the example dict, or trl will switch to the
-    # prompt+completion tokenisation path and crash (KeyError: 'completion').
-    def format_dataset(example):
-        prompt_text   = example.get("text", example.get("prompt", ""))
-        response_text = "unsafe" if example.get("label", 0) == 1 else "safe"
-        messages = [
-            {"role": "system", "content": SYSTEM_PROMPT},
-            {"role": "user",   "content": prompt_text},
-            {"role": "assistant", "content": response_text},
-        ]
-        if hasattr(tokenizer, "apply_chat_template"):
-            example["text"] = tokenizer.apply_chat_template(
-                messages, tokenize=False, add_generation_prompt=False
-            )
-        else:
-            example["text"] = (
-                f"<|system|>{SYSTEM_PROMPT}</s>\n"
-                f"<|user|>{prompt_text}</s>\n"
-                f"<|assistant|>{response_text}</s>"
-            )
-        return example
-
-    train_dataset = train_dataset.map(format_dataset)
-    if eval_dataset:
-        eval_dataset = eval_dataset.map(format_dataset)
+    train_dataset = load_and_format_dataset(
+        train_path, tokenizer, cfg["model_name"], SYSTEM_PROMPT, split="train"
+    )
+    eval_dataset = None
+    if eval_path and Path(eval_path).exists():
+        eval_dataset = load_and_format_dataset(
+            eval_path, tokenizer, cfg["model_name"], SYSTEM_PROMPT, split="val"
+        )
 
     print(f"Train: {len(train_dataset)} | Eval: {len(eval_dataset) if eval_dataset else 'N/A'}")
 
@@ -249,8 +232,17 @@ def train(cfg: dict):
         processing_class=tokenizer,
     )
 
+    # Resume from checkpoint if available
+    resume_ckpt = cfg.get("resume_from_checkpoint")
+    if resume_ckpt == "auto":
+        # Find latest checkpoint in output_dir
+        ckpts = sorted(Path(output_dir).glob("checkpoint-*"), key=lambda p: int(p.name.split("-")[1]))
+        resume_ckpt = str(ckpts[-1]) if ckpts else None
+        if resume_ckpt:
+            print(f"Resuming from checkpoint: {resume_ckpt}")
+
     print("Starting LoRA training...")
-    trainer.train()
+    trainer.train(resume_from_checkpoint=resume_ckpt)
 
     # --- Save adapter ---
     print(f"Saving LoRA adapter to {output_dir}")
@@ -284,6 +276,8 @@ def parse_args():
     parser.add_argument("--train_data", type=str, default=None)
     parser.add_argument("--eval_data", type=str, default=None)
     parser.add_argument("--output_dir", type=str, default=None)
+    parser.add_argument("--resume_from_checkpoint", type=str, default=None,
+                        help="'auto' to find latest checkpoint, or path to a specific checkpoint")
     parser.add_argument("--use_qlora", type=lambda x: x.lower() == "true", default=None)
     parser.add_argument("--lora_r", type=int, default=None)
     parser.add_argument("--num_epochs", type=int, default=None)

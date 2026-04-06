@@ -4,7 +4,7 @@
 # Model
 model_name: Qwen/Qwen3-4B-SafeRL
 trust_remote_code: true
-attn_implementation: flash_attention_2  # set to "eager" if flash-attn unavailable
+attn_implementation: flash_attention_2
 
 # Data
 train_data: null          # override with --train_data /path/to/train.jsonl
@@ -17,9 +17,9 @@ run_name: qwen3-4b-ce-ft
 
 # Training
 num_epochs: 3
-per_device_train_batch_size: 2
-per_device_eval_batch_size: 2
-gradient_accumulation_steps: 8
+per_device_train_batch_size: 1
+per_device_eval_batch_size: 1
+gradient_accumulation_steps: 16
 learning_rate: 2.0e-5
 warmup_steps: 4218
 weight_decay: 0.01

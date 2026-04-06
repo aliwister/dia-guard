@@ -32,6 +32,7 @@ Usage:
 import argparse
 import json
 import os
+import sys
 from pathlib import Path
 from typing import Optional, List, Dict
 
@@ -48,6 +49,10 @@ from transformers import (
     set_seed,
 )
 from accelerate import Accelerator
+
+# Add parent dir to path for data_utils
+sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
+from data_utils import load_jsonl_records
 from tqdm import tqdm
 
 
@@ -243,7 +248,7 @@ def train(cfg: dict):
     if not train_path or not Path(train_path).exists():
         raise ValueError(f"train_data not found: {train_path}")
 
-    records = load_jsonl(train_path)
+    records = load_jsonl_records(train_path, cfg["model_name"], split="train")
     dataset = TripletDataset(records, tokenizer, cfg.get("max_seq_length", 2048))
     loader = DataLoader(
         dataset,

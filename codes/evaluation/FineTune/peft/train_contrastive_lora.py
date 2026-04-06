@@ -27,6 +27,7 @@ Usage:
 import argparse
 import json
 import os
+import sys
 from pathlib import Path
 from typing import List, Dict
 
@@ -45,6 +46,10 @@ from transformers import (
 )
 from accelerate import Accelerator
 from tqdm import tqdm
+
+# Add parent dir to path for data_utils
+sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
+from data_utils import load_jsonl_records
 
 
 # ---------------------------------------------------------------------------
@@ -232,7 +237,7 @@ def train(cfg: dict):
         model.gradient_checkpointing_enable()
 
     # Dataset
-    records = load_jsonl(cfg["train_data"])
+    records = load_jsonl_records(cfg["train_data"], cfg["model_name"], split="train")
     dataset = TripletLoRADataset(records, tokenizer, cfg.get("max_seq_length", 2048))
     loader = DataLoader(dataset, batch_size=cfg.get("per_device_train_batch_size", 4),
                         shuffle=True, num_workers=2)

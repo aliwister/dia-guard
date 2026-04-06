@@ -311,8 +311,17 @@ def load_rule_data(rule_data_dir: str) -> list[dict]:
     """
     Load rule-based (multi-value) transformation data.
     Expected structure: {rule_data_dir}/{dialect}/*.csv
-    Each CSV row has: prompt, prompt_transformed, target, transformation_tool
-    All records are treated as harmful (label=1); neg_text is empty (CE-only, no benign counterparts).
+    Each CSV row has: prompt, prompt_transformed, transformation_tool,
+    counterharm_prompt, counterharm_prompt_transformed, counterharm_score,
+    counterharm_validated, counterharm_model.
+
+    Produces up to 3 records per row:
+      1. mv_transform          (label=1) from prompt_transformed
+      2. mv_counterharm        (label=0) from counterharm_prompt        (if present)
+      3. mv_counterharm_trans  (label=0) from counterharm_prompt_transformed (if present)
+
+    Harmful records carry neg_text pointing to their benign counterpart and vice versa,
+    enabling contrastive training.
     """
     rule_path = Path(rule_data_dir)
     if not rule_path.exists():
@@ -320,25 +329,33 @@ def load_rule_data(rule_data_dir: str) -> list[dict]:
         return []
 
     records = []
+    n_benign_original = 0
+    n_benign_transformed = 0
     for csv_file in sorted(rule_path.rglob("*.csv")):
         try:
             with open(csv_file, encoding="utf-8", newline="") as f:
                 reader = csv.DictReader(f)
                 for row_idx, row in enumerate(reader):
-                    # Bug 1 fix: actual column is prompt_transformed (not mv_transform/transformed_text)
                     text = row.get("prompt_transformed", row.get("mv_transform", row.get("transformed_text", "")))
                     if not _is_valid_text(text):
                         continue
-                    label_str = row.get("label_str", row.get("label", "unsafe")).strip().lower()
-                    label = 0 if label_str == "safe" else 1
                     dialect = row.get("dialect", csv_file.parent.name)
-                    # Bug 3 fix: strip dialect suffix from filename to get clean dataset name
-                    # e.g. "advbench_aboriginal_english" → "advbench"
                     raw_stem = csv_file.stem
                     dataset = row.get("dataset", raw_stem.replace(f"_{dialect}", "", 1))
-                    # Bug 4 fix: use row index since CSV has no sample_id column
                     row_id = row.get("sample_id", row.get("id", str(row_idx)))
 
+                    prompt_orig = row.get("prompt", row.get("original_input", ""))
+                    prompt_trans = row.get("prompt_transformed", row.get("transformed_input", ""))
+                    ch_prompt = row.get("counterharm_prompt", "").strip()
+                    ch_prompt_trans = row.get("counterharm_prompt_transformed", "").strip()
+                    model = row.get("model", "")
+
+                    # Determine best benign text for neg_text on the harmful record
+                    benign_for_neg = ch_prompt_trans if _is_valid_text(ch_prompt_trans) else (
+                        ch_prompt if _is_valid_text(ch_prompt) else ""
+                    )
+
+                    # ── Harmful record (label=1): prompt_transformed ──────────
                     records.append({
                         "sample_id":         f"{dataset}__{dialect}__{row_id}__mv_transform",
                         "source_sample_id":  str(row_id),
@@ -346,18 +363,63 @@ def load_rule_data(rule_data_dir: str) -> list[dict]:
                         "dialect":           dialect,
                         "text":              text.strip(),
                         "text_type":         "mv_transform",
-                        "label":             label,
-                        "label_str":         "safe" if label == 0 else "unsafe",
-                        "neg_text":          "",
-                        # Bug 2 fix: actual column is prompt (not original_input)
-                        "original_input":    row.get("prompt", row.get("original_input", "")),
-                        "transformed_input": row.get("prompt_transformed", row.get("transformed_input", "")),
+                        "label":             1,
+                        "label_str":         "unsafe",
+                        "neg_text":          benign_for_neg,
+                        "original_input":    prompt_orig,
+                        "transformed_input": prompt_trans,
                         "basic_transform":   "",
                         "coi_transform":     "",
-                        "model":             row.get("model", ""),
+                        "model":             model,
                     })
+
+                    # ── Benign record (label=0): counterharm_prompt ───────────
+                    if _is_valid_text(ch_prompt):
+                        n_benign_original += 1
+                        records.append({
+                            "sample_id":         f"{dataset}__{dialect}__{row_id}__mv_counterharm",
+                            "source_sample_id":  str(row_id),
+                            "dataset":           dataset,
+                            "dialect":           dialect,
+                            "text":              ch_prompt,
+                            "text_type":         "mv_counterharm",
+                            "label":             0,
+                            "label_str":         "safe",
+                            "neg_text":          prompt_orig.strip() if _is_valid_text(prompt_orig) else text.strip(),
+                            "original_input":    prompt_orig,
+                            "transformed_input": prompt_trans,
+                            "basic_transform":   "",
+                            "coi_transform":     "",
+                            "model":             model,
+                        })
+
+                    # ── Benign record (label=0): counterharm_prompt_transformed
+                    if _is_valid_text(ch_prompt_trans):
+                        n_benign_transformed += 1
+                        records.append({
+                            "sample_id":         f"{dataset}__{dialect}__{row_id}__mv_counterharm_trans",
+                            "source_sample_id":  str(row_id),
+                            "dataset":           dataset,
+                            "dialect":           dialect,
+                            "text":              ch_prompt_trans,
+                            "text_type":         "mv_counterharm_trans",
+                            "label":             0,
+                            "label_str":         "safe",
+                            "neg_text":          text.strip(),
+                            "original_input":    prompt_orig,
+                            "transformed_input": prompt_trans,
+                            "basic_transform":   "",
+                            "coi_transform":     "",
+                            "model":             model,
+                        })
         except Exception as exc:
             print(f"  Warning: could not read {csv_file}: {exc}")
+
+    if n_benign_original or n_benign_transformed:
+        print(
+            f"  Multi-value benign records: {n_benign_original:,} counterharm_prompt "
+            f"+ {n_benign_transformed:,} counterharm_prompt_transformed"
+        )
 
     return records
 
