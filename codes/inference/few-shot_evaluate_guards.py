@@ -106,6 +106,38 @@ BEDROCK_MODEL_CONFIGS: Dict[str, Dict] = {
         "max_tokens": 10,
         "context_window": 200000,
     },
+    # ── OpenAI GPT-OSS models ──
+    "bedrock_gpt_oss_safeguard_20b": {
+        "model_id": "openai.gpt-oss-safeguard-20b",
+        "region": "us-east-1",
+        "max_tokens": 10,
+        "context_window": 128000,
+    },
+    "bedrock_gpt_oss_safeguard_120b": {
+        "model_id": "openai.gpt-oss-safeguard-120b",
+        "region": "us-east-1",
+        "max_tokens": 10,
+        "context_window": 128000,
+    },
+    "bedrock_gpt_oss_20b": {
+        "model_id": "openai.gpt-oss-20b-1:0",
+        "region": "us-east-1",
+        "max_tokens": 10,
+        "context_window": 128000,
+    },
+    "bedrock_gpt_oss_120b": {
+        "model_id": "openai.gpt-oss-120b-1:0",
+        "region": "us-east-1",
+        "max_tokens": 10,
+        "context_window": 128000,
+    },
+    # ── Google Gemma ──
+    "bedrock_gemma3_27b": {
+        "model_id": "google.gemma-3-27b-it",
+        "region": "us-east-1",
+        "max_tokens": 10,
+        "context_window": 128000,
+    },
 }
 
 # Default context window for models without an explicit value

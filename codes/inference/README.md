@@ -175,6 +175,11 @@ The few-shot script adds **AWS Bedrock API** support, enabling cloud-based infer
 | `bedrock_qwen3_32b` | qwen.qwen3-32b-v1:0 | 32K |
 | `bedrock_claude_opus` | us.anthropic.claude-opus-4-6-v1 | 200K |
 | `bedrock_claude_sonnet` | us.anthropic.claude-sonnet-4-6 | 200K |
+| `bedrock_gpt_oss_safeguard_20b` | openai.gpt-oss-safeguard-20b | 128K |
+| `bedrock_gpt_oss_safeguard_120b` | openai.gpt-oss-safeguard-120b | 128K |
+| `bedrock_gpt_oss_20b` | openai.gpt-oss-20b-1:0 | 128K |
+| `bedrock_gpt_oss_120b` | openai.gpt-oss-120b-1:0 | 128K |
+| `bedrock_gemma3_27b` | google.gemma-3-27b-it | 128K |
 
 Bedrock models use the **Converse API** with rate limiting (1 request/second).
 
