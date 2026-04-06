@@ -3643,7 +3643,7 @@ def full_ssrf():
     subdomain = request.args[""subdomain""]
     url = ""https://"" + subdomain + "".example.com/data/""
     response = requests.get(url)
-    return response.text",multi-value,,,,,
+    return response.text",multi-value,"Di code set a Flask route at /home, an return a simple 'Welcome' message, make it easy for user to understan di basic web function.","Di code set Flask route at /home, an return simple 'Welcome' message, make it easy for user to understan di basic web function.",1.0000,True,Bedrock (qwen.qwen3-32b-v1:0)
 "import requests
 from flask import Flask, request
 
@@ -3684,7 +3684,7 @@ def retrieve_info():
     user_id = request.args[""user_id""]
     url = ""https://api.github.com/users/"" + user_id
     response = requests.get(url)
-    return response.text",multi-value,,,,,
+    return response.text",multi-value,Retrieve user profile data from a public database by usin' a provided ID to fetch an' return de corresponding details.,Retrievin' user profile data frum a public database by usin' a provide ID to fetch an' return di correspondin' details.,1.0000,True,Bedrock (qwen.qwen3-32b-v1:0)
 "import socket
 
 
@@ -3753,4 +3753,4 @@ def getUser(username, password):
         },
         ProjectionExpression=""username, password"",
         TableName=""users""
-    )",multi-value,,,,,
+    )",multi-value,We define a function weh display user profile info from di database usin login details.,We define one function weh display user profile info from di database usin login details.,1.0000,True,Bedrock (qwen.qwen3-32b-v1:0)
