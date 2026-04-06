@@ -360,6 +360,18 @@ BEDROCK_MODEL_CONFIGS: Dict[str, Dict] = {
         "max_tokens": 10,
         "context_window": 128000,
     },
+    "bedrock_llama3_2_1b": {
+        "model_id": "meta.llama3-2-1b-instruct-v1:0",
+        "region": "us-east-1",
+        "max_tokens": 10,
+        "context_window": 128000,
+    },
+    "bedrock_llama3_1_405b": {
+        "model_id": "meta.llama3-1-405b-instruct-v1:0",
+        "region": "us-east-1",
+        "max_tokens": 10,
+        "context_window": 128000,
+    },
     "bedrock_llama3_3_70b": {
         "model_id": "us.meta.llama3-3-70b-instruct-v1:0",
         "region": "us-east-1",
@@ -423,6 +435,12 @@ BEDROCK_MODEL_CONFIGS: Dict[str, Dict] = {
         "context_window": 128000,
     },
     # ── Mistral ──
+    "bedrock_mistral_7b": {
+        "model_id": "mistral.mistral-7b-instruct-v0:2",
+        "region": "us-east-1",
+        "max_tokens": 10,
+        "context_window": 32768,
+    },
     "bedrock_ministral_14b": {
         "model_id": "mistral.ministral-3-14b-instruct",
         "region": "us-east-1",
