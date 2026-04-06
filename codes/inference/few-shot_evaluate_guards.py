@@ -138,6 +138,19 @@ BEDROCK_MODEL_CONFIGS: Dict[str, Dict] = {
         "max_tokens": 10,
         "context_window": 128000,
     },
+    # ── Qwen3 models ──
+    "bedrock_qwen3_coder_30b": {
+        "model_id": "qwen.qwen3-coder-30b-a3b-v1:0",
+        "region": "us-east-1",
+        "max_tokens": 10,
+        "context_window": 128000,
+    },
+    "bedrock_qwen3_235b": {
+        "model_id": "qwen.qwen3-235b-a22b-2507-v1:0",
+        "region": "us-east-1",
+        "max_tokens": 10,
+        "context_window": 128000,
+    },
 }
 
 # Default context window for models without an explicit value
