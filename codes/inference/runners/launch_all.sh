@@ -31,12 +31,13 @@ DATA_DIR="$REPO_ROOT/dataset"
 SPLITS_DIR="$REPO_ROOT/dataset/dia_splits"
 RESULTS_DIR="$INFERENCE_DIR/results"
 
-# All 14 Bedrock models
+# All 15 Bedrock API models
 MODELS=(
     bedrock_deepseek
     bedrock_llama4_maverick
     bedrock_llama3_3_70b
     bedrock_mistral_large3
+    bedrock_ministral_14b
     bedrock_qwen3_32b
     bedrock_claude_opus
     bedrock_claude_sonnet
