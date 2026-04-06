@@ -103,10 +103,29 @@ Three experiment groups across 9 models:
 
 | Group | Name | Models | Description |
 |-------|------|--------|-------------|
-| **G1** | Teacher FT | 2 teachers (3B, 4B) | Fine-tune large models on safety data |
+| **G1** | Teacher FT | 3 teachers (3B, 4B, 8B) | Fine-tune large models on safety data |
 | **G2** | KD Students | 7 students (<2B) | Distill from G1 teachers (MINILLM, GKD, TED) |
 | **G3** | Student FT Baseline | 7 students (<2B) | Direct fine-tuning without KD |
 | **G4** | Quantization | G2 + G3 models | Post-training quantization at fp16/int8/nf4 |
+
+**Teacher Models (G1):**
+| Model | Size | HuggingFace ID |
+|-------|------|----------------|
+| Aya Global | 3B | `CohereLabs/tiny-aya-global` |
+| Qwen3-SafeRL | 4B | `Qwen/Qwen3-4B-SafeRL` |
+| Qwen3Guard-Gen | 8B | `Qwen/Qwen3Guard-Gen-8B` |
+
+**Student Models (G2/G3):**
+| Model | Size | HuggingFace ID |
+|-------|------|----------------|
+| Gemma 3 | 270M | `google/gemma-3-270m-it` |
+| Qwen3Guard-Gen | 0.6B | `Qwen/Qwen3Guard-Gen-0.6B` |
+| Qwen3.5 | 0.8B | `Qwen/Qwen3.5-0.8B` |
+| Gemma 3 | 1B | `google/gemma-3-1b-it` |
+| Llama 3.2 | 1B | `meta-llama/Llama-3.2-1B-Instruct` |
+| DeepSeek-R1-Distill | 1.5B | `deepseek-ai/DeepSeek-R1-Distill-Qwen-1.5B` |
+| Qwen3 | 1.7B | `Qwen/Qwen3-1.7B` |
+| SmolLM2 | 1.7B | `HuggingFaceTB/SmolLM2-1.7B-Instruct` |
 
 | Method | Type | Description |
 |--------|------|-------------|
@@ -127,7 +146,7 @@ bash codes/evaluation/FineTune/launch_ft.sh peft ce google/gemma-3-270m-it 0
 # Full pipeline: fine-tune teacher then distill
 python codes/evaluation/run_experiment.py --stage full \
   --ft_method full_ft --kd_method minillm \
-  --teacher_model Qwen/Qwen3-4B-SafeRL \
+  --teacher_model Qwen/Qwen3Guard-Gen-8B \
   --student_model meta-llama/Llama-3.2-1B-Instruct \
   --train_file dataset/dia_splits/train.jsonl \
   --val_file dataset/dia_splits/val.jsonl
