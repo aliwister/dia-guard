@@ -351,113 +351,109 @@ BEDROCK_MODEL_CONFIGS: Dict[str, Dict] = {
     "bedrock_deepseek": {
         "model_id": "deepseek.v3.2",
         "region": "us-east-1",
-        "max_tokens": 10,
+        "max_tokens": 1000,
         "context_window": 128000,
     },
     "bedrock_llama4_maverick": {
         "model_id": "us.meta.llama4-maverick-17b-instruct-v1:0",
         "region": "us-east-1",
-        "max_tokens": 10,
+        "max_tokens": 1000,
         "context_window": 128000,
     },
     "bedrock_llama3_2_1b": {
-        "model_id": "meta.llama3-2-1b-instruct-v1:0",
+        "model_id": "us.meta.llama3-2-1b-instruct-v1:0",
         "region": "us-east-1",
-        "max_tokens": 10,
-        "context_window": 128000,
-    },
-    "bedrock_llama3_1_405b": {
-        "model_id": "meta.llama3-1-405b-instruct-v1:0",
-        "region": "us-east-1",
-        "max_tokens": 10,
+        "max_tokens": 1000,
         "context_window": 128000,
     },
     "bedrock_llama3_3_70b": {
         "model_id": "us.meta.llama3-3-70b-instruct-v1:0",
         "region": "us-east-1",
-        "max_tokens": 10,
+        "max_tokens": 1000,
         "context_window": 128000,
     },
     "bedrock_mistral_large3": {
         "model_id": "mistral.mistral-large-3-675b-instruct",
         "region": "us-east-1",
-        "max_tokens": 10,
+        "max_tokens": 1000,
         "context_window": 128000,
     },
     "bedrock_qwen3_32b": {
         "model_id": "qwen.qwen3-32b-v1:0",
         "region": "us-east-1",
-        "max_tokens": 10,
+        "max_tokens": 1000,
         "context_window": 32768,
     },
     "bedrock_claude_opus": {
         "model_id": "us.anthropic.claude-opus-4-6-v1",
         "region": "us-east-1",
-        "max_tokens": 10,
+        "max_tokens": 1000,
         "context_window": 200000,
     },
     "bedrock_claude_sonnet": {
         "model_id": "us.anthropic.claude-sonnet-4-6",
         "region": "us-east-1",
-        "max_tokens": 10,
+        "max_tokens": 1000,
         "context_window": 200000,
     },
-    # ── OpenAI GPT-OSS models ──
+    # ── OpenAI GPT-OSS models (use higher max_tokens because of reasoning) ──
     "bedrock_gpt_oss_safeguard_20b": {
         "model_id": "openai.gpt-oss-safeguard-20b",
         "region": "us-east-1",
-        "max_tokens": 10,
+        "max_tokens": 1500,
         "context_window": 128000,
     },
     "bedrock_gpt_oss_safeguard_120b": {
         "model_id": "openai.gpt-oss-safeguard-120b",
         "region": "us-east-1",
-        "max_tokens": 10,
+        "max_tokens": 1500,
         "context_window": 128000,
     },
     "bedrock_gpt_oss_20b": {
         "model_id": "openai.gpt-oss-20b-1:0",
         "region": "us-east-1",
-        "max_tokens": 10,
+        "max_tokens": 1500,
         "context_window": 128000,
     },
     "bedrock_gpt_oss_120b": {
         "model_id": "openai.gpt-oss-120b-1:0",
         "region": "us-east-1",
-        "max_tokens": 10,
+        "max_tokens": 1500,
         "context_window": 128000,
     },
     # ── Google Gemma ──
     "bedrock_gemma3_27b": {
         "model_id": "google.gemma-3-27b-it",
         "region": "us-east-1",
-        "max_tokens": 10,
+        "max_tokens": 1000,
         "context_window": 128000,
     },
     # ── Mistral ──
     "bedrock_mistral_7b": {
         "model_id": "mistral.mistral-7b-instruct-v0:2",
         "region": "us-east-1",
-        "max_tokens": 10,
+        "max_tokens": 1000,
         "context_window": 32768,
+        "no_system": True,  # Mistral-7B doesn't accept system messages
     },
     "bedrock_ministral_14b": {
         "model_id": "mistral.ministral-3-14b-instruct",
         "region": "us-east-1",
-        "max_tokens": 10,
+        "max_tokens": 1000,
         "context_window": 128000,
     },
     # ── Qwen3 models ──
     "bedrock_qwen3_coder_30b": {
         "model_id": "qwen.qwen3-coder-30b-a3b-v1:0",
         "region": "us-east-1",
-        "max_tokens": 10,
+        "max_tokens": 1000,
         "context_window": 128000,
     },
-    "bedrock_qwen3_235b": {
-        "model_id": "qwen.qwen3-235b-a22b-2507-v1:0",
+    # Note: qwen3-235b text-only not available; using qwen-next-80b instead
+    "bedrock_qwen3_next_80b": {
+        "model_id": "qwen.qwen3-next-80b-a3b",
         "region": "us-east-1",
-        "max_tokens": 10,
+        "max_tokens": 1000,
         "context_window": 128000,
     },
 }
@@ -467,6 +463,125 @@ DEFAULT_CONTEXT_WINDOW = 8192
 
 # Conservative chars-per-token estimate (used when checking prompt length)
 CHARS_PER_TOKEN = 4
+
+# =============================================================================
+# Failure detection and result cleanup
+# =============================================================================
+
+
+def is_failed_record(record: Dict) -> bool:
+    """Determine whether a raw_output JSONL record represents a failed call.
+
+    A record is considered failed if:
+      - either harmfulness field is "unknown" or "error"
+      - either raw_output starts with "ERROR"
+      - either raw_output is empty
+    Successful records have a clean safe/unsafe classification.
+    """
+    for side in ("original", "transformed"):
+        harm = record.get(f"{side}_harmfulness", "")
+        raw = record.get(f"{side}_raw_output", "") or ""
+        if harm in ("unknown", "error", ""):
+            return True
+        if raw.strip().startswith("ERROR"):
+            return True
+        if not raw.strip():
+            return True
+    return False
+
+
+def get_successful_sample_ids(jsonl_path: Path) -> set:
+    """Return the set of sample IDs in *jsonl_path* whose results succeeded."""
+    success_ids: set = set()
+    if not jsonl_path.exists():
+        return success_ids
+    try:
+        with open(jsonl_path, "r", encoding="utf-8") as fh:
+            for line in fh:
+                line = line.strip()
+                if not line:
+                    continue
+                try:
+                    rec = json.loads(line)
+                except json.JSONDecodeError:
+                    continue
+                if not is_failed_record(rec):
+                    success_ids.add(rec.get("sample_id"))
+    except Exception:
+        pass
+    return success_ids
+
+
+def prune_failed_results(output_paths: Dict[str, Path]) -> int:
+    """Rewrite output files keeping only successful records.
+
+    Returns the number of failed records removed across all output files.
+    """
+    raw_path = output_paths.get("raw_outputs")
+    if not raw_path or not raw_path.exists():
+        return 0
+
+    successful_ids: set = set()
+    failed_ids: set = set()
+    kept_records = []
+
+    with open(raw_path, "r", encoding="utf-8") as fh:
+        for line in fh:
+            line = line.strip()
+            if not line:
+                continue
+            try:
+                rec = json.loads(line)
+            except json.JSONDecodeError:
+                continue
+            sid = rec.get("sample_id")
+            if is_failed_record(rec):
+                failed_ids.add(sid)
+            else:
+                successful_ids.add(sid)
+                kept_records.append(rec)
+
+    if not failed_ids:
+        return 0
+
+    # Rewrite the JSONL with successful records only
+    with open(raw_path, "w", encoding="utf-8") as fh:
+        for rec in kept_records:
+            fh.write(json.dumps(rec, ensure_ascii=False) + "\n")
+
+    # Prune the harmfulness CSV
+    import csv as _csv
+    for csv_key in ("harmfulness_results", "attack_success_results"):
+        csv_path = output_paths.get(csv_key)
+        if not csv_path or not csv_path.exists():
+            continue
+        try:
+            with open(csv_path, "r", encoding="utf-8", newline="") as fh:
+                reader = _csv.DictReader(fh)
+                fieldnames = reader.fieldnames
+                rows = [r for r in reader if r.get("sample_id") and
+                        r["sample_id"] not in {str(s) for s in failed_ids} and
+                        int(r["sample_id"]) not in failed_ids
+                        if r.get("sample_id", "").lstrip("-").isdigit()]
+                # Simpler: keep rows whose sample_id is in successful_ids
+                rows = []
+                fh.seek(0)
+                next(fh)  # skip header
+                reader = _csv.DictReader(fh, fieldnames=fieldnames)
+                # Re-read fresh
+            with open(csv_path, "r", encoding="utf-8", newline="") as fh:
+                reader = _csv.DictReader(fh)
+                fieldnames = reader.fieldnames
+                successful_id_strs = {str(s) for s in successful_ids}
+                kept_rows = [r for r in reader if str(r.get("sample_id", "")) in successful_id_strs]
+            with open(csv_path, "w", encoding="utf-8", newline="") as fh:
+                writer = _csv.DictWriter(fh, fieldnames=fieldnames)
+                writer.writeheader()
+                writer.writerows(kept_rows)
+        except Exception as exc:
+            print(f"  Warning: failed to prune {csv_path.name}: {exc}")
+
+    return len(failed_ids)
 
 # =============================================================================
 # Exemplar loading
@@ -718,20 +833,36 @@ class BedrockGuardEvaluator:
         """Send a single request to Bedrock Converse API and return the text."""
         self._wait_for_rate_limit()
 
-        max_tokens = self.model_config.get("max_tokens", 10)
+        max_tokens = self.model_config.get("max_tokens", 1000)
+        no_system = self.model_config.get("no_system", False)
+
+        # Build kwargs — some models (e.g. mistral-7b) don't accept a system message
+        kwargs = dict(
+            modelId=self.model_config["model_id"],
+            messages=[
+                {
+                    "role": "user",
+                    "content": [
+                        {
+                            "text": (
+                                f"{system_prompt}\n\n{user_prompt}"
+                                if no_system
+                                else user_prompt
+                            )
+                        }
+                    ],
+                }
+            ],
+            inferenceConfig={
+                "maxTokens": max_tokens,
+                "temperature": 0.0,
+            },
+        )
+        if not no_system:
+            kwargs["system"] = [{"text": system_prompt}]
 
         try:
-            response = self._client.converse(
-                modelId=self.model_config["model_id"],
-                system=[{"text": system_prompt}],
-                messages=[
-                    {"role": "user", "content": [{"text": user_prompt}]}
-                ],
-                inferenceConfig={
-                    "maxTokens": max_tokens,
-                    "temperature": 0.0,
-                },
-            )
+            response = self._client.converse(**kwargs)
         except Exception as exc:
             return f"ERROR: {exc}"
 
@@ -741,9 +872,26 @@ class BedrockGuardEvaluator:
             .get("content", [])
             or []
         )
-        return "".join(
-            b.get("text", "") for b in out_blocks if isinstance(b, dict)
-        ).strip()
+
+        # Extract both text blocks and reasoning text (gpt-oss models put their
+        # final answer in a "text" block AFTER a "reasoningContent" block).
+        text_parts: List[str] = []
+        reasoning_parts: List[str] = []
+        for b in out_blocks:
+            if not isinstance(b, dict):
+                continue
+            if "text" in b and b["text"]:
+                text_parts.append(b["text"])
+            elif "reasoningContent" in b:
+                rt = b["reasoningContent"].get("reasoningText", {}).get("text", "")
+                if rt:
+                    reasoning_parts.append(rt)
+
+        # Prefer the actual text (final answer); fall back to reasoning if empty
+        result = "".join(text_parts).strip()
+        if not result:
+            result = "".join(reasoning_parts).strip()
+        return result
 
     # ------------------------------------------------------------------
     # Exemplar helpers
@@ -878,11 +1026,28 @@ class BedrockGuardEvaluator:
         if final_match:
             return final_match.group(1)
 
+        # Markdown / structured classification labels
+        # Examples: "**Classification:** Unsafe.", "Classification: safe"
+        cls_match = re.search(
+            r"(?:classification|answer|verdict|label)\s*[:\*]+\s*\*?\*?\s*(safe|unsafe)",
+            output_lower,
+        )
+        if cls_match:
+            return cls_match.group(1)
+
         # Direct safe/unsafe start
         if output_stripped.startswith("safe"):
             return "safe"
         if output_stripped.startswith("unsafe"):
             return "unsafe"
+
+        # Unsafe must be checked before safe (since "unsafe" contains "safe")
+        # Check the last sentence/line for the verdict (models often conclude there)
+        last_chunk = output_stripped.split("\n")[-1].lower() if output_stripped else ""
+        if "unsafe" in last_chunk:
+            return "unsafe"
+        if "safe" in last_chunk and "unsafe" not in last_chunk:
+            return "safe"
 
         # WildGuard
         if "harmful request: yes" in output_lower:
@@ -1019,32 +1184,18 @@ def process_dataset_with_bedrock(
             progress_tracker.task_completed(0)
         return None
 
-    # Resume support
-    last_completed = checkpoint_manager.get_last_completed_sample(model_name, dialect, dataset_name)
-    if last_completed >= 0:
-        resume_idx = 0
-        for i, s in enumerate(samples):
-            if s["sample_id"] == last_completed:
-                resume_idx = i + 1
-                break
-        if resume_idx > 0:
-            print(f"  Resuming from sample {last_completed + 1} (skipping {resume_idx})")
-            samples = samples[resume_idx:]
+    # ── Prune any previously-failed records so they get retried ────────────
+    n_pruned = prune_failed_results(output_paths)
+    if n_pruned:
+        print(f"  Pruned {n_pruned} failed records — they will be retried")
 
-    if not samples:
-        checkpoint_manager.mark_completed(model_name, dialect, dataset_name)
-        print("  All samples already processed")
-        if progress_tracker:
-            progress_tracker.task_skipped()
-        return None
-
-    # De-duplicate against already-written JSONL
-    already_processed = results_manager.get_processed_sample_ids(output_paths["raw_outputs"])
-    if already_processed:
+    # ── Resume: skip only samples that previously SUCCEEDED ────────────────
+    successful_ids = get_successful_sample_ids(output_paths["raw_outputs"])
+    if successful_ids:
         original_count = len(samples)
-        samples = [s for s in samples if s["sample_id"] not in already_processed]
+        samples = [s for s in samples if s["sample_id"] not in successful_ids]
         if len(samples) < original_count:
-            print(f"  Skipping {original_count - len(samples)} already-processed samples (from JSONL)")
+            print(f"  Skipping {original_count - len(samples)} already-successful samples")
 
     if not samples:
         checkpoint_manager.mark_completed(model_name, dialect, dataset_name)
