@@ -27,82 +27,123 @@ print_status() {
     log "============================================================"
     log ""
 
-    # GPU table header
-    printf "%-4s | %-30s | %-10s | %-6s | %-8s | %-5s | %-4s | %-10s | %-7s | %-7s | %-10s\n" \
-        "GPU" "Job" "VRAM" "VRAM%" "GPU Util" "Batch" "GA" "Step" "Loss" "Acc" "ETA" | tee -a "$LOG_FILE"
+    # Header
+    printf "%-25s | %-9s | %-9s | %-15s | %-9s | %-7s | %-7s | %-9s | %-10s\n" \
+        "Job" "VRAM%" "GPU Util" "Step" "Epoch/3" "Loss" "Acc" "EvalLoss" "ETA" | tee -a "$LOG_FILE"
     printf "%s\n" "$(printf '%.0s-' {1..120})" | tee -a "$LOG_FILE"
 
-    # Get GPU info
-    mapfile -t gpu_info < <(nvidia-smi --query-gpu=index,memory.used,memory.total,utilization.gpu --format=csv,noheader,nounits)
-
-    # Get all tmux windows
     mapfile -t windows < <(tmux list-windows -t dia-guard-ft -F '#{window_name}' 2>/dev/null)
 
-    for line in "${gpu_info[@]}"; do
-        IFS=',' read -r gpu_id mem_used mem_total gpu_util <<< "$line"
-        gpu_id=$(echo "$gpu_id" | xargs)
-        mem_used=$(echo "$mem_used" | xargs)
-        mem_total=$(echo "$mem_total" | xargs)
-        gpu_util=$(echo "$gpu_util" | xargs)
-
-        vram_pct=$((mem_used * 100 / mem_total))
-        vram_str="${mem_used}/${mem_total}MB"
-
-        # Find which job is on this GPU
-        job_name="-"
-        step_info="-"
-        loss="-"
-        acc="-"
-        eta="-"
-        batch="-"
-        ga="-"
-
-        if [[ $mem_used -gt 100 ]]; then
-            # Find the job running on this GPU by checking window outputs
-            for w in "${windows[@]}"; do
-                output=$(tmux capture-pane -t "dia-guard-ft:$w" -p -S -50 2>/dev/null)
-                # Check if this window mentions this GPU
-                if echo "$output" | grep -q "CUDA_VISIBLE_DEVICES.*${gpu_id}" 2>/dev/null || \
-                   echo "$w" | grep -qv "control" 2>/dev/null; then
-                    # Get progress
-                    prog=$(echo "$output" | grep -oP "\d+/\d+\s*\[" | tail -1 | tr -d ' [')
-                    if [[ -n "$prog" ]]; then
-                        step_info="$prog"
-                    fi
-                    loss_val=$(echo "$output" | grep -oP "'loss': '[0-9.]+'" | tail -1 | grep -oP "[0-9.]+$")
-                    acc_val=$(echo "$output" | grep -oP "'mean_token_accuracy': '[0-9.]+'" | tail -1 | grep -oP "[0-9.]+$")
-                    [[ -n "$loss_val" ]] && loss="$loss_val"
-                    [[ -n "$acc_val" ]] && acc="$acc_val"
-                fi
-            done
-        fi
-
-        printf "%-4s | %-30s | %-10s | %-5s%% | %-7s%% | %-5s | %-4s | %-10s | %-7s | %-7s | %-10s\n" \
-            "$gpu_id" "$job_name" "$vram_str" "$vram_pct" "$gpu_util" "$batch" "$ga" "$step_info" "$loss" "$acc" "$eta" | tee -a "$LOG_FILE"
-    done
-
-    log ""
-
-    # Per-job detailed status
-    log "--- Per-Job Detail ---"
     for w in "${windows[@]}"; do
-        [[ "$w" == "control" ]] && continue
-        output=$(tmux capture-pane -t "dia-guard-ft:$w" -p -S -10 2>/dev/null)
-        done_check=$(echo "$output" | grep "DONE" | tail -1)
-        progress=$(echo "$output" | grep -E "it/s\]|s/it" | tail -1 | head -c 120)
+        [[ "$w" == "control" || "$w" == "monitor" ]] && continue
+
+        # Live tmux capture (latest progress bar / DONE)
+        out_short=$(tmux capture-pane -t "dia-guard-ft:$w" -p -S -10 2>/dev/null)
+
+        # Skip dead windows
+        done_check=$(echo "$out_short" | grep "DONE" | tail -1)
         if [[ -n "$done_check" ]]; then
-            # Check if it was error or success
-            error_check=$(tmux capture-pane -t "dia-guard-ft:$w" -p -S -30 2>/dev/null | grep -E "Error|OOM|Saving.*adapter|Saving.*model|saved" | tail -1)
-            if echo "$error_check" | grep -qi "error\|oom"; then
-                log "  FAILED: $w — $error_check"
+            log_path=$(ls /data/vibe_exp/dia-guard/logs/${w}*.log 2>/dev/null | tail -1)
+            err_check=""
+            [[ -f "$log_path" ]] && err_check=$(grep -E "Error|OOM|FAILED" "$log_path" 2>/dev/null | tail -1)
+            if [[ -n "$err_check" ]]; then
+                printf "%-25s | %-95s\n" "${w:0:25}" "FAILED: ${err_check:0:90}" | tee -a "$LOG_FILE"
             else
-                log "  COMPLETED: $w — $error_check"
+                printf "%-25s | %-95s\n" "${w:0:25}" "COMPLETED" | tee -a "$LOG_FILE"
             fi
-        elif [[ -n "$progress" ]]; then
-            log "  RUNNING: $w — $progress"
-        else
-            log "  LOADING: $w"
+            continue
         fi
+
+        # Find log file for this window (full history of training output)
+        log_path=$(ls /data/vibe_exp/dia-guard/logs/${w}*.log 2>/dev/null | tail -1)
+
+        # Find GPU from launch banner ("GPUs     : 0,1") or CUDA_VISIBLE_DEVICES
+        gpu_id="?"
+        if [[ -f "$log_path" ]]; then
+            gpu_id=$(grep -oP "^\s+GPUs\s+:\s+\K[0-9,]+" "$log_path" 2>/dev/null | tail -1)
+            [[ -z "$gpu_id" ]] && gpu_id=$(grep -oP "CUDA_VISIBLE_DEVICES=\K[0-9,]+" "$log_path" 2>/dev/null | tail -1)
+            [[ -z "$gpu_id" ]] && gpu_id="?"
+        fi
+        first_gpu=$(echo "$gpu_id" | cut -d',' -f1)
+
+        # GPU stats
+        if [[ "$first_gpu" =~ ^[0-9]+$ ]]; then
+            gpu_stat=$(nvidia-smi --query-gpu=memory.used,memory.total,utilization.gpu --format=csv,noheader,nounits -i "$first_gpu" 2>/dev/null)
+            mem_used=$(echo "$gpu_stat" | awk -F',' '{gsub(/ /,""); print $1}')
+            mem_total=$(echo "$gpu_stat" | awk -F',' '{gsub(/ /,""); print $2}')
+            gpu_util=$(echo "$gpu_stat" | awk -F',' '{gsub(/ /,""); print $3}')
+            vram_pct=$((mem_used * 100 / mem_total))
+        else
+            vram_pct="-"; gpu_util="-"
+        fi
+
+        # Step info — only count real training steps (phase 2)
+        step_info=""
+        if [[ -f "$log_path" ]]; then
+            step_info=$(grep -oP "\d+/156930|\d+/209241|\d+/139493|\d+/313860" "$log_path" 2>/dev/null | tail -1)
+        fi
+        [[ -z "$step_info" ]] && step_info=$(echo "$out_short" | grep -oP "\d+/\d+\s*\[" | tail -1 | tr -d ' [')
+
+        # Epoch — directly from SFTTrainer log line ('epoch': '0.6576')
+        epoch_val=""
+        if [[ -f "$log_path" ]]; then
+            epoch_val=$(grep -oP "'epoch': '[0-9.]+'" "$log_path" 2>/dev/null | tail -1 | grep -oP "[0-9.]+" | head -1)
+        fi
+        if [[ -n "$epoch_val" ]]; then
+            epoch_str=$(printf "%.2f/3" "$epoch_val")
+        else
+            # Contrastive script: parse "Epoch N: step/per_epoch"
+            ep_line=$(echo "$out_short" | grep -oP "Epoch \d+:\s+\d+/\d+" | tail -1)
+            if [[ -n "$ep_line" ]]; then
+                ep_num=$(echo "$ep_line" | grep -oP "Epoch \K\d+")
+                ep_step=$(echo "$ep_line" | grep -oP "\d+/\d+" | head -1 | cut -d'/' -f1)
+                ep_total=$(echo "$ep_line" | grep -oP "\d+/\d+" | head -1 | cut -d'/' -f2)
+                if [[ -n "$ep_num" && -n "$ep_step" && -n "$ep_total" && "$ep_total" -gt 0 ]]; then
+                    frac=$(awk "BEGIN {printf \"%.2f\", ($ep_num - 1) + $ep_step / $ep_total}")
+                    epoch_str="${frac}/3"
+                else
+                    epoch_str="-"
+                fi
+            else
+                epoch_str="-"
+            fi
+        fi
+
+        # Loss / acc / eval loss — parsed from log file with strict patterns
+        loss_val=""; acc_val=""; evloss_val=""
+        if [[ -f "$log_path" ]]; then
+            # Training loss only — exclude eval_loss by requiring leading {' or comma
+            loss_val=$(grep -oP "(?<=^|[{,] )'loss': '[0-9.]+'" "$log_path" 2>/dev/null | tail -1 | grep -oP "[0-9.]+(?=')" | head -1)
+            [[ -z "$loss_val" ]] && loss_val=$(grep -oP "'loss': '[0-9.]+'" "$log_path" 2>/dev/null | tail -1 | grep -oP "[0-9.]+(?=')" | head -1)
+            acc_val=$(grep -oP "'mean_token_accuracy': '[0-9.]+'" "$log_path" 2>/dev/null | tail -1 | grep -oP "[0-9.]+(?=')" | head -1)
+            evloss_val=$(grep -oP "'eval_loss': '[0-9.]+'" "$log_path" 2>/dev/null | tail -1 | grep -oP "[0-9.]+(?=')" | head -1)
+        fi
+        # Contrastive uses ce= field
+        [[ -z "$loss_val" ]] && loss_val=$(echo "$out_short" | grep -oP "ce=[0-9.]+" | tail -1 | grep -oP "[0-9.]+")
+
+        # ETA — from current step, total, and speed
+        eta_str="-"
+        if [[ -n "$step_info" ]]; then
+            cur=$(echo "$step_info" | cut -d'/' -f1)
+            tot=$(echo "$step_info" | cut -d'/' -f2)
+            speed=$(echo "$out_short" | grep -oP "[0-9.]+it/s|[0-9.]+s/it" | tail -1)
+            if [[ -n "$speed" && "$cur" =~ ^[0-9]+$ && "$tot" =~ ^[0-9]+$ ]]; then
+                remaining=$((tot - cur))
+                if [[ "$speed" == *"it/s"* ]]; then
+                    its=$(echo "$speed" | grep -oP "[0-9.]+")
+                    eta_sec=$(awk "BEGIN {printf \"%.0f\", $remaining / $its}")
+                else
+                    sit=$(echo "$speed" | grep -oP "[0-9.]+")
+                    eta_sec=$(awk "BEGIN {printf \"%.0f\", $remaining * $sit}")
+                fi
+                eta_h=$((eta_sec / 3600))
+                eta_m=$(((eta_sec % 3600) / 60))
+                eta_str="${eta_h}h${eta_m}m"
+            fi
+        fi
+
+        printf "%-25s | %-7s%% | %-7s%% | %-15s | %-9s | %-7s | %-7s | %-9s | %-10s\n" \
+            "${w:0:25}" "${vram_pct:--}" "${gpu_util:--}" "${step_info:--}" "${epoch_str:--}" "${loss_val:--}" "${acc_val:--}" "${evloss_val:--}" "${eta_str:--}" | tee -a "$LOG_FILE"
     done
 
     log ""
@@ -320,7 +361,8 @@ log "Teachers pending: Aya=$((1 - TEACHER_AYA_LAUNCHED)) Qwen4B=$((1 - TEACHER_Q
 
 while true; do
     print_status
-    check_and_launch_teachers
+    # Teacher auto-launch disabled by user request
+    # check_and_launch_teachers
     log "Next check in 1 hour..."
     log "============================================================"
     sleep 3600
