@@ -17,6 +17,18 @@ TEACHER_QWEN8B_LAUNCHED=0
 [[ -f /data/vibe_exp/dia-guard/logs/.qwen4b_launched ]] && TEACHER_QWEN_LAUNCHED=1
 [[ -f /data/vibe_exp/dia-guard/logs/.qwen8b_launched ]] && TEACHER_QWEN8B_LAUNCHED=1
 
+# Map of CE job window name → (model_id, contrastive_window_name, contrastive_log_name)
+# Used to auto-launch the contrastive variant after a CE job completes.
+declare -A CONTRASTIVE_FOR_CE=(
+    ["llama1b_ce"]="meta-llama/Llama-3.2-1B-Instruct|llama1b_con|llama1b_peft_contrastive.log"
+    ["smollm_ce"]="HuggingFaceTB/SmolLM2-1.7B-Instruct|smollm_con|smollm_peft_contrastive.log"
+    ["qwen17b_ce"]="Qwen/Qwen3-1.7B|qwen17b_con|qwen17b_peft_contrastive.log"
+    ["gemma270m_ce"]="google/gemma-3-270m-it|gemma270m_con|gemma270m_peft_contrastive.log"
+    ["qwen_guard_ce"]="Qwen/Qwen3Guard-Gen-0.6B|qwen_guard_con|qwen_guard_peft_contrastive.log"
+    ["qwen35_ce"]="Qwen/Qwen3.5-0.8B|qwen35_con|qwen35_peft_contrastive.log"
+    ["gemma1b_ce"]="google/gemma-3-1b-it|gemma1b_con|gemma1b_peft_contrastive.log"
+)
+
 log() {
     echo "[$(date '+%Y-%m-%d %H:%M:%S')] $*" | tee -a "$LOG_FILE"
 }
@@ -355,15 +367,52 @@ EOFCFG
     fi
 }
 
+check_and_launch_contrastive() {
+    # When a CE PEFT job completes, launch the matching contrastive variant
+    # on the same GPU. Tracked via flag files /data/vibe_exp/dia-guard/logs/.con_<wname>
+    for ce_window in "${!CONTRASTIVE_FOR_CE[@]}"; do
+        IFS='|' read -r model con_window con_log <<< "${CONTRASTIVE_FOR_CE[$ce_window]}"
+        flag="/data/vibe_exp/dia-guard/logs/.con_${con_window}"
+        [[ -f "$flag" ]] && continue  # already launched
+
+        # Skip if contrastive window already exists (manual launch)
+        if tmux list-windows -t dia-guard-ft -F '#{window_name}' 2>/dev/null | grep -qx "$con_window"; then
+            touch "$flag"
+            continue
+        fi
+
+        # Check if CE job completed (window shows DONE) — must look at last line
+        out=$(tmux capture-pane -t "dia-guard-ft:$ce_window" -p -S -5 2>/dev/null)
+        if ! echo "$out" | grep -q "^DONE"; then
+            continue
+        fi
+
+        # Find the GPU the CE job was using (from log file)
+        ce_log=$(ls /data/vibe_exp/dia-guard/logs/${ce_window%_ce}_peft_ce.log 2>/dev/null | tail -1)
+        [[ -z "$ce_log" ]] && ce_log=$(ls /data/vibe_exp/dia-guard/logs/${ce_window}*.log 2>/dev/null | tail -1)
+        gpu=$(grep -oP "^\s+GPUs\s+:\s+\K[0-9,]+" "$ce_log" 2>/dev/null | tail -1)
+        [[ -z "$gpu" ]] && { log "  Could not find GPU for ${ce_window}, skipping"; continue; }
+
+        log ">>> CE job '${ce_window}' completed — launching contrastive '${con_window}' on GPU ${gpu}"
+        tmux new-window -t dia-guard-ft -n "${con_window}" \
+            "bash ${SCRIPT_DIR}/launch_ft.sh peft contrastive '${model}' ${gpu} 1 \
+             2>&1 | tee /data/vibe_exp/dia-guard/logs/${con_log}; echo 'DONE'; read"
+        touch "$flag"
+        log ">>> Launched ${con_window}"
+    done
+}
+
 # Main loop
 log "Monitor started. Checking every hour. Ctrl-C to stop."
 log "Teachers pending: Aya=$((1 - TEACHER_AYA_LAUNCHED)) Qwen4B=$((1 - TEACHER_QWEN_LAUNCHED)) Qwen8B=$((1 - TEACHER_QWEN8B_LAUNCHED))"
+log "Auto-launching contrastive variants when CE jobs complete (7 students)"
 
 while true; do
     print_status
     # Teacher auto-launch disabled by user request
     # check_and_launch_teachers
-    log "Next check in 1 hour..."
+    check_and_launch_contrastive
+    log "Next check in 5 minutes..."
     log "============================================================"
-    sleep 3600
+    sleep 300
 done

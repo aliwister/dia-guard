@@ -201,9 +201,9 @@ def train(cfg: dict):
     if eval_dataset and cfg.get("early_stopping", True):
         patience = int(cfg.get("early_stopping_patience", 3))
         threshold = float(cfg.get("early_stopping_threshold", 0.0))
-        if not training_args.metric_for_best_model:
-            training_args.metric_for_best_model = "eval_loss"
-            training_args.greater_is_better = False
+        # Force eval_loss as the early stopping metric (default would be train "loss")
+        training_args.metric_for_best_model = "eval_loss"
+        training_args.greater_is_better = False
         callbacks.append(
             EarlyStoppingCallback(
                 early_stopping_patience=patience,

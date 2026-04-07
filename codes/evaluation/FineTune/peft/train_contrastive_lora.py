@@ -262,6 +262,56 @@ def train(cfg: dict):
     output_dir = cfg.get("output_dir", "./output")
     os.makedirs(output_dir, exist_ok=True)
     global_step = 0
+    best_eval_init = float("inf")
+    no_improve_init = 0
+    resume_epoch = 0
+
+    # Resume from checkpoint if requested
+    resume_ckpt = cfg.get("resume_from_checkpoint")
+    if resume_ckpt == "auto":
+        ckpts = sorted(
+            [p for p in Path(output_dir).glob("checkpoint-*") if p.name != "checkpoint-best"],
+            key=lambda p: int(p.name.split("-")[1]),
+        )
+        resume_ckpt = str(ckpts[-1]) if ckpts else None
+    if resume_ckpt and Path(resume_ckpt).exists():
+        state_path = Path(resume_ckpt) / "trainer_state.pt"
+        if state_path.exists():
+            print(f"Resuming contrastive run from {resume_ckpt}")
+            # Load LoRA adapter weights
+            from peft import PeftModel
+            # The model passed to get_peft_model is already a PeftModel; load adapter into it
+            adapter_state = torch.load(
+                Path(resume_ckpt) / "adapter_model.safetensors"
+                if (Path(resume_ckpt) / "adapter_model.safetensors").exists()
+                else Path(resume_ckpt) / "adapter_model.bin",
+                map_location="cpu",
+            ) if (Path(resume_ckpt) / "adapter_model.bin").exists() else None
+            # Easier: use model.load_adapter
+            try:
+                model.load_adapter(str(resume_ckpt), adapter_name="default", is_trainable=True)
+            except Exception as e:
+                print(f"  load_adapter failed ({e}), trying set_peft_model_state_dict")
+                from peft import set_peft_model_state_dict
+                from safetensors.torch import load_file
+                sf = Path(resume_ckpt) / "adapter_model.safetensors"
+                if sf.exists():
+                    state = load_file(str(sf))
+                    set_peft_model_state_dict(model, state)
+            # Load trainer state (optimizer, scheduler, step, best_eval)
+            saved = torch.load(state_path, map_location="cpu", weights_only=False)
+            optimizer.load_state_dict(saved["optimizer"])
+            scheduler.load_state_dict(saved["scheduler"])
+            global_step = saved.get("global_step", 0)
+            best_eval_init = saved.get("best_eval", float("inf"))
+            no_improve_init = saved.get("no_improve", 0)
+            resume_epoch = saved.get("epoch", 0)
+            print(
+                f"  Resumed: global_step={global_step}, epoch={resume_epoch}, "
+                f"best_eval={best_eval_init:.4f}, no_improve={no_improve_init}"
+            )
+        else:
+            print(f"  WARNING: {state_path} not found, starting fresh from step 0")
 
     # Optional eval loader (for early stopping)
     eval_loader = None
@@ -281,8 +331,8 @@ def train(cfg: dict):
     patience = int(cfg.get("early_stopping_patience", 3))
     threshold = float(cfg.get("early_stopping_threshold", 0.0))
     eval_steps = int(cfg.get("eval_steps", 200))
-    best_eval = float("inf")
-    no_improve = 0
+    best_eval = best_eval_init
+    no_improve = no_improve_init
     stop_training = False
     if early_stopping:
         print(
@@ -306,7 +356,8 @@ def train(cfg: dict):
         model.train()
         return total / max(n, 1)
 
-    for epoch in range(cfg.get("num_epochs", 3)):
+    num_epochs = cfg.get("num_epochs", 3)
+    for epoch in range(resume_epoch, num_epochs):
         if stop_training:
             break
         model.train()
@@ -337,7 +388,29 @@ def train(cfg: dict):
                 ckpt = os.path.join(output_dir, f"checkpoint-{global_step}")
                 model.save_pretrained(ckpt)
                 tokenizer.save_pretrained(ckpt)
+                # Save full training state for resume
+                torch.save(
+                    {
+                        "optimizer": optimizer.state_dict(),
+                        "scheduler": scheduler.state_dict(),
+                        "global_step": global_step,
+                        "epoch": epoch,
+                        "best_eval": best_eval,
+                        "no_improve": no_improve,
+                    },
+                    os.path.join(ckpt, "trainer_state.pt"),
+                )
                 print(f"Saved checkpoint: {ckpt}")
+                # Prune old checkpoints (keep last save_total_limit)
+                save_total_limit = int(cfg.get("save_total_limit", 3))
+                if save_total_limit > 0:
+                    all_ckpts = sorted(
+                        [p for p in Path(output_dir).glob("checkpoint-*") if p.name != "checkpoint-best"],
+                        key=lambda p: int(p.name.split("-")[1]),
+                    )
+                    for old in all_ckpts[:-save_total_limit]:
+                        import shutil
+                        shutil.rmtree(old, ignore_errors=True)
 
             if early_stopping and global_step % eval_steps == 0:
                 eval_loss = run_eval()
@@ -383,6 +456,8 @@ def parse_args():
     parser.add_argument("--train_data", type=str, default=None)
     parser.add_argument("--eval_data", type=str, default=None)
     parser.add_argument("--output_dir", type=str, default=None)
+    parser.add_argument("--resume_from_checkpoint", type=str, default=None,
+                        help="'auto' to find latest checkpoint, or path to a specific checkpoint")
     parser.add_argument("--use_qlora", type=lambda x: x.lower() == "true", default=None)
     parser.add_argument("--alpha", type=float, default=None)
     parser.add_argument("--margin", type=float, default=None)

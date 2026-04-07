@@ -282,6 +282,35 @@ def train(cfg: dict):
     os.makedirs(output_dir, exist_ok=True)
     grad_accum = cfg.get("gradient_accumulation_steps", 8)
 
+    # Resume from checkpoint if requested (uses accelerator.load_state for full state)
+    global_step = 0
+    best_eval_init = float("inf")
+    no_improve_init = 0
+    resume_epoch = 0
+    resume_ckpt = cfg.get("resume_from_checkpoint")
+    if resume_ckpt == "auto":
+        ckpts = sorted(
+            [p for p in Path(output_dir).glob("checkpoint-*") if p.name != "checkpoint-best"],
+            key=lambda p: int(p.name.split("-")[1]),
+        )
+        resume_ckpt = str(ckpts[-1]) if ckpts else None
+    if resume_ckpt and Path(resume_ckpt).exists():
+        if accelerator.is_main_process:
+            print(f"Resuming full FT contrastive run from {resume_ckpt}")
+        accelerator.load_state(resume_ckpt)
+        meta_path = Path(resume_ckpt) / "trainer_meta.pt"
+        if meta_path.exists():
+            meta = torch.load(meta_path, map_location="cpu", weights_only=False)
+            global_step = meta.get("global_step", 0)
+            best_eval_init = meta.get("best_eval", float("inf"))
+            no_improve_init = meta.get("no_improve", 0)
+            resume_epoch = meta.get("epoch", 0)
+            if accelerator.is_main_process:
+                print(
+                    f"  Resumed: global_step={global_step}, epoch={resume_epoch}, "
+                    f"best_eval={best_eval_init:.4f}, no_improve={no_improve_init}"
+                )
+
     # Optional eval loader (for early stopping)
     eval_loader = None
     eval_path = cfg.get("eval_data")
@@ -299,8 +328,8 @@ def train(cfg: dict):
     patience = int(cfg.get("early_stopping_patience", 3))
     threshold = float(cfg.get("early_stopping_threshold", 0.0))
     eval_steps = int(cfg.get("eval_steps", 200))
-    best_eval = float("inf")
-    no_improve = 0
+    best_eval = best_eval_init
+    no_improve = no_improve_init
     stop_training = False
     if early_stopping and accelerator.is_main_process:
         print(
@@ -325,8 +354,8 @@ def train(cfg: dict):
         return total / max(n, 1)
 
     # --- Training loop ---
-    global_step = 0
-    for epoch in range(cfg.get("num_epochs", 3)):
+    num_epochs = cfg.get("num_epochs", 3)
+    for epoch in range(resume_epoch, num_epochs):
         if stop_training:
             break
         model.train()
@@ -373,12 +402,34 @@ def train(cfg: dict):
                 })
 
             # Save checkpoint
-            if global_step % cfg.get("save_steps", 500) == 0 and accelerator.is_main_process:
+            if global_step % cfg.get("save_steps", 500) == 0:
                 ckpt_dir = os.path.join(output_dir, f"checkpoint-{global_step}")
-                unwrapped = accelerator.unwrap_model(model)
-                unwrapped.save_pretrained(ckpt_dir)
-                tokenizer.save_pretrained(ckpt_dir)
-                print(f"Saved checkpoint to {ckpt_dir}")
+                # accelerator.save_state writes model+optimizer+scheduler+RNG (multi-process safe)
+                accelerator.save_state(ckpt_dir)
+                if accelerator.is_main_process:
+                    unwrapped = accelerator.unwrap_model(model)
+                    unwrapped.save_pretrained(ckpt_dir)
+                    tokenizer.save_pretrained(ckpt_dir)
+                    torch.save(
+                        {
+                            "global_step": global_step,
+                            "epoch": epoch,
+                            "best_eval": best_eval,
+                            "no_improve": no_improve,
+                        },
+                        os.path.join(ckpt_dir, "trainer_meta.pt"),
+                    )
+                    print(f"Saved checkpoint to {ckpt_dir}")
+                    # Prune old
+                    save_total_limit = int(cfg.get("save_total_limit", 3))
+                    if save_total_limit > 0:
+                        all_ckpts = sorted(
+                            [p for p in Path(output_dir).glob("checkpoint-*") if p.name != "checkpoint-best"],
+                            key=lambda p: int(p.name.split("-")[1]),
+                        )
+                        for old in all_ckpts[:-save_total_limit]:
+                            import shutil
+                            shutil.rmtree(old, ignore_errors=True)
 
             # Early stopping eval
             if early_stopping and global_step % eval_steps == 0:
@@ -436,6 +487,8 @@ def parse_args():
     parser.add_argument("--train_data", type=str, default=None)
     parser.add_argument("--eval_data", type=str, default=None)
     parser.add_argument("--output_dir", type=str, default=None)
+    parser.add_argument("--resume_from_checkpoint", type=str, default=None,
+                        help="'auto' to find latest checkpoint, or path to a specific checkpoint")
     parser.add_argument("--alpha", type=float, default=None,
                         help="Weight for CE loss (default 0.7)")
     parser.add_argument("--margin", type=float, default=None,
