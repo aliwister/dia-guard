@@ -40,6 +40,7 @@ from transformers import (
     AutoModelForCausalLM,
     AutoTokenizer,
     BitsAndBytesConfig,
+    EarlyStoppingCallback,
     set_seed,
 )
 from trl import SFTConfig, SFTTrainer
@@ -223,6 +224,26 @@ def train(cfg: dict):
         completion_only_loss=False,
     )
 
+    # Build callbacks (early stopping is enabled by default when eval_dataset exists)
+    callbacks = []
+    if eval_dataset and cfg.get("early_stopping", True):
+        patience = int(cfg.get("early_stopping_patience", 3))
+        threshold = float(cfg.get("early_stopping_threshold", 0.0))
+        # SFTConfig requires metric_for_best_model + greater_is_better when using EarlyStoppingCallback
+        if not training_args.metric_for_best_model:
+            training_args.metric_for_best_model = "eval_loss"
+            training_args.greater_is_better = False
+        callbacks.append(
+            EarlyStoppingCallback(
+                early_stopping_patience=patience,
+                early_stopping_threshold=threshold,
+            )
+        )
+        print(
+            f"EarlyStoppingCallback enabled: patience={patience}, "
+            f"threshold={threshold}, metric={training_args.metric_for_best_model}"
+        )
+
     # NOTE: trl >= 0.12 uses `processing_class` instead of `tokenizer`
     trainer = SFTTrainer(
         model=model,
@@ -230,6 +251,7 @@ def train(cfg: dict):
         train_dataset=train_dataset,
         eval_dataset=eval_dataset,
         processing_class=tokenizer,
+        callbacks=callbacks,
     )
 
     # Resume from checkpoint if available

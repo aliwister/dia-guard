@@ -38,6 +38,7 @@ from datasets import Dataset, load_dataset
 from transformers import (
     AutoModelForCausalLM,
     AutoTokenizer,
+    EarlyStoppingCallback,
     TrainingArguments,
     set_seed,
 )
@@ -195,6 +196,25 @@ def train(cfg: dict):
         completion_only_loss=False,
     )
 
+    # Build callbacks (early stopping is enabled by default when eval_dataset exists)
+    callbacks = []
+    if eval_dataset and cfg.get("early_stopping", True):
+        patience = int(cfg.get("early_stopping_patience", 3))
+        threshold = float(cfg.get("early_stopping_threshold", 0.0))
+        if not training_args.metric_for_best_model:
+            training_args.metric_for_best_model = "eval_loss"
+            training_args.greater_is_better = False
+        callbacks.append(
+            EarlyStoppingCallback(
+                early_stopping_patience=patience,
+                early_stopping_threshold=threshold,
+            )
+        )
+        print(
+            f"EarlyStoppingCallback enabled: patience={patience}, "
+            f"threshold={threshold}, metric={training_args.metric_for_best_model}"
+        )
+
     # --- Trainer ---
     # NOTE: trl >= 0.12 uses `processing_class` instead of `tokenizer`
     trainer = SFTTrainer(
@@ -203,11 +223,20 @@ def train(cfg: dict):
         train_dataset=train_dataset,
         eval_dataset=eval_dataset,
         processing_class=tokenizer,
+        callbacks=callbacks,
     )
+
+    # Resume from checkpoint if available
+    resume_ckpt = cfg.get("resume_from_checkpoint")
+    if resume_ckpt == "auto":
+        ckpts = sorted(Path(output_dir).glob("checkpoint-*"), key=lambda p: int(p.name.split("-")[1]))
+        resume_ckpt = str(ckpts[-1]) if ckpts else None
+        if resume_ckpt:
+            print(f"Resuming from checkpoint: {resume_ckpt}")
 
     # --- Train ---
     print("Starting training...")
-    trainer.train()
+    trainer.train(resume_from_checkpoint=resume_ckpt)
 
     # --- Save final model ---
     print(f"Saving final model to {output_dir}")
@@ -235,6 +264,8 @@ def parse_args():
     parser.add_argument("--train_data", type=str, default=None)
     parser.add_argument("--eval_data", type=str, default=None)
     parser.add_argument("--output_dir", type=str, default=None)
+    parser.add_argument("--resume_from_checkpoint", type=str, default=None,
+                        help="'auto' to find latest checkpoint, or path to a specific checkpoint")
     parser.add_argument("--num_epochs", type=int, default=None)
     parser.add_argument("--batch_size", type=int, default=None,
                         dest="per_device_train_batch_size")

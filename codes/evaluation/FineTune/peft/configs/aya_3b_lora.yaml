@@ -60,3 +60,8 @@ margin: 0.3
 temperature: 0.05
 
 report_to: wandb
+
+# Early stopping (requires eval_data and metric_for_best_model: eval_loss)
+early_stopping: true
+early_stopping_patience: 3
+early_stopping_threshold: 0.0

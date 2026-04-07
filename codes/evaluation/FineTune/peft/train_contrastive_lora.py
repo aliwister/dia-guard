@@ -263,7 +263,52 @@ def train(cfg: dict):
     os.makedirs(output_dir, exist_ok=True)
     global_step = 0
 
+    # Optional eval loader (for early stopping)
+    eval_loader = None
+    eval_path = cfg.get("eval_data")
+    if eval_path and Path(eval_path).exists():
+        eval_records = load_jsonl_records(eval_path, cfg["model_name"], split="val")
+        eval_dataset = TripletLoRADataset(eval_records, tokenizer, cfg.get("max_seq_length", 2048))
+        eval_loader = DataLoader(
+            eval_dataset,
+            batch_size=cfg.get("per_device_eval_batch_size", cfg.get("per_device_train_batch_size", 4)),
+            shuffle=False, num_workers=2,
+        )
+        if not use_qlora:
+            eval_loader = accelerator.prepare(eval_loader)
+
+    early_stopping = cfg.get("early_stopping", True) and eval_loader is not None
+    patience = int(cfg.get("early_stopping_patience", 3))
+    threshold = float(cfg.get("early_stopping_threshold", 0.0))
+    eval_steps = int(cfg.get("eval_steps", 200))
+    best_eval = float("inf")
+    no_improve = 0
+    stop_training = False
+    if early_stopping:
+        print(
+            f"Early stopping enabled: patience={patience}, threshold={threshold}, "
+            f"eval_steps={eval_steps}"
+        )
+
+    @torch.no_grad()
+    def run_eval():
+        model.eval()
+        total = 0.0
+        n = 0
+        for batch in eval_loader:
+            l_ce = ce_loss(model, batch["ce_input_ids"], batch["ce_labels"])
+            h_a = get_last_hidden(model, batch["anchor_input_ids"], batch["anchor_attention_mask"])
+            h_p = get_last_hidden(model, batch["pos_input_ids"], batch["pos_attention_mask"])
+            h_n = get_last_hidden(model, batch["neg_input_ids"], batch["neg_attention_mask"])
+            l_t = triplet_loss(h_a, h_p, h_n, margin)
+            total += (alpha * l_ce + (1.0 - alpha) * l_t).item()
+            n += 1
+        model.train()
+        return total / max(n, 1)
+
     for epoch in range(cfg.get("num_epochs", 3)):
+        if stop_training:
+            break
         model.train()
         pbar = tqdm(loader, desc=f"Epoch {epoch+1}")
         for batch in pbar:
@@ -294,6 +339,23 @@ def train(cfg: dict):
                 tokenizer.save_pretrained(ckpt)
                 print(f"Saved checkpoint: {ckpt}")
 
+            if early_stopping and global_step % eval_steps == 0:
+                eval_loss = run_eval()
+                print(f"[step {global_step}] eval_loss={eval_loss:.4f} best={best_eval:.4f} no_improve={no_improve}")
+                if eval_loss < best_eval - threshold:
+                    best_eval = eval_loss
+                    no_improve = 0
+                    # Save best checkpoint
+                    best_dir = os.path.join(output_dir, "checkpoint-best")
+                    model.save_pretrained(best_dir)
+                    tokenizer.save_pretrained(best_dir)
+                else:
+                    no_improve += 1
+                    if no_improve >= patience:
+                        print(f"Early stopping at step {global_step}: no improvement for {patience} evals")
+                        stop_training = True
+                        break
+
     model.save_pretrained(output_dir)
     tokenizer.save_pretrained(output_dir)
     with open(os.path.join(output_dir, "training_config.yaml"), "w") as f:
@@ -319,6 +381,7 @@ def parse_args():
     parser.add_argument("--config", type=str, required=True)
     parser.add_argument("--model_name", type=str, default=None)
     parser.add_argument("--train_data", type=str, default=None)
+    parser.add_argument("--eval_data", type=str, default=None)
     parser.add_argument("--output_dir", type=str, default=None)
     parser.add_argument("--use_qlora", type=lambda x: x.lower() == "true", default=None)
     parser.add_argument("--alpha", type=float, default=None)

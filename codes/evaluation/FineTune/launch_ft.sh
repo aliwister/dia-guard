@@ -150,11 +150,8 @@ if [[ "${LOSS}" != "contrastive" ]]; then
     fi
 fi
 
-# Contrastive scripts don't accept --eval_data
-EVAL_ARGS=""
-if [[ "${LOSS}" != "contrastive" ]]; then
-    EVAL_ARGS="--eval_data ${EVAL_DATA}"
-fi
+# All training scripts now accept --eval_data (used for early stopping in contrastive too)
+EVAL_ARGS="--eval_data ${EVAL_DATA}"
 
 if [[ "${NUM_GPUS}" -gt 1 ]]; then
     if [[ "${USE_DEEPSPEED}" == "deepspeed" ]]; then
