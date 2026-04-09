@@ -38,19 +38,13 @@ import torch.serialization
 import yaml
 
 
-# PyTorch 2.4+ defaults weights_only=True in torch.load, but checkpoint RNG state
-# files contain numpy objects. Allowlist them so resume_from_checkpoint works.
-# numpy.dtypes.* covers newer numpy (1.24+) where dtype classes moved out of numpy.core.
-_np_safe_globals = [
-    np.core.multiarray._reconstruct,
-    np.ndarray,
-    np.dtype,
-]
-for _attr in ("UInt32DType", "Int64DType", "Float64DType", "BoolDType"):
-    _cls = getattr(np.dtypes, _attr, None)
-    if _cls is not None:
-        _np_safe_globals.append(_cls)
-torch.serialization.add_safe_globals(_np_safe_globals)
+# Patch Trainer._load_rng_state to skip loading RNG state from checkpoint.
+# Transformers calls torch.load(..., weights_only=True) on the RNG file, but the
+# file contains numpy objects that fail the weights-only check across torch/numpy
+# version combinations. RNG state only affects random-seed reproducibility on
+# resume — training correctness and loss curves are unaffected.
+from transformers import Trainer as _Trainer
+_Trainer._load_rng_state = lambda self, checkpoint: None
 
 
 from datasets import Dataset
@@ -272,8 +266,24 @@ def train(cfg: dict):
 
 
 
+    local_rank = int(os.environ.get("LOCAL_RANK", 0))
+
+    class DebugSFTTrainer(SFTTrainer):
+        def compute_loss(self, model, inputs, **kwargs):
+            loss = super().compute_loss(model, inputs, **kwargs)
+            if isinstance(loss, torch.Tensor) and loss.item() < 1e-6:
+                print(f"\n[rank{local_rank}] WARNING: loss={loss.item():.6f} near zero!")
+                ids = inputs.get("input_ids")
+                labels = inputs.get("labels")
+                if ids is not None:
+                    for i, seq in enumerate(ids):
+                        decoded = tokenizer.decode(seq, skip_special_tokens=False)
+                        n_valid = (labels[i] != -100).sum().item() if labels is not None else "?"
+                        print(f"  sample[{i}] valid_label_tokens={n_valid} text={decoded[:200]!r}")
+            return loss
+
     # NOTE: trl >= 0.12 uses `processing_class` instead of `tokenizer`
-    trainer = SFTTrainer(
+    trainer = DebugSFTTrainer(
         model=model,
         args=training_args,
         train_dataset=train_dataset,
