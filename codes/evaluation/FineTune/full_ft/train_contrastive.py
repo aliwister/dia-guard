@@ -243,6 +243,17 @@ def train(cfg: dict):
     if cfg.get("gradient_checkpointing", True):
         model.gradient_checkpointing_enable()
 
+    # Apply Liger Kernel for fused lm_head + cross-entropy (helps the CE forward pass)
+    if cfg.get("use_liger_kernel", False):
+        try:
+            from liger_kernel.transformers import _apply_liger_kernel_to_instance
+            _apply_liger_kernel_to_instance(model=model)
+            if accelerator.is_main_process:
+                print("Liger Kernel applied to model (fused lm_head+CE for CE forward pass)")
+        except Exception as e:
+            if accelerator.is_main_process:
+                print(f"Warning: failed to apply Liger Kernel: {e}")
+
     # --- Dataset ---
     train_path = cfg.get("train_data")
     if not train_path or not Path(train_path).exists():

@@ -17,9 +17,9 @@ run_name: gemma-3-270m-ce-ft
 
 # Training
 num_epochs: 3
-per_device_train_batch_size: 4
-per_device_eval_batch_size: 4
-gradient_accumulation_steps: 4
+per_device_train_batch_size: 256
+per_device_eval_batch_size: 256
+gradient_accumulation_steps: 1
 learning_rate: 5.0e-5
 warmup_steps: 4218
 weight_decay: 0.01
@@ -34,11 +34,11 @@ gradient_checkpointing: true
 # Logging & evaluation
 logging_steps: 10
 eval_strategy: steps
-eval_steps: 200
+eval_steps: 1000
 save_strategy: steps
 save_steps: 500
 save_total_limit: 3
-load_best_model_at_end: true
+load_best_model_at_end: false
 metric_for_best_model: eval_loss
 
 # Contrastive loss weights (used only in train_contrastive.py)
@@ -53,3 +53,10 @@ report_to: wandb
 early_stopping: true
 early_stopping_patience: 3
 early_stopping_threshold: 0.0
+
+# Speed optimizations
+use_liger_kernel: true
+dataloader_num_workers: 0
+dataloader_pin_memory: true
+
+eval_max_samples: 500

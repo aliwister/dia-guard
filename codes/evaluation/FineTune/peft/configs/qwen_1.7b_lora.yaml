@@ -40,9 +40,9 @@ run_name: qwen3-1.7b-lora
 
 # Training
 num_epochs: 3
-per_device_train_batch_size: 8
-per_device_eval_batch_size: 8
-gradient_accumulation_steps: 2
+per_device_train_batch_size: 5
+per_device_eval_batch_size: 5
+gradient_accumulation_steps: 4
 learning_rate: 2.0e-4
 warmup_steps: 4218
 weight_decay: 0.01
@@ -57,11 +57,11 @@ gradient_checkpointing: true
 # Logging
 logging_steps: 10
 eval_strategy: steps
-eval_steps: 200
+eval_steps: 1000
 save_strategy: steps
 save_steps: 400
 save_total_limit: 3
-load_best_model_at_end: true
+load_best_model_at_end: false
 
 # Contrastive loss (used by train_contrastive_lora.py only)
 alpha: 0.7
@@ -75,3 +75,10 @@ report_to: wandb
 early_stopping: true
 early_stopping_patience: 3
 early_stopping_threshold: 0.0
+
+# Speed optimizations
+use_liger_kernel: false
+dataloader_num_workers: 0
+dataloader_pin_memory: true
+
+eval_max_samples: 500

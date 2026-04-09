@@ -236,6 +236,15 @@ def train(cfg: dict):
     if cfg.get("gradient_checkpointing", True) and not use_qlora:
         model.gradient_checkpointing_enable()
 
+    # Apply Liger Kernel for fused lm_head + cross-entropy (helps the CE forward pass)
+    if cfg.get("use_liger_kernel", False):
+        try:
+            from liger_kernel.transformers import _apply_liger_kernel_to_instance
+            _apply_liger_kernel_to_instance(model=model)
+            print("Liger Kernel applied to model (fused lm_head+CE for CE forward pass)")
+        except Exception as e:
+            print(f"Warning: failed to apply Liger Kernel: {e}")
+
     # Dataset
     records = load_jsonl_records(cfg["train_data"], cfg["model_name"], split="train")
     dataset = TripletLoRADataset(records, tokenizer, cfg.get("max_seq_length", 2048))

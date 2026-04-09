@@ -53,7 +53,7 @@ eval_steps: 200
 save_strategy: steps
 save_steps: 400
 save_total_limit: 3
-load_best_model_at_end: true
+load_best_model_at_end: false
 
 alpha: 0.7
 margin: 0.3
@@ -65,3 +65,8 @@ report_to: wandb
 early_stopping: true
 early_stopping_patience: 3
 early_stopping_threshold: 0.0
+
+# Speed optimizations
+use_liger_kernel: true
+dataloader_num_workers: 0
+dataloader_pin_memory: true

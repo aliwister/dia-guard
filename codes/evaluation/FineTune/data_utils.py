@@ -60,6 +60,7 @@ def load_and_format_dataset(
     model_name: str,
     system_prompt: str,
     split: str = "train",
+    max_samples: int = None,
 ) -> Dataset:
     """
     Load JSONL data, apply chat template formatting, and cache to disk.
@@ -78,7 +79,11 @@ def load_and_format_dataset(
             cached_key = f.read().strip()
         if cached_key == current_key:
             print(f"Loading cached formatted {split} dataset from {cache_dir}")
-            return load_from_disk(cache_dir)
+            dataset = load_from_disk(cache_dir)
+            if max_samples is not None and len(dataset) > max_samples:
+                print(f"Subsampling {split} dataset: {len(dataset)} → {max_samples}")
+                dataset = dataset.shuffle(seed=42).select(range(max_samples))
+            return dataset
         else:
             print(f"Cache key mismatch for {split}, regenerating...")
 
@@ -109,12 +114,17 @@ def load_and_format_dataset(
     print(f"Formatting {split} dataset ({len(dataset)} records)...")
     dataset = dataset.map(format_example)
 
-    # Save to cache
+    # Save to cache (full dataset, before subsampling)
     print(f"Caching formatted {split} dataset to {cache_dir}")
     os.makedirs(cache_dir, exist_ok=True)
     dataset.save_to_disk(cache_dir)
     with open(key_file, "w") as f:
         f.write(current_key)
+
+    # Apply max_samples after caching so the cache is reusable for any sample count
+    if max_samples is not None and len(dataset) > max_samples:
+        print(f"Subsampling {split} dataset: {len(dataset)} → {max_samples}")
+        dataset = dataset.shuffle(seed=42).select(range(max_samples))
 
     return dataset
 

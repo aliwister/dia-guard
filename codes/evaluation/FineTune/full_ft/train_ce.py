@@ -155,7 +155,8 @@ def train(cfg: dict):
     eval_dataset = None
     if eval_path and Path(eval_path).exists():
         eval_dataset = load_and_format_dataset(
-            eval_path, tokenizer, cfg["model_name"], SYSTEM_PROMPT, split="val"
+            eval_path, tokenizer, cfg["model_name"], SYSTEM_PROMPT, split="val",
+            max_samples=cfg.get("eval_max_samples", 2000),
         )
 
     print(f"Train size: {len(train_dataset)}")
@@ -194,6 +195,12 @@ def train(cfg: dict):
         dataset_text_field="text",
         packing=False,
         completion_only_loss=False,
+        # Speed optimizations
+        use_liger_kernel=cfg.get("use_liger_kernel", False),
+        dataloader_num_workers=cfg.get("dataloader_num_workers", 4),
+        dataloader_pin_memory=cfg.get("dataloader_pin_memory", True),
+        # On resume, don't iterate dataloader to skip already-seen samples
+        ignore_data_skip=cfg.get("ignore_data_skip", True),
     )
 
     # Build callbacks (early stopping is enabled by default when eval_dataset exists)
