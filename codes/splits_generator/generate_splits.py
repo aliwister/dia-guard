@@ -528,11 +528,27 @@ def write_jsonl(records: list[dict], path: str) -> None:
             f.write(json.dumps(rec, ensure_ascii=False) + "\n")
 
 
+def sample_stratified(records: list[dict], ratio: float, seed: int = 42) -> list[dict]:
+    """Return a stratified sample of `ratio` from records, preserving label balance."""
+    rng = random.Random(seed)
+    by_label: dict = defaultdict(list)
+    for r in records:
+        by_label[r["label"]].append(r)
+    sampled = []
+    for group in by_label.values():
+        k = max(1, round(len(group) * ratio))
+        sampled.extend(rng.sample(group, k))
+    rng.shuffle(sampled)
+    return sampled
+
+
 def write_splits(
     train: list[dict],
     val: list[dict],
     test: list[dict],
     output_dir: str,
+    val_sample_ratio: float = 0.10,
+    seed: int = 42,
 ) -> None:
     """Write global JSONL files and per-dialect JSONL files."""
     out = Path(output_dir)
@@ -541,7 +557,13 @@ def write_splits(
     write_jsonl(train, str(out / "train.jsonl"))
     write_jsonl(val,   str(out / "val.jsonl"))
     write_jsonl(test,  str(out / "test.jsonl"))
-    print(f"  Global  — train: {len(train):,}  val: {len(val):,}  test: {len(test):,}")
+
+    # Stratified val sample for fast evaluation during training
+    val_sample = sample_stratified(val, val_sample_ratio, seed=seed)
+    pct = int(val_sample_ratio * 100)
+    write_jsonl(val_sample, str(out / f"val_{pct}pct.jsonl"))
+
+    print(f"  Global  — train: {len(train):,}  val: {len(val):,}  test: {len(test):,}  val_{pct}pct: {len(val_sample):,}")
 
     # Per-dialect splits
     by_dialect_split: dict[str, dict[str, list[dict]]] = defaultdict(
@@ -722,7 +744,7 @@ def main() -> None:
 
     # ── Write files ───────────────────────────────────────────────────────────
     print(f"\nWriting splits to: {args.output_dir}")
-    write_splits(train, val, test, args.output_dir)
+    write_splits(train, val, test, args.output_dir, seed=args.seed)
 
     meta = compute_metadata(train, val, test)
     meta_path = os.path.join(args.output_dir, "splits_metadata.json")
