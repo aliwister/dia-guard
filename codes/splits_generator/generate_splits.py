@@ -550,22 +550,39 @@ def write_splits(
     val_sample_ratio: float = 0.10,
     seed: int = 42,
 ) -> None:
-    """Write global JSONL files and per-dialect JSONL files."""
+    """Write global JSONL files and per-dialect JSONL files.
+
+    val is downsampled to val_sample_ratio for use as the eval set during
+    training. The remaining val rows are merged into test so no data is lost.
+    The split field on those rows is updated to 'test' in-place.
+    """
     out = Path(output_dir)
 
-    # Global splits
+    # Original splits written unchanged
     write_jsonl(train, str(out / "train.jsonl"))
     write_jsonl(val,   str(out / "val.jsonl"))
     write_jsonl(test,  str(out / "test.jsonl"))
 
-    # Stratified val sample for fast evaluation during training
+    # new_val: 10% stratified sample of val
+    # new_test: original test + remaining 90% of val
     val_sample = sample_stratified(val, val_sample_ratio, seed=seed)
+    val_sample_ids = {r["sample_id"] for r in val_sample}
+    val_remainder = [r for r in val if r["sample_id"] not in val_sample_ids]
+    extended_test = test + val_remainder
+
+    write_jsonl(val_sample,    str(out / "new_val.jsonl"))
+    write_jsonl(extended_test, str(out / "new_test.jsonl"))
+
     pct = int(val_sample_ratio * 100)
-    write_jsonl(val_sample, str(out / f"val_{pct}pct.jsonl"))
+    print(
+        f"  Global  — train: {len(train):,}  val: {len(val):,}  test: {len(test):,}"
+    )
+    print(
+        f"  New     — new_val: {len(val_sample):,} ({pct}% of val)  "
+        f"new_test: {len(extended_test):,} (test + {len(val_remainder):,} from val)"
+    )
 
-    print(f"  Global  — train: {len(train):,}  val: {len(val):,}  test: {len(test):,}  val_{pct}pct: {len(val_sample):,}")
-
-    # Per-dialect splits
+    # Per-dialect splits use the original split assignments
     by_dialect_split: dict[str, dict[str, list[dict]]] = defaultdict(
         lambda: {"train": [], "val": [], "test": []}
     )
@@ -579,6 +596,7 @@ def write_splits(
             write_jsonl(recs, str(d_dir / f"{split_name}.jsonl"))
 
     print(f"  Per-dialect splits written for {len(by_dialect_split)} dialects")
+    return val_sample, extended_test
 
 
 # ─── Metadata ─────────────────────────────────────────────────────────────────
@@ -744,9 +762,9 @@ def main() -> None:
 
     # ── Write files ───────────────────────────────────────────────────────────
     print(f"\nWriting splits to: {args.output_dir}")
-    write_splits(train, val, test, args.output_dir, seed=args.seed)
+    val_out, test_out = write_splits(train, val, test, args.output_dir, seed=args.seed)
 
-    meta = compute_metadata(train, val, test)
+    meta = compute_metadata(train, val_out, test_out)
     meta_path = os.path.join(args.output_dir, "splits_metadata.json")
     os.makedirs(args.output_dir, exist_ok=True)
     with open(meta_path, "w", encoding="utf-8") as f:
