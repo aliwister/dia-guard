@@ -266,8 +266,6 @@ def train(cfg: dict):
 
 
 
-    local_rank = int(os.environ.get("LOCAL_RANK", 0))
-
     class DebugSFTTrainer(SFTTrainer):
         def compute_loss(self, model, inputs, **kwargs):
             loss = super().compute_loss(model, inputs, **kwargs)
