@@ -79,21 +79,21 @@ BATCH_SIZE_PEFT = {
     # After merge_and_unload(), PEFT inference uses same VRAM as Full FT.
     # These match BATCH_SIZE_FULL for safety.
     "gemma_3_270m_it":        1024,
-    "qwen3guard_gen_0_6b":    512,
+    "qwen3guard_gen_0_6b":    256,
     "qwen3_5_0_8b":           256,
     "gemma_3_1b_it":          384,
     "llama_3_2_1b_instruct":  256,
     "qwen3_1_7b":             192,
-    "smollm2_1_7b_instruct":  192,
+    "smollm2_1_7b_instruct":  96,
 }
 BATCH_SIZE_FULL = {
     "gemma_3_270m_it":        1024,
-    "qwen3guard_gen_0_6b":    512,
+    "qwen3guard_gen_0_6b":    256,
     "qwen3_5_0_8b":           256,
     "gemma_3_1b_it":          384,
     "llama_3_2_1b_instruct":  256,  # hidden_size=2048 → big attention activations
     "qwen3_1_7b":             192,
-    "smollm2_1_7b_instruct":  192,
+    "smollm2_1_7b_instruct":  96,
 }
 BATCH_SIZE = BATCH_SIZE_PEFT  # legacy alias
 
@@ -174,8 +174,10 @@ def load_model_and_tokenizer(slug, method, model_dir):
 # Output paths and HF model card update
 # ---------------------------------------------------------------------------
 
+METHOD_SUFFIX = ""  # set via CLI to e.g. "-SAE"
+
 def make_output_dir(slug, method):
-    method_label = "Full-FT-CE" if method == "full_ft" else "PEFT-CE"
+    method_label = ("Full-FT-CE" if method == "full_ft" else "PEFT-CE") + METHOD_SUFFIX
     out = RESULTS_ROOT / method_label / PRETTY[slug]
     out.mkdir(parents=True, exist_ok=True)
     return out
@@ -377,7 +379,16 @@ def main():
                         help="Don't push results to HF model cards")
     parser.add_argument("--force", action="store_true",
                         help="Re-evaluate even if metrics.json already exists")
+    parser.add_argument("--test_data", type=str, default=None,
+                        help="Override path to the test JSONL")
+    parser.add_argument("--method_suffix", type=str, default="",
+                        help="Suffix to append to method dir (e.g. '-SAE')")
     args = parser.parse_args()
+
+    global TEST_DATA, METHOD_SUFFIX
+    if args.test_data:
+        TEST_DATA = args.test_data
+    METHOD_SUFFIX = args.method_suffix
 
     # Token
     if "HF_TOKEN" not in os.environ and HF_TOKEN_PATH.exists():

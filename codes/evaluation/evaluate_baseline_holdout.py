@@ -51,12 +51,12 @@ BASE_MODELS = {
 # Per-model batch size for inference (no gradients) - same as Full FT
 BATCH_SIZE = {
     "Gemma-3-270m":          1024,
-    "Qwen3Guard-Gen-0.6B":   512,
+    "Qwen3Guard-Gen-0.6B":   256,
     "Qwen3.5-0.8B":          256,
     "Gemma-3-1B":            384,
     "Llama-3.2-1B":          256,
     "Qwen3-1.7B":            192,
-    "SmolLM2-1.7B":          192,
+    "SmolLM2-1.7B":          96,
 }
 
 # GPU split: assign small models to one GPU, big to the other
@@ -163,7 +163,17 @@ def main():
     parser.add_argument("--gpu_split", type=str, choices=["first", "second", "all"],
                         default="all", help="Which subset of models to run")
     parser.add_argument("--force", action="store_true")
+    parser.add_argument("--test_data", type=str, default=None,
+                        help="Override path to the test JSONL")
+    parser.add_argument("--results_root", type=str, default=None,
+                        help="Override results dir (default: results/Shield/Baseline)")
     args = parser.parse_args()
+
+    global TEST_DATA, RESULTS_ROOT
+    if args.test_data:
+        TEST_DATA = args.test_data
+    if args.results_root:
+        RESULTS_ROOT = Path(args.results_root)
 
     if "HF_TOKEN" not in os.environ and HF_TOKEN_PATH.exists():
         os.environ["HF_TOKEN"] = HF_TOKEN_PATH.read_text().strip()
