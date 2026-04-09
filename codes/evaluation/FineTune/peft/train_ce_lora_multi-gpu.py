@@ -266,18 +266,23 @@ def train(cfg: dict):
 
 
 
+    _debug_log = open(f"{output_dir}/debug_rank{local_rank}.log", "a", buffering=1)
+
     class DebugSFTTrainer(SFTTrainer):
         def compute_loss(self, model, inputs, **kwargs):
             loss = super().compute_loss(model, inputs, **kwargs)
-            if isinstance(loss, torch.Tensor) and loss.item() < 1e-6:
-                print(f"\n[rank{local_rank}] WARNING: loss={loss.item():.6f} near zero!")
+            loss_val = loss.item() if isinstance(loss, torch.Tensor) else float(loss)
+            if not (loss_val > 1e-6):  # catches 0, nan, -inf
                 ids = inputs.get("input_ids")
                 labels = inputs.get("labels")
+                _debug_log.write(f"[rank{local_rank}] loss={loss_val} step={self.state.global_step}\n")
                 if ids is not None:
                     for i, seq in enumerate(ids):
                         decoded = tokenizer.decode(seq, skip_special_tokens=False)
                         n_valid = (labels[i] != -100).sum().item() if labels is not None else "?"
-                        print(f"  sample[{i}] valid_label_tokens={n_valid} text={decoded[:200]!r}")
+                        _debug_log.write(f"  sample[{i}] valid_label_tokens={n_valid} text={decoded[:300]!r}\n")
+                _debug_log.flush()
+                self.control.should_training_stop = True
             return loss
 
     # NOTE: trl >= 0.12 uses `processing_class` instead of `tokenizer`
