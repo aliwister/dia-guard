@@ -31,9 +31,28 @@ import json
 import os
 import sys
 from pathlib import Path
+import numpy as np
 
 import torch
+import torch.serialization
 import yaml
+
+
+# PyTorch 2.4+ defaults weights_only=True in torch.load, but checkpoint RNG state
+# files contain numpy objects. Allowlist them so resume_from_checkpoint works.
+# numpy.dtypes.* covers newer numpy (1.24+) where dtype classes moved out of numpy.core.
+_np_safe_globals = [
+    np.core.multiarray._reconstruct,
+    np.ndarray,
+    np.dtype,
+]
+for _attr in ("UInt32DType", "Int64DType", "Float64DType", "BoolDType"):
+    _cls = getattr(np.dtypes, _attr, None)
+    if _cls is not None:
+        _np_safe_globals.append(_cls)
+torch.serialization.add_safe_globals(_np_safe_globals)
+
+
 from datasets import Dataset
 from peft import LoraConfig, TaskType, get_peft_model, prepare_model_for_kbit_training
 from transformers import (
@@ -49,7 +68,9 @@ from trl import SFTConfig, SFTTrainer
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 from data_utils import load_and_format_dataset
 
-
+os.environ['WANDB_API_KEY'] = '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'
+os.environ.setdefault("TOKENIZERS_PARALLELISM", "true")
+os.environ.setdefault("RAYON_NUM_THREADS", "24")
 # ---------------------------------------------------------------------------
 # Prompt template
 # ---------------------------------------------------------------------------
@@ -136,6 +157,11 @@ def train(cfg: dict):
         )
 
     # --- Base model ---
+    # Pin QLoRA to a single GPU per process so accelerate's prepare() doesn't
+    # fail when device_map="auto" splits 4-bit layers across multiple GPUs.
+    local_rank = int(os.environ.get("LOCAL_RANK", 0))
+    device_map = {"": local_rank} if use_qlora else None
+
     print(f"Loading model: {cfg['model_name']}")
     model = AutoModelForCausalLM.from_pretrained(
         cfg["model_name"],
@@ -143,7 +169,7 @@ def train(cfg: dict):
         torch_dtype=torch.bfloat16 if not use_qlora else None,
         attn_implementation=cfg.get("attn_implementation", "eager"),
         trust_remote_code=cfg.get("trust_remote_code", True),
-        device_map="auto" if use_qlora else None,
+        device_map=device_map,
     )
     model.config.use_cache = False
 
@@ -186,8 +212,7 @@ def train(cfg: dict):
     eval_dataset = None
     if eval_path and Path(eval_path).exists():
         eval_dataset = load_and_format_dataset(
-            eval_path, tokenizer, cfg["model_name"], SYSTEM_PROMPT, split="val",
-            max_samples=cfg.get("eval_max_samples", 2000),
+            eval_path, tokenizer, cfg["model_name"], SYSTEM_PROMPT, split="val"
         )
 
     print(f"Train: {len(train_dataset)} | Eval: {len(eval_dataset) if eval_dataset else 'N/A'}")
@@ -223,14 +248,8 @@ def train(cfg: dict):
         dataset_text_field="text",
         packing=False,
         completion_only_loss=False,
-        # Speed optimizations
-        use_liger_kernel=cfg.get("use_liger_kernel", False),
-        dataloader_num_workers=cfg.get("dataloader_num_workers", 4),
-        dataloader_pin_memory=cfg.get("dataloader_pin_memory", True),
-        # On resume, don't iterate through dataloader to skip already-seen samples
-        # (slow + we don't need exact reproducibility for fine-tuning)
-        ignore_data_skip=cfg.get("ignore_data_skip", True),
     )
+
 
     # Build callbacks (early stopping is enabled by default when eval_dataset exists)
     callbacks = []
@@ -251,6 +270,8 @@ def train(cfg: dict):
             f"threshold={threshold}, metric={training_args.metric_for_best_model}"
         )
 
+
+
     # NOTE: trl >= 0.12 uses `processing_class` instead of `tokenizer`
     trainer = SFTTrainer(
         model=model,
@@ -258,7 +279,6 @@ def train(cfg: dict):
         train_dataset=train_dataset,
         eval_dataset=eval_dataset,
         processing_class=tokenizer,
-        callbacks=callbacks,
     )
 
     # Resume from checkpoint if available

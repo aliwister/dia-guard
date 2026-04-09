@@ -17,9 +17,9 @@ run_name: qwen3-1.7b-ce-ft
 
 # Training
 num_epochs: 3
-per_device_train_batch_size: 2
-per_device_eval_batch_size: 2
-gradient_accumulation_steps: 8
+per_device_train_batch_size: 64
+per_device_eval_batch_size: 64
+gradient_accumulation_steps: 1
 learning_rate: 2.0e-5
 warmup_steps: 4218
 weight_decay: 0.01
@@ -38,7 +38,7 @@ eval_steps: 200
 save_strategy: steps
 save_steps: 500
 save_total_limit: 3
-load_best_model_at_end: true
+load_best_model_at_end: false
 metric_for_best_model: eval_loss
 
 # Contrastive loss weights (used only in train_contrastive.py)
@@ -48,3 +48,13 @@ temperature: 0.05
 
 # W&B logging (optional)
 report_to: wandb
+
+# Early stopping (requires eval_data and metric_for_best_model: eval_loss)
+early_stopping: true
+early_stopping_patience: 3
+early_stopping_threshold: 0.0
+
+# Speed optimizations
+use_liger_kernel: true
+dataloader_num_workers: 0
+dataloader_pin_memory: true

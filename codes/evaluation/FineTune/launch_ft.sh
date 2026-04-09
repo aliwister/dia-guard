@@ -141,20 +141,15 @@ USE_DEEPSPEED="${6:-}"  # pass "deepspeed" as 6th arg to use DeepSpeed ZeRO-2
 EXTRA_ARGS=""
 [[ -n "${CONFIG}" ]] && EXTRA_ARGS="--config ${CONFIG}"
 
-# Auto-resume from latest checkpoint if one exists
+# Auto-resume from latest checkpoint if one exists (works for both CE and contrastive)
 RESUME_ARGS=""
-if [[ "${LOSS}" != "contrastive" ]]; then
-    if ls "${OUTPUT_DIR}"/checkpoint-* &>/dev/null; then
-        RESUME_ARGS="--resume_from_checkpoint auto"
-        echo "  Checkpoint(s) found — will resume from latest"
-    fi
+if ls "${OUTPUT_DIR}"/checkpoint-* &>/dev/null; then
+    RESUME_ARGS="--resume_from_checkpoint auto"
+    echo "  Checkpoint(s) found — will resume from latest"
 fi
 
-# Contrastive scripts don't accept --eval_data
-EVAL_ARGS=""
-if [[ "${LOSS}" != "contrastive" ]]; then
-    EVAL_ARGS="--eval_data ${EVAL_DATA}"
-fi
+# All training scripts now accept --eval_data (used for early stopping in contrastive too)
+EVAL_ARGS="--eval_data ${EVAL_DATA}"
 
 if [[ "${NUM_GPUS}" -gt 1 ]]; then
     if [[ "${USE_DEEPSPEED}" == "deepspeed" ]]; then

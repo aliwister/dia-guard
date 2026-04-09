@@ -243,6 +243,17 @@ def train(cfg: dict):
     if cfg.get("gradient_checkpointing", True):
         model.gradient_checkpointing_enable()
 
+    # Apply Liger Kernel for fused lm_head + cross-entropy (helps the CE forward pass)
+    if cfg.get("use_liger_kernel", False):
+        try:
+            from liger_kernel.transformers import _apply_liger_kernel_to_instance
+            _apply_liger_kernel_to_instance(model=model)
+            if accelerator.is_main_process:
+                print("Liger Kernel applied to model (fused lm_head+CE for CE forward pass)")
+        except Exception as e:
+            if accelerator.is_main_process:
+                print(f"Warning: failed to apply Liger Kernel: {e}")
+
     # --- Dataset ---
     train_path = cfg.get("train_data")
     if not train_path or not Path(train_path).exists():
@@ -282,9 +293,82 @@ def train(cfg: dict):
     os.makedirs(output_dir, exist_ok=True)
     grad_accum = cfg.get("gradient_accumulation_steps", 8)
 
-    # --- Training loop ---
+    # Resume from checkpoint if requested (uses accelerator.load_state for full state)
     global_step = 0
-    for epoch in range(cfg.get("num_epochs", 3)):
+    best_eval_init = float("inf")
+    no_improve_init = 0
+    resume_epoch = 0
+    resume_ckpt = cfg.get("resume_from_checkpoint")
+    if resume_ckpt == "auto":
+        ckpts = sorted(
+            [p for p in Path(output_dir).glob("checkpoint-*") if p.name != "checkpoint-best"],
+            key=lambda p: int(p.name.split("-")[1]),
+        )
+        resume_ckpt = str(ckpts[-1]) if ckpts else None
+    if resume_ckpt and Path(resume_ckpt).exists():
+        if accelerator.is_main_process:
+            print(f"Resuming full FT contrastive run from {resume_ckpt}")
+        accelerator.load_state(resume_ckpt)
+        meta_path = Path(resume_ckpt) / "trainer_meta.pt"
+        if meta_path.exists():
+            meta = torch.load(meta_path, map_location="cpu", weights_only=False)
+            global_step = meta.get("global_step", 0)
+            best_eval_init = meta.get("best_eval", float("inf"))
+            no_improve_init = meta.get("no_improve", 0)
+            resume_epoch = meta.get("epoch", 0)
+            if accelerator.is_main_process:
+                print(
+                    f"  Resumed: global_step={global_step}, epoch={resume_epoch}, "
+                    f"best_eval={best_eval_init:.4f}, no_improve={no_improve_init}"
+                )
+
+    # Optional eval loader (for early stopping)
+    eval_loader = None
+    eval_path = cfg.get("eval_data")
+    if eval_path and Path(eval_path).exists():
+        eval_records = load_jsonl_records(eval_path, cfg["model_name"], split="val")
+        eval_dataset = TripletDataset(eval_records, tokenizer, cfg.get("max_seq_length", 2048))
+        eval_loader = DataLoader(
+            eval_dataset,
+            batch_size=cfg.get("per_device_eval_batch_size", cfg.get("per_device_train_batch_size", 2)),
+            shuffle=False, num_workers=2,
+        )
+        eval_loader = accelerator.prepare(eval_loader)
+
+    early_stopping = cfg.get("early_stopping", True) and eval_loader is not None
+    patience = int(cfg.get("early_stopping_patience", 3))
+    threshold = float(cfg.get("early_stopping_threshold", 0.0))
+    eval_steps = int(cfg.get("eval_steps", 200))
+    best_eval = best_eval_init
+    no_improve = no_improve_init
+    stop_training = False
+    if early_stopping and accelerator.is_main_process:
+        print(
+            f"Early stopping enabled: patience={patience}, threshold={threshold}, "
+            f"eval_steps={eval_steps}"
+        )
+
+    @torch.no_grad()
+    def run_eval():
+        model.eval()
+        total = 0.0
+        n = 0
+        for batch in eval_loader:
+            l_ce = ce_loss_from_logits(model, batch["ce_input_ids"], batch["ce_labels"])
+            h_a = get_last_hidden_state(model, batch["anchor_input_ids"], batch["anchor_attention_mask"])
+            h_p = get_last_hidden_state(model, batch["pos_input_ids"], batch["pos_attention_mask"])
+            h_n = get_last_hidden_state(model, batch["neg_input_ids"], batch["neg_attention_mask"])
+            l_t = triplet_contrastive_loss(h_a, h_p, h_n, margin)
+            total += (alpha * l_ce + (1.0 - alpha) * l_t).item()
+            n += 1
+        model.train()
+        return total / max(n, 1)
+
+    # --- Training loop ---
+    num_epochs = cfg.get("num_epochs", 3)
+    for epoch in range(resume_epoch, num_epochs):
+        if stop_training:
+            break
         model.train()
         epoch_loss = 0.0
         pbar = tqdm(loader, desc=f"Epoch {epoch+1}", disable=not accelerator.is_main_process)
@@ -329,12 +413,54 @@ def train(cfg: dict):
                 })
 
             # Save checkpoint
-            if global_step % cfg.get("save_steps", 500) == 0 and accelerator.is_main_process:
+            if global_step % cfg.get("save_steps", 500) == 0:
                 ckpt_dir = os.path.join(output_dir, f"checkpoint-{global_step}")
-                unwrapped = accelerator.unwrap_model(model)
-                unwrapped.save_pretrained(ckpt_dir)
-                tokenizer.save_pretrained(ckpt_dir)
-                print(f"Saved checkpoint to {ckpt_dir}")
+                # accelerator.save_state writes model+optimizer+scheduler+RNG (multi-process safe)
+                accelerator.save_state(ckpt_dir)
+                if accelerator.is_main_process:
+                    unwrapped = accelerator.unwrap_model(model)
+                    unwrapped.save_pretrained(ckpt_dir)
+                    tokenizer.save_pretrained(ckpt_dir)
+                    torch.save(
+                        {
+                            "global_step": global_step,
+                            "epoch": epoch,
+                            "best_eval": best_eval,
+                            "no_improve": no_improve,
+                        },
+                        os.path.join(ckpt_dir, "trainer_meta.pt"),
+                    )
+                    print(f"Saved checkpoint to {ckpt_dir}")
+                    # Prune old
+                    save_total_limit = int(cfg.get("save_total_limit", 3))
+                    if save_total_limit > 0:
+                        all_ckpts = sorted(
+                            [p for p in Path(output_dir).glob("checkpoint-*") if p.name != "checkpoint-best"],
+                            key=lambda p: int(p.name.split("-")[1]),
+                        )
+                        for old in all_ckpts[:-save_total_limit]:
+                            import shutil
+                            shutil.rmtree(old, ignore_errors=True)
+
+            # Early stopping eval
+            if early_stopping and global_step % eval_steps == 0:
+                eval_loss = run_eval()
+                if accelerator.is_main_process:
+                    print(f"[step {global_step}] eval_loss={eval_loss:.4f} best={best_eval:.4f} no_improve={no_improve}")
+                if eval_loss < best_eval - threshold:
+                    best_eval = eval_loss
+                    no_improve = 0
+                    if accelerator.is_main_process:
+                        best_dir = os.path.join(output_dir, "checkpoint-best")
+                        accelerator.unwrap_model(model).save_pretrained(best_dir)
+                        tokenizer.save_pretrained(best_dir)
+                else:
+                    no_improve += 1
+                    if no_improve >= patience:
+                        if accelerator.is_main_process:
+                            print(f"Early stopping at step {global_step}: no improvement for {patience} evals")
+                        stop_training = True
+                        break
 
         avg_loss = epoch_loss / len(loader)
         if accelerator.is_main_process:
@@ -370,7 +496,10 @@ def parse_args():
     parser.add_argument("--config", type=str, required=True)
     parser.add_argument("--model_name", type=str, default=None)
     parser.add_argument("--train_data", type=str, default=None)
+    parser.add_argument("--eval_data", type=str, default=None)
     parser.add_argument("--output_dir", type=str, default=None)
+    parser.add_argument("--resume_from_checkpoint", type=str, default=None,
+                        help="'auto' to find latest checkpoint, or path to a specific checkpoint")
     parser.add_argument("--alpha", type=float, default=None,
                         help="Weight for CE loss (default 0.7)")
     parser.add_argument("--margin", type=float, default=None,
