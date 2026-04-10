@@ -282,7 +282,23 @@ def train(cfg: dict):
                         n_valid = (labels[i] != -100).sum().item() if labels is not None else "?"
                         _debug_log.write(f"  sample[{i}] valid_label_tokens={n_valid} text={decoded[:300]!r}\n")
                 _debug_log.flush()
-                return loss * 0.0  # keep grad_fn intact so DDP all-reduce stays in sync
+                # nan * 0.0 = nan in IEEE 754 — anchor to a real param so DDP all-reduce fires
+                anchor = next(p for p in model.parameters() if p.requires_grad)
+                return anchor.sum() * 0.0
+            return loss
+
+        def training_step(self, model, inputs, *args, **kwargs):
+            loss = super().training_step(model, inputs, *args, **kwargs)
+            # After backward: zero out NaN/Inf gradients so the optimizer step
+            # doesn't poison parameters and cause cascading NaN loss.
+            nan_grads = 0
+            for p in model.parameters():
+                if p.grad is not None and not torch.isfinite(p.grad).all():
+                    p.grad.zero_()
+                    nan_grads += 1
+            if nan_grads:
+                _debug_log.write(f"[rank{local_rank}] zeroed {nan_grads} NaN/Inf grad tensors at step {self.state.global_step}\n")
+                _debug_log.flush()
             return loss
 
     # NOTE: trl >= 0.12 uses `processing_class` instead of `tokenizer`
