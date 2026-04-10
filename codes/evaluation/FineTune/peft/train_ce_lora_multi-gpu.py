@@ -282,7 +282,7 @@ def train(cfg: dict):
                         n_valid = (labels[i] != -100).sum().item() if labels is not None else "?"
                         _debug_log.write(f"  sample[{i}] valid_label_tokens={n_valid} text={decoded[:300]!r}\n")
                 _debug_log.flush()
-                return loss.new_tensor(0.0, requires_grad=True)
+                return loss * 0.0  # keep grad_fn intact so DDP all-reduce stays in sync
             return loss
 
     # NOTE: trl >= 0.12 uses `processing_class` instead of `tokenizer`
