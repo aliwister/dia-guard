@@ -282,15 +282,23 @@ def train(cfg: dict):
                         n_valid = (labels[i] != -100).sum().item() if labels is not None else "?"
                         _debug_log.write(f"  sample[{i}] valid_label_tokens={n_valid} text={decoded[:300]!r}\n")
                 _debug_log.flush()
-                # nan * 0.0 = nan in IEEE 754 — anchor to a real param so DDP all-reduce fires
-                anchor = next(p for p in model.parameters() if p.requires_grad)
-                return anchor.sum() * 0.0
             return loss
 
         def training_step(self, model, inputs, *args, **kwargs):
+            # Repair NaN/Inf params before forward so a poisoned checkpoint
+            # doesn't cause permanently stuck NaN loss.
+            nan_params = 0
+            for p in model.parameters():
+                if p.requires_grad and not torch.isfinite(p.data).all():
+                    p.data = torch.nan_to_num(p.data, nan=0.0, posinf=1e4, neginf=-1e4)
+                    nan_params += 1
+            if nan_params:
+                _debug_log.write(f"[rank{local_rank}] repaired {nan_params} NaN/Inf param tensors at step {self.state.global_step}\n")
+                _debug_log.flush()
+
             loss = super().training_step(model, inputs, *args, **kwargs)
-            # After backward: zero out NaN/Inf gradients so the optimizer step
-            # doesn't poison parameters and cause cascading NaN loss.
+
+            # Zero NaN/Inf gradients so the optimizer step doesn't re-poison params.
             nan_grads = 0
             for p in model.parameters():
                 if p.grad is not None and not torch.isfinite(p.grad).all():
