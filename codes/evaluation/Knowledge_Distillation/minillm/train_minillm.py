@@ -221,31 +221,44 @@ class MINILLMTrainer:
     def generate_student_responses(self, prompt_input_ids, prompt_attention_mask):
         """
         Sample sequences from student: y_s ~ p_student(·|x)
-        Returns padded generated sequences as input_ids.
 
-        Uses left-padding during generation (required for batched decoding),
-        then restores right-padding for subsequent loss computation.
+        The dataset right-pads prompts (cheaper for SFT loss). For generation
+        we need pads on the LEFT, so we re-arrange the batch in-place: every
+        row's pad tokens are rolled to the left and the real tokens to the
+        right. This is equivalent to left-padding without re-tokenizing.
         """
-        self.tokenizer.padding_side = "left"
+        pad_id = self.tokenizer.pad_token_id
+        # Re-pad: left-shift each row so pads are on the left.
+        B, T = prompt_input_ids.shape
+        new_ids = torch.full_like(prompt_input_ids, pad_id)
+        new_mask = torch.zeros_like(prompt_attention_mask)
+        for i in range(B):
+            valid = prompt_attention_mask[i].sum().item()
+            new_ids[i, T - valid:] = prompt_input_ids[i, :valid]
+            new_mask[i, T - valid:] = 1
         self.student.eval()
         with torch.no_grad():
             generated = self.student.generate(
-                input_ids=prompt_input_ids,
-                attention_mask=prompt_attention_mask,
+                input_ids=new_ids,
+                attention_mask=new_mask,
                 max_new_tokens=self.max_new_tokens,
                 do_sample=True,
                 temperature=self.temperature,
                 top_p=self.top_p,
-                pad_token_id=self.tokenizer.pad_token_id,
+                pad_token_id=pad_id,
                 eos_token_id=self.tokenizer.eos_token_id,
             )
         self.student.train()
-        self.tokenizer.padding_side = "right"  # restore for SFT loss
         return generated
 
     def compute_reward(self, generated_ids, generated_attention_mask):
         """
-        r(y_s|x) = log p_teacher(y_s|x) - log p_student(y_s|x)
+        r(y_s|x) = (log p_teacher(y_s|x) - log p_student(y_s|x)) / |y_s|
+
+        Per-token mean (length-normalized) to keep reward magnitudes stable;
+        equivalent to a per-token reverse-KL estimate. Without this the PG
+        loss explodes to ~1e6 because both logprob sums scale with sequence
+        length.
         """
         # Teacher log-prob (no grad)
         self.teacher.eval()
@@ -259,8 +272,15 @@ class MINILLMTrainer:
             self.student, generated_ids, generated_attention_mask
         )
 
-        reward = teacher_logprob.detach() - student_logprob.detach()
-        return reward, student_logprob, token_lp
+        # Length normalization (number of non-pad response tokens, min 1)
+        pad_id = self.tokenizer.pad_token_id
+        seq_len = (generated_ids != pad_id).sum(dim=-1).clamp_min(1).float()
+
+        reward = (teacher_logprob.detach() - student_logprob.detach()) / seq_len
+        # Clip reward to bound PG loss magnitude during early training when
+        # untrained students produce very low-prob sequences.
+        reward = reward.clamp(-5.0, 5.0)
+        return reward, student_logprob / seq_len, token_lp
 
     def policy_gradient_loss(self, reward, student_logprob):
         """
@@ -331,19 +351,24 @@ def train(cfg: dict):
     # --- Teacher (frozen, optionally quantized) ---
     print(f"Loading teacher: {cfg['teacher_model']}")
     teacher_bnb = None
+    quant_mode = None
     if cfg.get("teacher_load_in_4bit", False):
         teacher_bnb = BitsAndBytesConfig(
             load_in_4bit=True,
             bnb_4bit_quant_type="nf4",
             bnb_4bit_compute_dtype=torch.bfloat16,
         )
+        quant_mode = "4bit"
+    elif cfg.get("teacher_load_in_8bit", False):
+        teacher_bnb = BitsAndBytesConfig(load_in_8bit=True)
+        quant_mode = "8bit"
     teacher = AutoModelForCausalLM.from_pretrained(
         cfg["teacher_model"],
         quantization_config=teacher_bnb,
-        torch_dtype=torch.bfloat16 if not cfg.get("teacher_load_in_4bit") else None,
+        torch_dtype=torch.bfloat16 if quant_mode is None else None,
         attn_implementation=cfg.get("attn_implementation", "eager"),
         trust_remote_code=True,
-        device_map="auto" if cfg.get("teacher_load_in_4bit") else None,
+        device_map="auto" if quant_mode is not None else None,
     )
     teacher.eval()
     for p in teacher.parameters():
@@ -487,6 +512,8 @@ def parse_args():
                         help="SFT regularization weight")
     parser.add_argument("--max_new_tokens", type=int, default=256)
     parser.add_argument("--temperature", type=float, default=1.0)
+    parser.add_argument("--teacher_load_in_8bit", action="store_true",
+                        help="Load teacher in 8-bit (bnb) — less accurate than bf16 but more than 4bit")
     parser.add_argument("--teacher_load_in_4bit", action="store_true",
                         help="Load teacher in 4-bit to save memory")
     parser.add_argument("--bf16", type=lambda x: x.lower() == "true", default=True)

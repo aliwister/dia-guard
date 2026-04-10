@@ -288,23 +288,27 @@ def train(cfg: dict):
         tokenizer.pad_token_id = tokenizer.eos_token_id
     pad_id = tokenizer.pad_token_id or 0
 
-    # --- Teacher ---
+    # --- Teacher (frozen, optionally quantized) ---
     print(f"Loading teacher: {cfg['teacher_model']}")
     bnb_cfg = None
+    quant_mode = None
     if cfg.get("teacher_load_in_4bit", False):
         bnb_cfg = BitsAndBytesConfig(
-            load_in_4bit=True,
-            bnb_4bit_quant_type="nf4",
+            load_in_4bit=True, bnb_4bit_quant_type="nf4",
             bnb_4bit_compute_dtype=torch.bfloat16,
         )
+        quant_mode = "4bit"
+    elif cfg.get("teacher_load_in_8bit", False):
+        bnb_cfg = BitsAndBytesConfig(load_in_8bit=True)
+        quant_mode = "8bit"
     teacher = AutoModelForCausalLM.from_pretrained(
         cfg["teacher_model"],
         quantization_config=bnb_cfg,
-        torch_dtype=torch.bfloat16 if not cfg.get("teacher_load_in_4bit") else None,
+        torch_dtype=torch.bfloat16 if quant_mode is None else None,
         attn_implementation=cfg.get("attn_implementation", "eager"),
         trust_remote_code=True,
         output_hidden_states=True,
-        device_map="auto" if cfg.get("teacher_load_in_4bit") else None,
+        device_map="auto" if quant_mode is not None else None,
     )
     teacher.eval()
     for p in teacher.parameters():
@@ -379,7 +383,7 @@ def train(cfg: dict):
     student, filters, optimizer, loader, scheduler = accelerator.prepare(
         student, filters, optimizer, loader, scheduler
     )
-    if not cfg.get("teacher_load_in_4bit"):
+    if quant_mode is None:
         teacher = teacher.to(accelerator.device)
 
     alpha = cfg.get("alpha", 1.0)       # CE loss weight
@@ -544,6 +548,8 @@ def parse_args():
     parser.add_argument("--batch_size", type=int, default=2,
                         dest="per_device_train_batch_size")
     parser.add_argument("--lr", type=float, default=2e-5, dest="learning_rate")
+    parser.add_argument("--teacher_load_in_8bit", action="store_true",
+                        help="Load teacher in 8-bit (bnb)")
     parser.add_argument("--teacher_load_in_4bit", action="store_true",
                         help="Quantize teacher to 4-bit to reduce VRAM")
     parser.add_argument("--bf16", type=lambda x: x.lower() == "true", default=True)
