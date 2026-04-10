@@ -287,13 +287,23 @@ def train(cfg: dict):
         def training_step(self, model, inputs, *args, **kwargs):
             # Repair NaN/Inf params before forward so a poisoned checkpoint
             # doesn't cause permanently stuck NaN loss.
-            nan_params = 0
-            for p in model.parameters():
-                if p.requires_grad and not torch.isfinite(p.data).all():
-                    p.data = torch.nan_to_num(p.data, nan=0.0, posinf=1e4, neginf=-1e4)
-                    nan_params += 1
+            nan_params = [p for p in model.parameters()
+                          if p.requires_grad and not torch.isfinite(p.data).all()]
             if nan_params:
-                _debug_log.write(f"[rank{local_rank}] repaired {nan_params} NaN/Inf param tensors at step {self.state.global_step}\n")
+                for p in nan_params:
+                    p.data = torch.nan_to_num(p.data, nan=0.0, posinf=1e4, neginf=-1e4)
+                # Also clear optimizer states for these params: NaN Adam momentum/
+                # variance would re-corrupt params after optimizer.step() even when
+                # the forward/backward are clean.
+                optim = self.optimizer
+                while hasattr(optim, 'optimizer'):  # unwrap AcceleratedOptimizer
+                    optim = optim.optimizer
+                for p in nan_params:
+                    optim.state.pop(p, None)
+                _debug_log.write(
+                    f"[rank{local_rank}] repaired {len(nan_params)} NaN params "
+                    f"+ cleared optimizer states at step {self.state.global_step}\n"
+                )
                 _debug_log.flush()
 
             loss = super().training_step(model, inputs, *args, **kwargs)
