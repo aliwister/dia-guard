@@ -1,0 +1,34 @@
+{
+  "model": "Qwen3-1.7B",
+  "method": "KD-GKD-S2",
+  "teacher": "Qwen3-4B-SafeRL-FT",
+  "scenario": "s2-q17-peft",
+  "test_n": 181874,
+  "overall": {
+    "accuracy": 0.8311,
+    "precision": 0.8812,
+    "recall": 0.8153,
+    "f1": 0.8194,
+    "support": 181874
+  },
+  "confusion_matrix": {
+    "tp": 98712,
+    "tn": 52441,
+    "fp": 30699,
+    "fn": 22
+  },
+  "per_class": {
+    "safe": {
+      "precision": 0.9996,
+      "recall": 0.6308,
+      "f1": 0.7734,
+      "support": 83140
+    },
+    "unsafe": {
+      "precision": 0.7628,
+      "recall": 0.9998,
+      "f1": 0.8653,
+      "support": 98734
+    }
+  }
+}
