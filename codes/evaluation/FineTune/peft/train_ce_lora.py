@@ -136,14 +136,26 @@ def train(cfg: dict):
         )
 
     # --- Base model ---
-    print(f"Loading model: {cfg['model_name']}")
+    # device_map="auto" is only valid in single-process mode; in DDP each
+    # rank must hold its own full replica, so we map the quantized base onto
+    # the current local process's device.
+    import os as _os
+    is_distributed = int(_os.environ.get("WORLD_SIZE", "1")) > 1
+    if use_qlora and is_distributed:
+        local_rank = int(_os.environ.get("LOCAL_RANK", "0"))
+        device_map = {"": local_rank}
+    elif use_qlora:
+        device_map = "auto"
+    else:
+        device_map = None
+    print(f"Loading model: {cfg['model_name']} (device_map={device_map})")
     model = AutoModelForCausalLM.from_pretrained(
         cfg["model_name"],
         quantization_config=bnb_config,
         torch_dtype=torch.bfloat16 if not use_qlora else None,
         attn_implementation=cfg.get("attn_implementation", "eager"),
         trust_remote_code=cfg.get("trust_remote_code", True),
-        device_map="auto" if use_qlora else None,
+        device_map=device_map,
     )
     model.config.use_cache = False
 
