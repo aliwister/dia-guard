@@ -1,0 +1,34 @@
+{
+  "model": "Qwen3-1.7B",
+  "method": "KD-MINILLM",
+  "teacher": "Qwen3-4B-SafeRL",
+  "scenario": "oob",
+  "test_n": 181874,
+  "overall": {
+    "accuracy": 0.6288,
+    "precision": 0.6252,
+    "recall": 0.6215,
+    "f1": 0.6216,
+    "support": 181874
+  },
+  "confusion_matrix": {
+    "tp": 69778,
+    "tn": 44588,
+    "fp": 38552,
+    "fn": 28956
+  },
+  "per_class": {
+    "safe": {
+      "precision": 0.6063,
+      "recall": 0.5363,
+      "f1": 0.5691,
+      "support": 83140
+    },
+    "unsafe": {
+      "precision": 0.6441,
+      "recall": 0.7067,
+      "f1": 0.674,
+      "support": 98734
+    }
+  }
+}

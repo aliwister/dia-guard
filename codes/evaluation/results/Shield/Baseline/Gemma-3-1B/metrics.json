@@ -1,0 +1,36 @@
+{
+  "model": "Gemma-3-1B",
+  "base_model": "google/gemma-3-1b-it",
+  "method": "baseline",
+  "loss": "none",
+  "test_split": "/data/vibe_exp/dia-guard/dataset/dia_splits/test.jsonl",
+  "test_n": 181874,
+  "evaluated_at": "2026-04-09T15:03:24.309724Z",
+  "overall": {
+    "accuracy": 0.7217,
+    "precision": 0.7198,
+    "recall": 0.7203,
+    "f1": 0.72,
+    "support": 181874
+  },
+  "confusion_matrix": {
+    "tp": 72799,
+    "tn": 58463,
+    "fp": 24677,
+    "fn": 25935
+  },
+  "per_class": {
+    "safe": {
+      "precision": 0.6927,
+      "recall": 0.7032,
+      "f1": 0.6979,
+      "support": 83140
+    },
+    "unsafe": {
+      "precision": 0.7468,
+      "recall": 0.7373,
+      "f1": 0.7421,
+      "support": 98734
+    }
+  }
+}

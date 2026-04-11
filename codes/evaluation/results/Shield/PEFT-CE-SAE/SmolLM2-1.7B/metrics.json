@@ -1,0 +1,36 @@
+{
+  "model": "SmolLM2-1.7B",
+  "slug": "smollm2_1_7b_instruct",
+  "method": "peft",
+  "loss": "ce",
+  "test_split": "/data/vibe_exp/dia-guard/dataset/dia_splits/test_sae.jsonl",
+  "test_n": 36050,
+  "evaluated_at": "2026-04-09T21:08:01.294140Z",
+  "overall": {
+    "accuracy": 0.9765,
+    "precision": 0.9758,
+    "recall": 0.9775,
+    "f1": 0.9764,
+    "support": 36050
+  },
+  "confusion_matrix": {
+    "tp": 18664,
+    "tn": 16539,
+    "fp": 152,
+    "fn": 695
+  },
+  "per_class": {
+    "safe": {
+      "precision": 0.9597,
+      "recall": 0.9909,
+      "f1": 0.975,
+      "support": 16691
+    },
+    "unsafe": {
+      "precision": 0.9919,
+      "recall": 0.9641,
+      "f1": 0.9778,
+      "support": 19359
+    }
+  }
+}

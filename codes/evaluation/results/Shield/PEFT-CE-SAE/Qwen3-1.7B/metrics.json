@@ -1,0 +1,36 @@
+{
+  "model": "Qwen3-1.7B",
+  "slug": "qwen3_1_7b",
+  "method": "peft",
+  "loss": "ce",
+  "test_split": "/data/vibe_exp/dia-guard/dataset/dia_splits/test_sae.jsonl",
+  "test_n": 36050,
+  "evaluated_at": "2026-04-09T18:52:08.383790Z",
+  "overall": {
+    "accuracy": 0.9442,
+    "precision": 0.9485,
+    "recall": 0.9411,
+    "f1": 0.9435,
+    "support": 36050
+  },
+  "confusion_matrix": {
+    "tp": 19016,
+    "tn": 15022,
+    "fp": 1669,
+    "fn": 343
+  },
+  "per_class": {
+    "safe": {
+      "precision": 0.9777,
+      "recall": 0.9,
+      "f1": 0.9372,
+      "support": 16691
+    },
+    "unsafe": {
+      "precision": 0.9193,
+      "recall": 0.9823,
+      "f1": 0.9498,
+      "support": 19359
+    }
+  }
+}

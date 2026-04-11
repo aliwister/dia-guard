@@ -1,0 +1,36 @@
+{
+  "model": "Llama-3.2-1B",
+  "slug": "llama_3_2_1b_instruct",
+  "method": "peft",
+  "loss": "ce",
+  "test_split": "/data/vibe_exp/dia-guard/dataset/dia_splits/test_sae.jsonl",
+  "test_n": 36050,
+  "evaluated_at": "2026-04-09T18:47:07.372216Z",
+  "overall": {
+    "accuracy": 0.8811,
+    "precision": 0.8963,
+    "recall": 0.8889,
+    "f1": 0.8809,
+    "support": 36050
+  },
+  "confusion_matrix": {
+    "tp": 15154,
+    "tn": 16608,
+    "fp": 83,
+    "fn": 4205
+  },
+  "per_class": {
+    "safe": {
+      "precision": 0.798,
+      "recall": 0.995,
+      "f1": 0.8857,
+      "support": 16691
+    },
+    "unsafe": {
+      "precision": 0.9946,
+      "recall": 0.7828,
+      "f1": 0.8761,
+      "support": 19359
+    }
+  }
+}

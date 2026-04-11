@@ -1,0 +1,34 @@
+{
+  "model": "Qwen3-1.7B",
+  "method": "KD-TED",
+  "teacher": "Qwen3-4B-SafeRL",
+  "scenario": "oob",
+  "test_n": 181874,
+  "overall": {
+    "accuracy": 0.5758,
+    "precision": 0.6299,
+    "recall": 0.598,
+    "f1": 0.5567,
+    "support": 181874
+  },
+  "confusion_matrix": {
+    "tp": 33476,
+    "tn": 71247,
+    "fp": 11893,
+    "fn": 65258
+  },
+  "per_class": {
+    "safe": {
+      "precision": 0.5219,
+      "recall": 0.857,
+      "f1": 0.6487,
+      "support": 83140
+    },
+    "unsafe": {
+      "precision": 0.7379,
+      "recall": 0.3391,
+      "f1": 0.4646,
+      "support": 98734
+    }
+  }
+}

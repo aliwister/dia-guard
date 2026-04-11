@@ -1,0 +1,36 @@
+{
+  "model": "Gemma-3-1B",
+  "slug": "gemma_3_1b_it",
+  "method": "peft",
+  "loss": "ce",
+  "test_split": "/data/vibe_exp/dia-guard/dataset/dia_splits/test_sae.jsonl",
+  "test_n": 36050,
+  "evaluated_at": "2026-04-09T18:55:36.131496Z",
+  "overall": {
+    "accuracy": 0.9533,
+    "precision": 0.957,
+    "recall": 0.9506,
+    "f1": 0.9527,
+    "support": 36050
+  },
+  "confusion_matrix": {
+    "tp": 19110,
+    "tn": 15255,
+    "fp": 1436,
+    "fn": 249
+  },
+  "per_class": {
+    "safe": {
+      "precision": 0.9839,
+      "recall": 0.914,
+      "f1": 0.9477,
+      "support": 16691
+    },
+    "unsafe": {
+      "precision": 0.9301,
+      "recall": 0.9871,
+      "f1": 0.9578,
+      "support": 19359
+    }
+  }
+}

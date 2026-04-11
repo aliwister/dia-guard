@@ -1,0 +1,36 @@
+{
+  "model": "Qwen3.5-0.8B",
+  "base_model": "Qwen/Qwen3.5-0.8B",
+  "method": "baseline",
+  "loss": "none",
+  "test_split": "/data/vibe_exp/dia-guard/dataset/dia_splits/test.jsonl",
+  "test_n": 181874,
+  "evaluated_at": "2026-04-09T14:31:21.032397Z",
+  "overall": {
+    "accuracy": 0.7534,
+    "precision": 0.7829,
+    "recall": 0.7663,
+    "f1": 0.7516,
+    "support": 181874
+  },
+  "confusion_matrix": {
+    "tp": 60759,
+    "tn": 76258,
+    "fp": 6882,
+    "fn": 37975
+  },
+  "per_class": {
+    "safe": {
+      "precision": 0.6676,
+      "recall": 0.9172,
+      "f1": 0.7727,
+      "support": 83140
+    },
+    "unsafe": {
+      "precision": 0.8983,
+      "recall": 0.6154,
+      "f1": 0.7304,
+      "support": 98734
+    }
+  }
+}

@@ -1,0 +1,34 @@
+{
+  "model": "Qwen3-1.7B",
+  "method": "KD-MINILLM",
+  "teacher": "Qwen3Guard-Gen-8B",
+  "scenario": "oob",
+  "test_n": 181874,
+  "overall": {
+    "accuracy": 0.5657,
+    "precision": 0.6433,
+    "recall": 0.5274,
+    "f1": 0.4263,
+    "support": 181874
+  },
+  "confusion_matrix": {
+    "tp": 96282,
+    "tn": 6613,
+    "fp": 76527,
+    "fn": 2452
+  },
+  "per_class": {
+    "safe": {
+      "precision": 0.7295,
+      "recall": 0.0795,
+      "f1": 0.1434,
+      "support": 83140
+    },
+    "unsafe": {
+      "precision": 0.5572,
+      "recall": 0.9752,
+      "f1": 0.7091,
+      "support": 98734
+    }
+  }
+}
