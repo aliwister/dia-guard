@@ -54,6 +54,24 @@ def load_jsonl(path: str) -> Dataset:
     return Dataset.from_list(records)
 
 
+def _is_clean(ex, tokenizer, max_length):
+    text = str(ex.get("text", "")).strip()
+    if not text:
+        return False
+    ids = tokenizer(text, add_special_tokens=False)["input_ids"]
+    # Drop if too long
+    if len(ids) > max_length:
+        return False
+    # Drop if more than 1 pad/eos token appears (padding leaked into text)
+    eos_id = tokenizer.eos_token_id
+    if eos_id is not None and ids.count(eos_id) > 1:
+        return False
+    # Drop if the assistant turn has no real content (empty think block / empty response)
+    if "<think>\n\n</think>" in text and text.rstrip().endswith("</think>"):
+        return False
+    return True
+
+
 def load_and_format_dataset(
     jsonl_path: str,
     tokenizer,
@@ -83,10 +101,7 @@ def load_and_format_dataset(
             dataset = load_from_disk(cache_dir)
             if max_length is not None:
                 before = len(dataset)
-                dataset = dataset.filter(lambda ex: bool(str(ex.get("text", "")).strip()))
-                dataset = dataset.filter(
-                    lambda ex: len(tokenizer(ex["text"], add_special_tokens=False)["input_ids"]) <= max_length
-                )
+                dataset = dataset.filter(lambda ex: _is_clean(ex, tokenizer, max_length))
                 print(f"Filtered {split} dataset by max_length={max_length}: {before} → {len(dataset)} ({before - len(dataset)} removed)")
             if max_samples is not None and len(dataset) > max_samples:
                 print(f"Subsampling {split} dataset: {len(dataset)} → {max_samples}")
