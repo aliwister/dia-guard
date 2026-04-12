@@ -200,13 +200,15 @@ def train(cfg: dict):
     if not train_path or not Path(train_path).exists():
         raise ValueError(f"train_data not found: {train_path}")
 
+    max_length = cfg.get("max_seq_length", 1024)
     train_dataset = load_and_format_dataset(
-        train_path, tokenizer, cfg["model_name"], SYSTEM_PROMPT, split="train"
+        train_path, tokenizer, cfg["model_name"], SYSTEM_PROMPT, split="train",
+        max_length=max_length,
     )
     eval_dataset = None
     if eval_path and Path(eval_path).exists():
         eval_dataset = load_and_format_dataset(
-            eval_path, tokenizer, cfg["model_name"], SYSTEM_PROMPT, split="val"
+            eval_path, tokenizer, cfg["model_name"], SYSTEM_PROMPT, split="val",
         )
 
     print(f"Train: {len(train_dataset)} | Eval: {len(eval_dataset) if eval_dataset else 'N/A'}")
@@ -226,8 +228,9 @@ def train(cfg: dict):
         warmup_ratio=cfg.get("warmup_ratio", 0.03),
         weight_decay=cfg.get("weight_decay", 0.01),
         lr_scheduler_type=cfg.get("lr_scheduler_type", "cosine"),
-        max_grad_norm=cfg.get("max_grad_norm", 1.0),
+        max_grad_norm=cfg.get("max_grad_norm", 0.3),
         bf16=cfg.get("bf16", True) and not use_qlora,
+        bf16_full_eval=cfg.get("bf16_full_eval", False),
         tf32=cfg.get("tf32", True),
         gradient_checkpointing=cfg.get("gradient_checkpointing", True),
         logging_steps=cfg.get("logging_steps", 10),
@@ -263,64 +266,8 @@ def train(cfg: dict):
             f"EarlyStoppingCallback enabled: patience={patience}, "
             f"threshold={threshold}, metric={training_args.metric_for_best_model}"
         )
-
-
-
-    _debug_log = open(f"{output_dir}/debug_rank{local_rank}.log", "a", buffering=1)
-
-    class DebugSFTTrainer(SFTTrainer):
-        def compute_loss(self, model, inputs, **kwargs):
-            loss = super().compute_loss(model, inputs, **kwargs)
-            loss_val = loss.item() if isinstance(loss, torch.Tensor) else float(loss)
-            if not (loss_val > 1e-6):  # catches 0, nan, -inf
-                ids = inputs.get("input_ids")
-                labels = inputs.get("labels")
-                _debug_log.write(f"[rank{local_rank}] loss={loss_val} step={self.state.global_step}\n")
-                if ids is not None:
-                    for i, seq in enumerate(ids):
-                        decoded = tokenizer.decode(seq, skip_special_tokens=False)
-                        n_valid = (labels[i] != -100).sum().item() if labels is not None else "?"
-                        _debug_log.write(f"  sample[{i}] valid_label_tokens={n_valid} text={decoded[:300]!r}\n")
-                _debug_log.flush()
-            return loss
-
-        def training_step(self, model, inputs, *args, **kwargs):
-            # Repair NaN/Inf params before forward so a poisoned checkpoint
-            # doesn't cause permanently stuck NaN loss.
-            nan_params = [p for p in model.parameters()
-                          if p.requires_grad and not torch.isfinite(p.data).all()]
-            if nan_params:
-                for p in nan_params:
-                    p.data = torch.nan_to_num(p.data, nan=0.0, posinf=1e4, neginf=-1e4)
-                # Also clear optimizer states for these params: NaN Adam momentum/
-                # variance would re-corrupt params after optimizer.step() even when
-                # the forward/backward are clean.
-                optim = self.optimizer
-                while hasattr(optim, 'optimizer'):  # unwrap AcceleratedOptimizer
-                    optim = optim.optimizer
-                for p in nan_params:
-                    optim.state.pop(p, None)
-                _debug_log.write(
-                    f"[rank{local_rank}] repaired {len(nan_params)} NaN params "
-                    f"+ cleared optimizer states at step {self.state.global_step}\n"
-                )
-                _debug_log.flush()
-
-            loss = super().training_step(model, inputs, *args, **kwargs)
-
-            # Zero NaN/Inf gradients so the optimizer step doesn't re-poison params.
-            nan_grads = 0
-            for p in model.parameters():
-                if p.grad is not None and not torch.isfinite(p.grad).all():
-                    p.grad.zero_()
-                    nan_grads += 1
-            if nan_grads:
-                _debug_log.write(f"[rank{local_rank}] zeroed {nan_grads} NaN/Inf grad tensors at step {self.state.global_step}\n")
-                _debug_log.flush()
-            return loss
-
     # NOTE: trl >= 0.12 uses `processing_class` instead of `tokenizer`
-    trainer = DebugSFTTrainer(
+    trainer = SFTTrainer(
         model=model,
         args=training_args,
         train_dataset=train_dataset,

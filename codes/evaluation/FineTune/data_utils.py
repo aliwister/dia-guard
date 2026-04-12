@@ -83,6 +83,7 @@ def load_and_format_dataset(
             dataset = load_from_disk(cache_dir)
             if max_length is not None:
                 before = len(dataset)
+                dataset = dataset.filter(lambda ex: bool(str(ex.get("text", "")).strip()))
                 dataset = dataset.filter(
                     lambda ex: len(tokenizer(ex["text"], add_special_tokens=False)["input_ids"]) <= max_length
                 )
@@ -131,6 +132,7 @@ def load_and_format_dataset(
     # Filter by token length after caching so the cache is reusable for any max_length
     if max_length is not None:
         before = len(dataset)
+        dataset = dataset.filter(lambda ex: bool(str(ex.get("text", "")).strip()))
         dataset = dataset.filter(
             lambda ex: len(tokenizer(ex["text"], add_special_tokens=False)["input_ids"]) <= max_length
         )
