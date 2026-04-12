@@ -62,9 +62,9 @@ def _is_clean(ex, tokenizer, max_length):
     # Drop if too long
     if len(ids) > max_length:
         return False
-    # Drop if more than 1 pad/eos token appears (padding leaked into text)
-    eos_id = tokenizer.eos_token_id
-    if eos_id is not None and ids.count(eos_id) > 1:
+    # Drop if endoftext token appears (padding leaked into text)
+    endoftext_id = tokenizer.convert_tokens_to_ids("<|endoftext|>")
+    if endoftext_id is not None and endoftext_id != tokenizer.unk_token_id and endoftext_id in ids:
         return False
     # Drop if the assistant turn has no real content (empty think block / empty response)
     if "<think>\n\n</think>" in text and text.rstrip().endswith("</think>"):
