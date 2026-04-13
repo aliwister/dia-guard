@@ -1,0 +1,59 @@
+% Harmfulness Detection accuracy disaggregated by threat category
+% Categories: Toxicity/Safety, Prompt Injection, Code Generation
+% Source: codes/inference/results/zero-shot/harmfulness_detection/multi_value/<model>/categories/
+
+\begin{table}[t]
+\centering
+\scriptsize
+\begin{tabular}{lcccccc}
+\toprule
+ & \multicolumn{2}{c}{\textbf{Toxicity/Safety}} & \multicolumn{2}{c}{\textbf{Prompt Injection}} & \multicolumn{2}{c}{\textbf{Code Generation}} \\
+\cmidrule(lr){2-3} \cmidrule(lr){4-5} \cmidrule(lr){6-7}
+\textbf{Model} & \textbf{Acc$_d$} & \textbf{$\Delta$} & \textbf{Acc$_d$} & \textbf{$\Delta$} & \textbf{Acc$_d$} & \textbf{$\Delta$} \\
+\midrule
+\multicolumn{7}{l}{\textbf{\textit{Open-Source}}} \\
+Mistral-7B          & \textcolor{blue}{[XX]} & \textcolor{blue}{[XX]} & \textcolor{blue}{[XX]} & \textcolor{blue}{[XX]} & \textcolor{blue}{[XX]} & \textcolor{blue}{[XX]} \\
+Ministral-14B       & 59.2 & $-$17.2 & \textcolor{blue}{[XX]} & \textcolor{blue}{[XX]} & \textcolor{blue}{[XX]} & \textcolor{blue}{[XX]} \\
+Llama-3.1-8B        & \textcolor{blue}{[XX]} & \textcolor{blue}{[XX]} & \textcolor{blue}{[XX]} & \textcolor{blue}{[XX]} & \textcolor{blue}{[XX]} & \textcolor{blue}{[XX]} \\
+Llama-3.2-1B        & \textcolor{blue}{[XX]} & \textcolor{blue}{[XX]} & \textcolor{blue}{[XX]} & \textcolor{blue}{[XX]} & \textcolor{blue}{[XX]} & \textcolor{blue}{[XX]} \\
+Gemma-3-1B          & \textcolor{blue}{[XX]} & \textcolor{blue}{[XX]} & \textcolor{blue}{[XX]} & \textcolor{blue}{[XX]} & \textcolor{blue}{[XX]} & \textcolor{blue}{[XX]} \\
+Qwen3-8B            & 53.5 & $-$18.9 & \textcolor{blue}{[XX]} & \textcolor{blue}{[XX]} & \textcolor{blue}{[XX]} & \textcolor{blue}{[XX]} \\
+GPT-OSS-20B         & 66.7 & $-$4.4  & 24.0 & 0.0    & 4.3  & $-$0.3 \\
+\midrule
+\multicolumn{7}{l}{\textbf{\textit{Safety Guards}}} \\
+LlamaGuard-1        & 54.0 & $-$3.9  & 0.0  & 0.0    & 0.0  & 0.0 \\
+LlamaGuard-2        & 56.5 & $-$6.3  & 33.0 & $-$0.1 & 11.4 & $+$1.5 \\
+LlamaGuard-3        & 62.4 & $-$1.9  & 20.4 & $+$9.2 & 63.5 & $+$4.1 \\
+LlamaGuard-3-1B     & 28.7 & $-$5.7  & 10.9 & $+$4.8 & 20.0 & $+$3.6 \\
+ShieldGemma-2-4B    & \textcolor{blue}{[XX]} & \textcolor{blue}{[XX]} & \textcolor{blue}{[XX]} & \textcolor{blue}{[XX]} & \textcolor{blue}{[XX]} & \textcolor{blue}{[XX]} \\
+ShieldGemma-9B      & \textcolor{blue}{[XX]} & \textcolor{blue}{[XX]} & \textcolor{blue}{[XX]} & \textcolor{blue}{[XX]} & \textcolor{blue}{[XX]} & \textcolor{blue}{[XX]} \\
+WildGuard           & \textcolor{blue}{[XX]} & \textcolor{blue}{[XX]} & \textcolor{blue}{[XX]} & \textcolor{blue}{[XX]} & \textcolor{blue}{[XX]} & \textcolor{blue}{[XX]} \\
+Aegis-Defensive     & \textcolor{blue}{[XX]} & \textcolor{blue}{[XX]} & \textcolor{blue}{[XX]} & \textcolor{blue}{[XX]} & \textcolor{blue}{[XX]} & \textcolor{blue}{[XX]} \\
+Aegis-Permissive    & \textcolor{blue}{[XX]} & \textcolor{blue}{[XX]} & \textcolor{blue}{[XX]} & \textcolor{blue}{[XX]} & \textcolor{blue}{[XX]} & \textcolor{blue}{[XX]} \\
+PolyGuard           & 70.1 & $-$3.9  & 40.5 & $-$14.8 & 1.1  & 0.0 \\
+Qwen3Guard-8B       & 64.3 & $-$18.5 & \textcolor{blue}{[XX]} & \textcolor{blue}{[XX]} & \textcolor{blue}{[XX]} & \textcolor{blue}{[XX]} \\
+Qwen3Guard-4B       & 64.7 & $-$18.9 & \textcolor{blue}{[XX]} & \textcolor{blue}{[XX]} & \textcolor{blue}{[XX]} & \textcolor{blue}{[XX]} \\
+Qwen3Guard-0.6B     & \textcolor{blue}{[XX]} & \textcolor{blue}{[XX]} & \textcolor{blue}{[XX]} & \textcolor{blue}{[XX]} & \textcolor{blue}{[XX]} & \textcolor{blue}{[XX]} \\
+Qwen3-4B-SafeRL     & 61.7 & $-$15.4 & \textcolor{blue}{[XX]} & \textcolor{blue}{[XX]} & \textcolor{blue}{[XX]} & \textcolor{blue}{[XX]} \\
+PromptGuard-86M     & 22.0 & $+$3.5  & 0.0  & 0.0    & 0.0  & 0.0 \\
+PromptGuard-22M     & 12.6 & $-$2.2  & 0.9  & $+$0.9 & 0.2  & 0.0 \\
+HarmBench-Mistral   & 0.4  & $-$0.4  & 0.1  & 0.0    & 0.0  & 0.0 \\
+HarmBench-Llama     & 0.4  & $-$0.1  & 0.0  & 0.0    & 0.4  & 0.0 \\
+DuoGuard-1B         & 54.8 & $-$18.0 & 0.5  & $-$4.9 & 0.2  & 0.0 \\
+GPT-OSS-Safeguard-20B & 61.7 & $-$4.9  & 6.8  & $-$2.3 & 2.0  & $-$0.1 \\
+\midrule
+\multicolumn{7}{l}{\textbf{\textit{Proprietary}}} \\
+Claude Sonnet       & \textcolor{blue}{[XX]} & \textcolor{blue}{[XX]} & \textcolor{blue}{[XX]} & \textcolor{blue}{[XX]} & \textcolor{blue}{[XX]} & \textcolor{blue}{[XX]} \\
+Claude Opus         & \textcolor{blue}{[XX]} & \textcolor{blue}{[XX]} & \textcolor{blue}{[XX]} & \textcolor{blue}{[XX]} & \textcolor{blue}{[XX]} & \textcolor{blue}{[XX]} \\
+\midrule
+\multicolumn{7}{l}{\textbf{\textit{Our Defense}}} \\
+\diaguard{}-4B      & \textcolor{blue}{[XX]} & \textcolor{blue}{[XX]} & \textcolor{blue}{[XX]} & \textcolor{blue}{[XX]} & \textcolor{blue}{[XX]} & \textcolor{blue}{[XX]} \\
+\diaguard{}-3B      & \textcolor{blue}{[XX]} & \textcolor{blue}{[XX]} & \textcolor{blue}{[XX]} & \textcolor{blue}{[XX]} & \textcolor{blue}{[XX]} & \textcolor{blue}{[XX]} \\
+\diaguard{}-1B      & \textcolor{blue}{[XX]} & \textcolor{blue}{[XX]} & \textcolor{blue}{[XX]} & \textcolor{blue}{[XX]} & \textcolor{blue}{[XX]} & \textcolor{blue}{[XX]} \\
+\diaguard{}-0.6B    & \textcolor{blue}{[XX]} & \textcolor{blue}{[XX]} & \textcolor{blue}{[XX]} & \textcolor{blue}{[XX]} & \textcolor{blue}{[XX]} & \textcolor{blue}{[XX]} \\
+\diaguard{}-270M    & \textcolor{blue}{[XX]} & \textcolor{blue}{[XX]} & \textcolor{blue}{[XX]} & \textcolor{blue}{[XX]} & \textcolor{blue}{[XX]} & \textcolor{blue}{[XX]} \\
+\bottomrule
+\end{tabular}
+\caption{Dialectal accuracy (lower = more vulnerable) and gap ($\Delta$: more negative = more vulnerable) disaggregated by threat category. \textcolor{blue}{Blue values indicate results pending completion.} Toxicity/Safety covers Jigsaw, SaladBench, HarmBench, AdvBench, JailbreakBench, Sorry-Bench, Do-Not-Answer, Simple-Safety-Tests, Toxic-Text, and Forbidden-Questions; Prompt Injection covers BIPIA and InjecAgent; Code Generation covers CyberSecEval, LLMSecEval, and SecurityEval.}
+\label{tab:category_results}
+\end{table}
