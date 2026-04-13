@@ -200,10 +200,8 @@ def train(cfg: dict):
     if not train_path or not Path(train_path).exists():
         raise ValueError(f"train_data not found: {train_path}")
 
-    max_length = cfg.get("max_seq_length", 1024)
     train_dataset = load_and_format_dataset(
         train_path, tokenizer, cfg["model_name"], SYSTEM_PROMPT, split="train",
-        max_length=max_length,
     )
     eval_dataset = None
     if eval_path and Path(eval_path).exists():
@@ -266,39 +264,20 @@ def train(cfg: dict):
             f"EarlyStoppingCallback enabled: patience={patience}, "
             f"threshold={threshold}, metric={training_args.metric_for_best_model}"
         )
-    _nan_log_path = os.path.join(output_dir, "nan_batches.jsonl")
-    _logged_good = False
+    _pad_token_id = tokenizer.pad_token_id
 
-    class NaNGuardTrainer(SFTTrainer):
+    class PaddingFixTrainer(SFTTrainer):
         def training_step(self, model, inputs, *args, **kwargs):
-            nonlocal _logged_good
-            loss = super().training_step(model, inputs, *args, **kwargs)
-            nan_grads = any(
-                p.grad is not None and not torch.isfinite(p.grad).all()
-                for p in model.parameters()
-            )
-            ids = inputs.get("input_ids")
-            if nan_grads:
-                # Log the offending examples so we can filter them from the dataset
-                if ids is not None:
-                    with open(_nan_log_path, "a") as f:
-                        for seq in ids:
-                            text = tokenizer.decode(seq, skip_special_tokens=False)
-                            f.write(json.dumps({"type": "nan", "step": self.state.global_step, "text": text}) + "\n")
-                # Zero NaN grads to prevent optimizer state corruption
-                for p in model.parameters():
-                    if p.grad is not None and not torch.isfinite(p.grad).all():
-                        p.grad.zero_()
-            elif not _logged_good and ids is not None:
-                with open(_nan_log_path, "a") as f:
-                    for seq in ids:
-                        text = tokenizer.decode(seq, skip_special_tokens=False)
-                        f.write(json.dumps({"type": "good", "step": self.state.global_step, "text": text}) + "\n")
-                _logged_good = True
-            return loss
+            # TRL's DataCollatorForCompletionOnlyLM pads labels with pad_token_id
+            # instead of -100, causing loss to be computed on padding tokens.
+            if "labels" in inputs and _pad_token_id is not None:
+                inputs["labels"] = inputs["labels"].masked_fill(
+                    inputs["labels"] == _pad_token_id, -100
+                )
+            return super().training_step(model, inputs, *args, **kwargs)
 
     # NOTE: trl >= 0.12 uses `processing_class` instead of `tokenizer`
-    trainer = NaNGuardTrainer(
+    trainer = PaddingFixTrainer(
         model=model,
         args=training_args,
         train_dataset=train_dataset,
