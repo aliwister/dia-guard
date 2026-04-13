@@ -54,20 +54,6 @@ def load_jsonl(path: str) -> Dataset:
     return Dataset.from_list(records)
 
 
-def _is_clean(ex, tokenizer, max_length):
-    text = str(ex.get("text", "")).strip()
-    if not text:
-        return False
-    ids = tokenizer(text, add_special_tokens=False)["input_ids"]
-    # Drop if too long
-    if len(ids) > max_length:
-        return False
-    # Drop if endoftext token appears (padding leaked into text)
-    endoftext_id = tokenizer.convert_tokens_to_ids("<|endoftext|>")
-    if endoftext_id is not None and endoftext_id != tokenizer.unk_token_id and endoftext_id in ids:
-        return False
-    return True
-
 
 def load_and_format_dataset(
     jsonl_path: str,
@@ -98,7 +84,9 @@ def load_and_format_dataset(
             dataset = load_from_disk(cache_dir)
             if max_length is not None:
                 before = len(dataset)
-                dataset = dataset.filter(lambda ex: _is_clean(ex, tokenizer, max_length))
+                dataset = dataset.filter(
+                    lambda ex: len(tokenizer(ex["text"], add_special_tokens=False)["input_ids"]) <= max_length
+                )
                 print(f"Filtered {split} dataset by max_length={max_length}: {before} → {len(dataset)} ({before - len(dataset)} removed)")
             if max_samples is not None and len(dataset) > max_samples:
                 print(f"Subsampling {split} dataset: {len(dataset)} → {max_samples}")
@@ -171,7 +159,6 @@ def load_and_format_dataset(
     # Filter by token length after caching so the cache is reusable for any max_length
     if max_length is not None:
         before = len(dataset)
-        dataset = dataset.filter(lambda ex: bool(str(ex.get("text", "")).strip()))
         dataset = dataset.filter(
             lambda ex: len(tokenizer(ex["text"], add_special_tokens=False)["input_ids"]) <= max_length
         )
