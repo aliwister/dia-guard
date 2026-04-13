@@ -1,0 +1,34 @@
+{
+  "model": "Qwen3Guard-Gen-0.6B",
+  "method": "KD-TED-S2",
+  "teacher": "Qwen3-4B-SafeRL-FT",
+  "scenario": "oob",
+  "test_n": 181874,
+  "overall": {
+    "accuracy": 0.4672,
+    "precision": 0.5967,
+    "recall": 0.5083,
+    "f1": 0.3425,
+    "support": 181874
+  },
+  "confusion_matrix": {
+    "tp": 2881,
+    "tn": 82086,
+    "fp": 1054,
+    "fn": 95853
+  },
+  "per_class": {
+    "safe": {
+      "precision": 0.4613,
+      "recall": 0.9873,
+      "f1": 0.6288,
+      "support": 83140
+    },
+    "unsafe": {
+      "precision": 0.7321,
+      "recall": 0.0292,
+      "f1": 0.0561,
+      "support": 98734
+    }
+  }
+}

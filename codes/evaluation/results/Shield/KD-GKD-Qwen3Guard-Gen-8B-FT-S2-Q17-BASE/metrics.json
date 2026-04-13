@@ -1,0 +1,34 @@
+{
+  "model": "Qwen3-1.7B",
+  "method": "KD-GKD-S2",
+  "teacher": "Qwen3Guard-Gen-8B-FT",
+  "scenario": "s2-q17-base",
+  "test_n": 181874,
+  "overall": {
+    "accuracy": 0.6932,
+    "precision": 0.7862,
+    "recall": 0.6666,
+    "f1": 0.6452,
+    "support": 181874
+  },
+  "confusion_matrix": {
+    "tp": 96480,
+    "tn": 29598,
+    "fp": 53542,
+    "fn": 2254
+  },
+  "per_class": {
+    "safe": {
+      "precision": 0.9292,
+      "recall": 0.356,
+      "f1": 0.5148,
+      "support": 83140
+    },
+    "unsafe": {
+      "precision": 0.6431,
+      "recall": 0.9772,
+      "f1": 0.7757,
+      "support": 98734
+    }
+  }
+}
