@@ -264,23 +264,22 @@ def train(cfg: dict):
             f"EarlyStoppingCallback enabled: patience={patience}, "
             f"threshold={threshold}, metric={training_args.metric_for_best_model}"
         )
-    _pad_token_id = tokenizer.pad_token_id
-    _padding_checked = False
+    _label_check_done = False
 
     class PaddingFixTrainer(SFTTrainer):
         def training_step(self, model, inputs, *args, **kwargs):
-            nonlocal _padding_checked
-            if "labels" in inputs and _pad_token_id is not None:
-                if not _padding_checked:
-                    n_pad_labels = (inputs["labels"] == _pad_token_id).sum().item()
-                    if n_pad_labels > 0:
-                        print(f"[PaddingCheck] {n_pad_labels} label tokens == pad_token_id — fix is needed")
-                    else:
-                        print(f"[PaddingCheck] no pad_token_id in labels — TRL already handles this, fix is a no-op")
-                    _padding_checked = True
-                inputs["labels"] = inputs["labels"].masked_fill(
-                    inputs["labels"] == _pad_token_id, -100
+            nonlocal _label_check_done
+            if "labels" in inputs and not _label_check_done:
+                labels = inputs["labels"]
+                total_tokens = labels.numel()
+                masked_tokens = (labels == -100).sum().item()
+                active_tokens = total_tokens - masked_tokens
+                print(
+                    f"[LabelCheck] total={total_tokens} | masked(-100)={masked_tokens} "
+                    f"| active(loss)={active_tokens} "
+                    f"({100*active_tokens/total_tokens:.1f}% of sequence)"
                 )
+                _label_check_done = True
             return super().training_step(model, inputs, *args, **kwargs)
 
     # NOTE: trl >= 0.12 uses `processing_class` instead of `tokenizer`
