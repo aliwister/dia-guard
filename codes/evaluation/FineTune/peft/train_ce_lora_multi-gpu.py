@@ -60,7 +60,7 @@ from trl import SFTConfig, SFTTrainer
 
 # Add parent dir to path for data_utils
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
-from data_utils import load_and_format_dataset
+from data_utils_new import load_and_format_dataset
 
 os.environ['WANDB_API_KEY'] = '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'
 os.environ.setdefault("TOKENIZERS_PARALLELISM", "true")
@@ -244,7 +244,7 @@ def train(cfg: dict):
         max_length=cfg.get("max_seq_length", 2048),
         dataset_text_field="text",
         packing=False,
-        completion_only_loss=False,
+        completion_only_loss=True,
     )
 
 
