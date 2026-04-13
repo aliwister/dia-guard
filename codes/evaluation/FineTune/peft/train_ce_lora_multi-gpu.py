@@ -265,16 +265,19 @@ def train(cfg: dict):
             f"threshold={threshold}, metric={training_args.metric_for_best_model}"
         )
     _pad_token_id = tokenizer.pad_token_id
+    _padding_checked = False
 
     class PaddingFixTrainer(SFTTrainer):
         def training_step(self, model, inputs, *args, **kwargs):
-            # Verify whether TRL already masks padding in labels.
+            nonlocal _padding_checked
             if "labels" in inputs and _pad_token_id is not None:
-                n_pad_labels = (inputs["labels"] == _pad_token_id).sum().item()
-                if n_pad_labels > 0 and self.state.global_step == 0:
-                    print(f"[PaddingCheck] step=0: {n_pad_labels} label tokens == pad_token_id before masking — fix is needed")
-                elif self.state.global_step == 0:
-                    print(f"[PaddingCheck] step=0: no pad_token_id in labels — TRL already handles this, fix is a no-op")
+                if not _padding_checked:
+                    n_pad_labels = (inputs["labels"] == _pad_token_id).sum().item()
+                    if n_pad_labels > 0:
+                        print(f"[PaddingCheck] {n_pad_labels} label tokens == pad_token_id — fix is needed")
+                    else:
+                        print(f"[PaddingCheck] no pad_token_id in labels — TRL already handles this, fix is a no-op")
+                    _padding_checked = True
                 inputs["labels"] = inputs["labels"].masked_fill(
                     inputs["labels"] == _pad_token_id, -100
                 )
