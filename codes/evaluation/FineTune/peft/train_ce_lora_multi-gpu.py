@@ -56,7 +56,7 @@ from transformers import (
     EarlyStoppingCallback,
     set_seed,
 )
-from trl import SFTConfig, SFTTrainer
+from trl import DataCollatorForCompletionOnlyLM, SFTConfig, SFTTrainer
 
 # Add parent dir to path for data_utils
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
@@ -242,7 +242,7 @@ def train(cfg: dict):
         max_length=cfg.get("max_seq_length", 2048),
         dataset_text_field="text",
         packing=False,
-        completion_only_loss=True,
+        completion_only_loss=False,  # handled manually via DataCollatorForCompletionOnlyLM
     )
 
 
@@ -264,9 +264,26 @@ def train(cfg: dict):
             f"EarlyStoppingCallback enabled: patience={patience}, "
             f"threshold={threshold}, metric={training_args.metric_for_best_model}"
         )
+    # Build completion-only data collator.
+    # For Qwen3Guard, add_generation_prompt=True appends:
+    #   <|im_start|>assistant\n<think>\n\n</think>\n\n
+    # before the actual completion. We use "</think>\n\n" as the response
+    # template so loss is computed only on "Safety: Safe/Unsafe..." tokens.
+    is_guard_model = "guard" in cfg["model_name"].lower()
+    if is_guard_model:
+        response_template = "</think>\n\n"
+    else:
+        response_template = "<|im_start|>assistant\n"
+
+    data_collator = DataCollatorForCompletionOnlyLM(
+        response_template=response_template,
+        tokenizer=tokenizer,
+    )
+    print(f"[DataCollator] response_template={repr(response_template)}")
+
     _label_check_done = False
 
-    class PaddingFixTrainer(SFTTrainer):
+    class DiagnosticTrainer(SFTTrainer):
         def training_step(self, model, inputs, *args, **kwargs):
             nonlocal _label_check_done
             if "labels" in inputs and not _label_check_done:
@@ -283,12 +300,13 @@ def train(cfg: dict):
             return super().training_step(model, inputs, *args, **kwargs)
 
     # NOTE: trl >= 0.12 uses `processing_class` instead of `tokenizer`
-    trainer = PaddingFixTrainer(
+    trainer = DiagnosticTrainer(
         model=model,
         args=training_args,
         train_dataset=train_dataset,
         eval_dataset=eval_dataset,
         processing_class=tokenizer,
+        data_collator=data_collator,
     )
 
     # Resume from checkpoint if available
