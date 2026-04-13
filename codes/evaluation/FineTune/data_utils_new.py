@@ -82,9 +82,7 @@ def load_and_format_dataset(
         if cached_key == current_key:
             print(f"Loading cached formatted {split} dataset from {cache_dir}")
             dataset = load_from_disk(cache_dir)
-            if max_samples is not None and len(dataset) > max_samples:
-                print(f"Subsampling {split} dataset: {len(dataset)} → {max_samples}")
-                dataset = dataset.shuffle(seed=42).select(range(max_samples))
+            dataset = _apply_postprocess(dataset, tokenizer, split, max_length, max_samples)
             return dataset
         else:
             print(f"Cache key mismatch for {split}, regenerating...")
@@ -150,8 +148,11 @@ def load_and_format_dataset(
     with open(key_file, "w") as f:
         f.write(current_key)
 
-    # Filter sequences that exceed max_length — truncation would cut off the
-    # response template, causing the entire example to be ignored in loss calculation.
+    return _apply_postprocess(dataset, tokenizer, split, max_length, max_samples)
+
+
+def _apply_postprocess(dataset, tokenizer, split, max_length, max_samples):
+    """Filter by length and subsample. Applied after both cache-hit and cache-miss paths."""
     if max_length is not None:
         before = len(dataset)
         dataset = dataset.filter(
@@ -161,7 +162,6 @@ def load_and_format_dataset(
         if dropped:
             print(f"[LengthFilter] {split}: dropped {dropped}/{before} examples exceeding {max_length} tokens")
 
-    # Apply max_samples after caching so the cache is reusable for any sample count
     if max_samples is not None and len(dataset) > max_samples:
         print(f"Subsampling {split} dataset: {len(dataset)} → {max_samples}")
         dataset = dataset.shuffle(seed=42).select(range(max_samples))

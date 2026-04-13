@@ -284,19 +284,27 @@ def train(cfg: dict):
     )
     print(f"[DataCollator] response_template={repr(response_template)}")
 
-    _label_check_done = False
+    _train_check_done = False
+    _eval_check_done = False
 
     class DiagnosticTrainer(SFTTrainer):
         def training_step(self, model, inputs, *args, **kwargs):
-            nonlocal _label_check_done
-            if "labels" in inputs and not _label_check_done:
-                labels = inputs["labels"]
-                # Print the decoded loss tokens from the first example in the batch
-                first_labels = labels[0]
+            nonlocal _train_check_done
+            if "labels" in inputs and not _train_check_done:
+                first_labels = inputs["labels"][0]
                 active_ids = first_labels[first_labels != -100].tolist()
-                print(f"[LabelCheck] loss tokens: {repr(tokenizer.decode(active_ids))}")
-                _label_check_done = True
+                print(f"[LabelCheck train] {repr(tokenizer.decode(active_ids))}")
+                _train_check_done = True
             return super().training_step(model, inputs, *args, **kwargs)
+
+        def prediction_step(self, model, inputs, prediction_loss_only, ignore_keys=None):
+            nonlocal _eval_check_done
+            if "labels" in inputs and not _eval_check_done:
+                first_labels = inputs["labels"][0]
+                active_ids = first_labels[first_labels != -100].tolist()
+                print(f"[LabelCheck eval]  {repr(tokenizer.decode(active_ids))}")
+                _eval_check_done = True
+            return super().prediction_step(model, inputs, prediction_loss_only, ignore_keys)
 
     # NOTE: trl >= 0.12 uses `processing_class` instead of `tokenizer`
     trainer = DiagnosticTrainer(
