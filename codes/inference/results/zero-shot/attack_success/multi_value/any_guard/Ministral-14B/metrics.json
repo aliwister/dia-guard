@@ -1,0 +1,29 @@
+{
+  "production_model": "Ministral-14B",
+  "defense_config": "any_guard",
+  "defense_description": "Top-5 Any-Guard (high-stakes)",
+  "shot": "zero-shot",
+  "prompt_type": "multi_value",
+  "metric": "attack_success",
+  "guards_used": [
+    "Qwen3Guard-4B",
+    "Qwen3Guard-8B",
+    "PolyGuard",
+    "LlamaGuard-3",
+    "DuoGuard-1B"
+  ],
+  "n_datasets": 6,
+  "n_dialects": 48,
+  "n_samples": 28424,
+  "overall": {
+    "support": 28424,
+    "gbr_sae": 6.8,
+    "gbr_dialect": 11.67,
+    "pbr_sae": 23.61,
+    "pbr_dialect": 40.76,
+    "asr_sae": 6.79,
+    "asr_dialect": 11.32,
+    "iarr_sae": 0.16,
+    "iarr_dialect": 2.93
+  }
+}

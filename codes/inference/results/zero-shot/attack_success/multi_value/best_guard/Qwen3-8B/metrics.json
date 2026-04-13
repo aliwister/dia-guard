@@ -1,0 +1,25 @@
+{
+  "production_model": "Qwen3-8B",
+  "defense_config": "best_guard",
+  "defense_description": "Qwen3Guard-4B (best single)",
+  "shot": "zero-shot",
+  "prompt_type": "multi_value",
+  "metric": "attack_success",
+  "guards_used": [
+    "Qwen3Guard-4B"
+  ],
+  "n_datasets": 6,
+  "n_dialects": 48,
+  "n_samples": 28424,
+  "overall": {
+    "support": 28424,
+    "gbr_sae": 16.37,
+    "gbr_dialect": 35.29,
+    "pbr_sae": 27.67,
+    "pbr_dialect": 46.52,
+    "asr_sae": 16.2,
+    "asr_dialect": 35.11,
+    "iarr_sae": 1.03,
+    "iarr_dialect": 0.52
+  }
+}

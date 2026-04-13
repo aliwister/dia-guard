@@ -1,0 +1,52 @@
+% Guard classifier accuracy on SAE vs. dialectal inputs
+% MV = Multi-Value, DL = Dia-LLM
+% Source: codes/inference/results/zero-shot/harmfulness_detection/
+
+\begin{table}[t]
+\centering
+\scriptsize
+\begin{tabular}{lccccccc}
+\toprule
+\textbf{Model} & \textbf{Base} & \multicolumn{2}{c}{\textbf{Acc$_{\text{SAE}}$}} & \multicolumn{2}{c}{\textbf{Acc$_{\text{Dial}}$}} & \multicolumn{2}{c}{\textbf{$\Delta$}} \\
+\cmidrule(lr){3-4} \cmidrule(lr){5-6} \cmidrule(lr){7-8}
+ &  & \textsc{MV} & \textsc{DL} & \textsc{MV} & \textsc{DL} & \textsc{MV} & \textsc{DL} \\
+\midrule
+\multicolumn{8}{l}{\textbf{\textit{Open-Source}}} \\
+Mistral-7B & $^\text{a}$ & \textcolor{blue}{[XX]} & \textcolor{blue}{[XX]} & \textcolor{blue}{[XX]} & \textcolor{blue}{[XX]} & \textcolor{blue}{[XX]} & \textcolor{blue}{[XX]} \\
+Ministral-14B & $^\text{b}$ & 76.39 & \textcolor{blue}{[XX]} & 59.24 & \textcolor{blue}{[XX]} & $-$17.15 & \textcolor{blue}{[XX]} \\
+Llama-3.1-8B & $^\text{c}$ & \textcolor{blue}{[XX]} & \textcolor{blue}{[XX]} & \textcolor{blue}{[XX]} & \textcolor{blue}{[XX]} & \textcolor{blue}{[XX]} & \textcolor{blue}{[XX]} \\
+Llama-3.2-1B & $^\text{c}$ & \textcolor{blue}{[XX]} & \textcolor{blue}{[XX]} & \textcolor{blue}{[XX]} & \textcolor{blue}{[XX]} & \textcolor{blue}{[XX]} & \textcolor{blue}{[XX]} \\
+Gemma-3-1B & $^\text{f}$ & 66.30 & \textcolor{blue}{[XX]} & 39.50 & \textcolor{blue}{[XX]} & $-$26.80 & \textcolor{blue}{[XX]} \\
+Qwen3-8B & $^\text{g}$ & 72.33 & \textcolor{blue}{[XX]} & 53.48 & \textcolor{blue}{[XX]} & $-$18.85 & \textcolor{blue}{[XX]} \\
+GPT-OSS-20B & $^\text{j}$ & 57.27 & 55.23 & 53.94 & 45.83 & $-$3.33 & $-$9.40 \\
+\midrule
+\multicolumn{8}{l}{\textbf{\textit{Safety Guards}}} \\
+LlamaGuard-1 & $^\text{c}$ & 43.00 & 39.66 & 40.11 & 30.93 & $-$2.89 & $-$8.72 \\
+LlamaGuard-2 & $^\text{c}$ & 52.89 & 50.10 & 48.33 & 41.15 & $-$4.56 & $-$8.95 \\
+LlamaGuard-3 & $^\text{c}$ & 56.16 & 57.61 & 56.47 & 48.65 & $+$0.31 & $-$8.96 \\
+LlamaGuard-3-1B & $^\text{c}$ & 28.37 & 32.15 & 25.18 & 24.00 & $-$3.19 & $-$8.15 \\
+ShieldGemma-2-4B-it & $^\text{e}$ & \textcolor{blue}{[XX]} & \textcolor{blue}{[XX]} & \textcolor{blue}{[XX]} & \textcolor{blue}{[XX]} & \textcolor{blue}{[XX]} & \textcolor{blue}{[XX]} \\
+ShieldGemma-9B & $^\text{e}$ & \textcolor{blue}{[XX]} & \textcolor{blue}{[XX]} & \textcolor{blue}{[XX]} & \textcolor{blue}{[XX]} & \textcolor{blue}{[XX]} & \textcolor{blue}{[XX]} \\
+WildGuard & $^\text{a}$ & \textcolor{blue}{[XX]} & \textcolor{blue}{[XX]} & \textcolor{blue}{[XX]} & \textcolor{blue}{[XX]} & \textcolor{blue}{[XX]} & \textcolor{blue}{[XX]} \\
+Aegis-Defensive & $^\text{c}$ & \textcolor{blue}{[XX]} & \textcolor{blue}{[XX]} & \textcolor{blue}{[XX]} & \textcolor{blue}{[XX]} & \textcolor{blue}{[XX]} & \textcolor{blue}{[XX]} \\
+Aegis-Permissive & $^\text{c}$ & \textcolor{blue}{[XX]} & \textcolor{blue}{[XX]} & \textcolor{blue}{[XX]} & \textcolor{blue}{[XX]} & \textcolor{blue}{[XX]} & \textcolor{blue}{[XX]} \\
+PolyGuard & $^\text{h}$ & 63.63 & 61.32 & 58.57 & 51.36 & $-$5.06 & $-$9.96 \\
+Qwen3Guard-8B & $^\text{g}$ & 82.79 & \textcolor{blue}{[XX]} & 64.29 & \textcolor{blue}{[XX]} & $-$18.49 & \textcolor{blue}{[XX]} \\
+Qwen3Guard-4B & $^\text{g}$ & 83.63 & \textcolor{blue}{[XX]} & 64.71 & \textcolor{blue}{[XX]} & $-$18.92 & \textcolor{blue}{[XX]} \\
+Qwen3Guard-0.6B & $^\text{g}$ & \textcolor{blue}{[XX]} & \textcolor{blue}{[XX]} & \textcolor{blue}{[XX]} & \textcolor{blue}{[XX]} & \textcolor{blue}{[XX]} & \textcolor{blue}{[XX]} \\
+Qwen3-4B-SafeRL & $^\text{g}$ & 77.07 & \textcolor{blue}{[XX]} & 61.68 & \textcolor{blue}{[XX]} & $-$15.39 & \textcolor{blue}{[XX]} \\
+PromptGuard-86M & $^\text{i}$ & 13.87 & 15.45 & 16.52 & 13.03 & $+$2.65 & $-$2.42 \\
+PromptGuard-22M & $^\text{i}$ & 11.14 & 12.70 & 9.61 & 9.84 & $-$1.53 & $-$2.86 \\
+HarmBench-Mistral & $^\text{a}$ & 0.62 & 0.57 & 0.31 & 0.40 & $-$0.31 & $-$0.17 \\
+HarmBench-Llama & $^\text{d}$ & 0.42 & 0.10 & 0.35 & 0.22 & $-$0.06 & $+$0.12 \\
+DuoGuard-1B & $^\text{h}$ & 55.44 & 52.92 & 41.21 & 42.89 & $-$14.23 & $-$10.03 \\
+GPT-OSS-Safeguard-20B & $^\text{e}$ & 51.47 & 50.39 & 47.46 & 40.99 & $-$4.00 & $-$9.40 \\
+\midrule
+\multicolumn{8}{l}{\textbf{\textit{Proprietary}}} \\
+Claude Sonnet & $^\text{k}$ & \textcolor{blue}{[XX]} & \textcolor{blue}{[XX]} & \textcolor{blue}{[XX]} & \textcolor{blue}{[XX]} & \textcolor{blue}{[XX]} & \textcolor{blue}{[XX]} \\
+Claude Opus   & $^\text{l}$ & \textcolor{blue}{[XX]} & \textcolor{blue}{[XX]} & \textcolor{blue}{[XX]} & \textcolor{blue}{[XX]} & \textcolor{blue}{[XX]} & \textcolor{blue}{[XX]} \\
+\bottomrule
+\end{tabular}
+\caption{Guard classifier accuracy on \sae{} vs.\ dialectal inputs. \textsc{MV} = Multi-Value, \textsc{DL} = \textsc{Dia-LLM}. $\Delta$ = accuracy drop (lower = more vulnerable). Base models: $^\text{a}$Mistral, $^\text{b}$Ministral, $^\text{c}$Llama3, $^\text{d}$Llama2, $^\text{e}$Gemma2, $^\text{f}$Gemma3, $^\text{g}$Qwen3, $^\text{h}$Qwen2.5, $^\text{i}$DeBERTa, $^\text{j}$OpenAI, $^\text{k}$Google, $^\text{l}$Anthropic. Full per-dialect results in Appendix~\ref{app:full_results}.}
+\label{tab:guard_results}
+\end{table}

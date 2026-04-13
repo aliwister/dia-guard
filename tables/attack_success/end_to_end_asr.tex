@@ -1,0 +1,53 @@
+% End-to-End Attack Success Rate grouped by defense setting
+% Source: codes/inference/results/zero-shot/attack_success/multi_value/
+
+\begin{table}[t]
+\centering
+\caption{End-to-End Attack Success Rate (ASR) grouped by defense setting. Production models (GPT-OSS-20B, Ministral-14B, Qwen3-8B) are evaluated as target systems only and are \emph{not} used as guards. \textbf{Single-Model Defense}: one guard classifier (Best = Qwen3Guard-4B, highest individual accuracy; Worst = HarmBench-Llama, lowest). \textbf{Ensemble Defense}: top-5 guards (Qwen3Guard-4B, Qwen3Guard-8B, PolyGuard, LlamaGuard-3, DuoGuard-1B) combined via majority vote (low-stakes) or any-guard-flags (high-stakes). \textbf{Metric interpretation} (all values are \%): \textbf{GBR} = Guard Bypass Rate (low = guard is effective, high = vulnerable); \textbf{PBR} = Production Bypass Rate (low = strong internal alignment, high = intrinsically vulnerable); \textbf{ASR} = end-to-end bypass (low = safe pipeline, high = exploitable); \textbf{IARR} = Internal Alignment Recovery Rate (high = internal alignment catches guard failures, low = production model offers no second line of defense). \textbf{$\Delta$ interpretation}: positive $\Delta$ = model maintained or improved robustness under dialectal transformation (less vulnerable on dialects); negative $\Delta$ = safety degraded under dialectal transformation (more vulnerable on dialects). Within each setting, \textbf{bold} = best per column (lowest GBR/PBR/ASR, highest IARR, most positive $\Delta$). \textcolor{blue}{Blue} = pending.}
+\label{tab:asr_results}
+\resizebox{\columnwidth}{!}{%
+\begin{tabular}{l ccc ccc ccc ccc}
+\toprule
+ & \multicolumn{3}{c}{\textbf{GBR (\%)}} & \multicolumn{3}{c}{\textbf{PBR (\%)}} & \multicolumn{3}{c}{\textbf{ASR (\%)}} & \multicolumn{3}{c}{\textbf{IARR (\%)}} \\
+\cmidrule(lr){2-4} \cmidrule(lr){5-7} \cmidrule(lr){8-10} \cmidrule(lr){11-13}
+\textbf{Production Model} & \textbf{SAE} & \textbf{Dia} & \textbf{$\Delta$} & \textbf{SAE} & \textbf{Dia} & \textbf{$\Delta$} & \textbf{SAE} & \textbf{Dia} & \textbf{$\Delta$} & \textbf{SAE} & \textbf{Dia} & \textbf{$\Delta$} \\
+\midrule
+\multicolumn{13}{l}{\textbf{\textit{Single-Model Defense: Best Guard (Qwen3Guard-4B)}}} \\
+GPT-OSS-20B     & \textbf{0.8}  & \textbf{1.9}  & \textbf{$-$1.1}  & 42.7         & 46.1         & \textbf{$-$3.3}  & \textbf{0.2}  & \textbf{0.4}  & \textbf{$-$0.2}  & \textbf{78.4} & \textbf{80.4} & \textbf{$+$2.0} \\
+Ministral-14B   & 16.4          & 35.3          & $-$18.9          & \textbf{23.6} & \textbf{40.8} & $-$17.2          & 15.9          & 34.1          & $-$18.3          & 3.1           & 3.3           & $+$0.2 \\
+Qwen3-8B        & 16.4          & 35.3          & $-$18.9          & 27.7         & 46.5         & $-$18.9          & 16.2          & 35.1          & $-$18.9          & 1.0           & 0.5           & $-$0.5 \\
+Llama-4-Scout   & \textcolor{blue}{[XX]} & \textcolor{blue}{[XX]} & \textcolor{blue}{[XX]} & \textcolor{blue}{[XX]} & \textcolor{blue}{[XX]} & \textcolor{blue}{[XX]} & \textcolor{blue}{[XX]} & \textcolor{blue}{[XX]} & \textcolor{blue}{[XX]} & \textcolor{blue}{[XX]} & \textcolor{blue}{[XX]} & \textcolor{blue}{[XX]} \\
+Mistral-Large   & \textcolor{blue}{[XX]} & \textcolor{blue}{[XX]} & \textcolor{blue}{[XX]} & \textcolor{blue}{[XX]} & \textcolor{blue}{[XX]} & \textcolor{blue}{[XX]} & \textcolor{blue}{[XX]} & \textcolor{blue}{[XX]} & \textcolor{blue}{[XX]} & \textcolor{blue}{[XX]} & \textcolor{blue}{[XX]} & \textcolor{blue}{[XX]} \\
+GPT-5.2         & \textcolor{blue}{[XX]} & \textcolor{blue}{[XX]} & \textcolor{blue}{[XX]} & \textcolor{blue}{[XX]} & \textcolor{blue}{[XX]} & \textcolor{blue}{[XX]} & \textcolor{blue}{[XX]} & \textcolor{blue}{[XX]} & \textcolor{blue}{[XX]} & \textcolor{blue}{[XX]} & \textcolor{blue}{[XX]} & \textcolor{blue}{[XX]} \\
+Gemini 3.1 Pro  & \textcolor{blue}{[XX]} & \textcolor{blue}{[XX]} & \textcolor{blue}{[XX]} & \textcolor{blue}{[XX]} & \textcolor{blue}{[XX]} & \textcolor{blue}{[XX]} & \textcolor{blue}{[XX]} & \textcolor{blue}{[XX]} & \textcolor{blue}{[XX]} & \textcolor{blue}{[XX]} & \textcolor{blue}{[XX]} & \textcolor{blue}{[XX]} \\
+\midrule
+\multicolumn{13}{l}{\textbf{\textit{Single-Model Defense: Worst Guard (HarmBench-Llama)}}} \\
+GPT-OSS-20B     & 96.7         & 96.8         & $-$0.1           & 42.7         & 46.1         & \textbf{$-$3.3}  & 40.2         & 43.5         & \textbf{$-$3.3}  & 58.5         & 55.1         & \textbf{$-$3.4} \\
+Ministral-14B   & \textbf{87.3} & \textbf{87.2} & \textbf{$+$0.1}  & \textbf{23.6} & \textbf{40.8} & $-$17.2          & \textbf{17.3} & \textbf{31.8} & $-$14.5          & \textbf{80.2} & \textbf{63.6} & $-$16.6 \\
+Qwen3-8B        & \textbf{87.3} & \textbf{87.2} & \textbf{$+$0.1}  & 27.7         & 46.5         & $-$18.9          & 20.0         & 36.5         & $-$16.5          & 77.1         & 58.2         & $-$18.9 \\
+Llama-4-Scout   & \textcolor{blue}{[XX]} & \textcolor{blue}{[XX]} & \textcolor{blue}{[XX]} & \textcolor{blue}{[XX]} & \textcolor{blue}{[XX]} & \textcolor{blue}{[XX]} & \textcolor{blue}{[XX]} & \textcolor{blue}{[XX]} & \textcolor{blue}{[XX]} & \textcolor{blue}{[XX]} & \textcolor{blue}{[XX]} & \textcolor{blue}{[XX]} \\
+Mistral-Large   & \textcolor{blue}{[XX]} & \textcolor{blue}{[XX]} & \textcolor{blue}{[XX]} & \textcolor{blue}{[XX]} & \textcolor{blue}{[XX]} & \textcolor{blue}{[XX]} & \textcolor{blue}{[XX]} & \textcolor{blue}{[XX]} & \textcolor{blue}{[XX]} & \textcolor{blue}{[XX]} & \textcolor{blue}{[XX]} & \textcolor{blue}{[XX]} \\
+GPT-5.2         & \textcolor{blue}{[XX]} & \textcolor{blue}{[XX]} & \textcolor{blue}{[XX]} & \textcolor{blue}{[XX]} & \textcolor{blue}{[XX]} & \textcolor{blue}{[XX]} & \textcolor{blue}{[XX]} & \textcolor{blue}{[XX]} & \textcolor{blue}{[XX]} & \textcolor{blue}{[XX]} & \textcolor{blue}{[XX]} & \textcolor{blue}{[XX]} \\
+Gemini 3.1 Pro  & \textcolor{blue}{[XX]} & \textcolor{blue}{[XX]} & \textcolor{blue}{[XX]} & \textcolor{blue}{[XX]} & \textcolor{blue}{[XX]} & \textcolor{blue}{[XX]} & \textcolor{blue}{[XX]} & \textcolor{blue}{[XX]} & \textcolor{blue}{[XX]} & \textcolor{blue}{[XX]} & \textcolor{blue}{[XX]} & \textcolor{blue}{[XX]} \\
+\midrule
+\multicolumn{13}{l}{\textbf{\textit{Ensemble Defense: Majority Vote (Low-Stakes)}}} \\
+GPT-OSS-20B     & 43.8         & 47.8         & \textbf{$-$3.9}  & 42.7         & 46.1         & \textbf{$-$3.3}  & 38.4         & 40.5         & \textbf{$-$2.1}  & 12.5         & \textbf{15.3} & \textbf{$+$2.8} \\
+Ministral-14B   & \textbf{12.0} & \textbf{22.6} & $-$10.6          & \textbf{23.6} & \textbf{40.8} & $-$17.2          & \textbf{9.8}  & \textbf{20.1} & $-$10.3          & \textbf{18.6} & 11.3         & $-$7.3 \\
+Qwen3-8B        & \textbf{12.0} & \textbf{22.6} & $-$10.6          & 27.7         & 46.5         & $-$18.9          & 10.0         & 20.7         & $-$10.8          & 17.1         & 8.4          & $-$8.7 \\
+Llama-4-Scout   & \textcolor{blue}{[XX]} & \textcolor{blue}{[XX]} & \textcolor{blue}{[XX]} & \textcolor{blue}{[XX]} & \textcolor{blue}{[XX]} & \textcolor{blue}{[XX]} & \textcolor{blue}{[XX]} & \textcolor{blue}{[XX]} & \textcolor{blue}{[XX]} & \textcolor{blue}{[XX]} & \textcolor{blue}{[XX]} & \textcolor{blue}{[XX]} \\
+Mistral-Large   & \textcolor{blue}{[XX]} & \textcolor{blue}{[XX]} & \textcolor{blue}{[XX]} & \textcolor{blue}{[XX]} & \textcolor{blue}{[XX]} & \textcolor{blue}{[XX]} & \textcolor{blue}{[XX]} & \textcolor{blue}{[XX]} & \textcolor{blue}{[XX]} & \textcolor{blue}{[XX]} & \textcolor{blue}{[XX]} & \textcolor{blue}{[XX]} \\
+GPT-5.2         & \textcolor{blue}{[XX]} & \textcolor{blue}{[XX]} & \textcolor{blue}{[XX]} & \textcolor{blue}{[XX]} & \textcolor{blue}{[XX]} & \textcolor{blue}{[XX]} & \textcolor{blue}{[XX]} & \textcolor{blue}{[XX]} & \textcolor{blue}{[XX]} & \textcolor{blue}{[XX]} & \textcolor{blue}{[XX]} & \textcolor{blue}{[XX]} \\
+Gemini 3.1 Pro  & \textcolor{blue}{[XX]} & \textcolor{blue}{[XX]} & \textcolor{blue}{[XX]} & \textcolor{blue}{[XX]} & \textcolor{blue}{[XX]} & \textcolor{blue}{[XX]} & \textcolor{blue}{[XX]} & \textcolor{blue}{[XX]} & \textcolor{blue}{[XX]} & \textcolor{blue}{[XX]} & \textcolor{blue}{[XX]} & \textcolor{blue}{[XX]} \\
+\midrule
+\multicolumn{13}{l}{\textbf{\textit{Ensemble Defense: Any-Guard (High-Stakes)}}} \\
+GPT-OSS-20B     & 23.2         & 26.6         & \textbf{$-$3.5}  & 42.7         & 46.1         & \textbf{$-$3.3}  & 22.0         & 24.9         & \textbf{$-$2.8}  & \textbf{4.8}  & \textbf{6.7}  & $+$1.8 \\
+Ministral-14B   & \textbf{6.8}  & \textbf{11.7} & $-$4.9           & \textbf{23.6} & \textbf{40.8} & $-$17.2          & \textbf{6.8}  & \textbf{11.3} & $-$4.5           & 0.2          & 2.9          & \textbf{$+$2.8} \\
+Qwen3-8B        & \textbf{6.8}  & \textbf{11.7} & $-$4.9           & 27.7         & 46.5         & $-$18.9          & \textbf{6.8}  & 11.6         & $-$4.8           & 0.2          & 0.7          & $+$0.5 \\
+Llama-4-Scout   & \textcolor{blue}{[XX]} & \textcolor{blue}{[XX]} & \textcolor{blue}{[XX]} & \textcolor{blue}{[XX]} & \textcolor{blue}{[XX]} & \textcolor{blue}{[XX]} & \textcolor{blue}{[XX]} & \textcolor{blue}{[XX]} & \textcolor{blue}{[XX]} & \textcolor{blue}{[XX]} & \textcolor{blue}{[XX]} & \textcolor{blue}{[XX]} \\
+Mistral-Large   & \textcolor{blue}{[XX]} & \textcolor{blue}{[XX]} & \textcolor{blue}{[XX]} & \textcolor{blue}{[XX]} & \textcolor{blue}{[XX]} & \textcolor{blue}{[XX]} & \textcolor{blue}{[XX]} & \textcolor{blue}{[XX]} & \textcolor{blue}{[XX]} & \textcolor{blue}{[XX]} & \textcolor{blue}{[XX]} & \textcolor{blue}{[XX]} \\
+GPT-5.2         & \textcolor{blue}{[XX]} & \textcolor{blue}{[XX]} & \textcolor{blue}{[XX]} & \textcolor{blue}{[XX]} & \textcolor{blue}{[XX]} & \textcolor{blue}{[XX]} & \textcolor{blue}{[XX]} & \textcolor{blue}{[XX]} & \textcolor{blue}{[XX]} & \textcolor{blue}{[XX]} & \textcolor{blue}{[XX]} & \textcolor{blue}{[XX]} \\
+Gemini 3.1 Pro  & \textcolor{blue}{[XX]} & \textcolor{blue}{[XX]} & \textcolor{blue}{[XX]} & \textcolor{blue}{[XX]} & \textcolor{blue}{[XX]} & \textcolor{blue}{[XX]} & \textcolor{blue}{[XX]} & \textcolor{blue}{[XX]} & \textcolor{blue}{[XX]} & \textcolor{blue}{[XX]} & \textcolor{blue}{[XX]} & \textcolor{blue}{[XX]} \\
+\bottomrule
+\end{tabular}
+}
+\end{table}

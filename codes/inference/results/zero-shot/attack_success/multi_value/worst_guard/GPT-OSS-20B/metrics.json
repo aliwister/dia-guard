@@ -1,0 +1,25 @@
+{
+  "production_model": "GPT-OSS-20B",
+  "defense_config": "worst_guard",
+  "defense_description": "HarmBench-Llama (worst single)",
+  "shot": "zero-shot",
+  "prompt_type": "multi_value",
+  "metric": "attack_success",
+  "guards_used": [
+    "HarmBench-Llama"
+  ],
+  "n_datasets": 15,
+  "n_dialects": 50,
+  "n_samples": 385554,
+  "overall": {
+    "support": 385554,
+    "gbr_sae": 99.58,
+    "gbr_dialect": 99.65,
+    "pbr_sae": 41.41,
+    "pbr_dialect": 44.81,
+    "asr_sae": 41.35,
+    "asr_dialect": 44.76,
+    "iarr_sae": 58.48,
+    "iarr_dialect": 55.08
+  }
+}
