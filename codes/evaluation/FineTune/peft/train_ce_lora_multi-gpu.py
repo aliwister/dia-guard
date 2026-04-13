@@ -200,13 +200,16 @@ def train(cfg: dict):
     if not train_path or not Path(train_path).exists():
         raise ValueError(f"train_data not found: {train_path}")
 
+    max_seq_length = cfg.get("max_seq_length", 2048)
     train_dataset = load_and_format_dataset(
         train_path, tokenizer, cfg["model_name"], SYSTEM_PROMPT, split="train",
+        max_length=max_seq_length,
     )
     eval_dataset = None
     if eval_path and Path(eval_path).exists():
         eval_dataset = load_and_format_dataset(
             eval_path, tokenizer, cfg["model_name"], SYSTEM_PROMPT, split="val",
+            max_length=max_seq_length,
         )
 
     print(f"Train: {len(train_dataset)} | Eval: {len(eval_dataset) if eval_dataset else 'N/A'}")
@@ -288,14 +291,10 @@ def train(cfg: dict):
             nonlocal _label_check_done
             if "labels" in inputs and not _label_check_done:
                 labels = inputs["labels"]
-                total_tokens = labels.numel()
-                masked_tokens = (labels == -100).sum().item()
-                active_tokens = total_tokens - masked_tokens
-                print(
-                    f"[LabelCheck] total={total_tokens} | masked(-100)={masked_tokens} "
-                    f"| active(loss)={active_tokens} "
-                    f"({100*active_tokens/total_tokens:.1f}% of sequence)"
-                )
+                # Print the decoded loss tokens from the first example in the batch
+                first_labels = labels[0]
+                active_ids = first_labels[first_labels != -100].tolist()
+                print(f"[LabelCheck] loss tokens: {repr(tokenizer.decode(active_ids))}")
                 _label_check_done = True
             return super().training_step(model, inputs, *args, **kwargs)
 

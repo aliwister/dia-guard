@@ -82,12 +82,6 @@ def load_and_format_dataset(
         if cached_key == current_key:
             print(f"Loading cached formatted {split} dataset from {cache_dir}")
             dataset = load_from_disk(cache_dir)
-            if max_length is not None:
-                before = len(dataset)
-                dataset = dataset.filter(
-                    lambda ex: len(tokenizer(ex["text"], add_special_tokens=False)["input_ids"]) <= max_length
-                )
-                print(f"Filtered {split} dataset by max_length={max_length}: {before} → {len(dataset)} ({before - len(dataset)} removed)")
             if max_samples is not None and len(dataset) > max_samples:
                 print(f"Subsampling {split} dataset: {len(dataset)} → {max_samples}")
                 dataset = dataset.shuffle(seed=42).select(range(max_samples))
@@ -156,13 +150,16 @@ def load_and_format_dataset(
     with open(key_file, "w") as f:
         f.write(current_key)
 
-    # Filter by token length after caching so the cache is reusable for any max_length
+    # Filter sequences that exceed max_length — truncation would cut off the
+    # response template, causing the entire example to be ignored in loss calculation.
     if max_length is not None:
         before = len(dataset)
         dataset = dataset.filter(
             lambda ex: len(tokenizer(ex["text"], add_special_tokens=False)["input_ids"]) <= max_length
         )
-        print(f"Filtered {split} dataset by max_length={max_length}: {before} → {len(dataset)} ({before - len(dataset)} removed)")
+        dropped = before - len(dataset)
+        if dropped:
+            print(f"[LengthFilter] {split}: dropped {dropped}/{before} examples exceeding {max_length} tokens")
 
     # Apply max_samples after caching so the cache is reusable for any sample count
     if max_samples is not None and len(dataset) > max_samples:
