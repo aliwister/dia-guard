@@ -66,9 +66,6 @@ def _is_clean(ex, tokenizer, max_length):
     endoftext_id = tokenizer.convert_tokens_to_ids("<|endoftext|>")
     if endoftext_id is not None and endoftext_id != tokenizer.unk_token_id and endoftext_id in ids:
         return False
-    # Drop if the assistant turn has no real content (empty think block / empty response)
-    if "<think>\n\n</think>" in text and text.rstrip().endswith("</think>"):
-        return False
     return True
 
 

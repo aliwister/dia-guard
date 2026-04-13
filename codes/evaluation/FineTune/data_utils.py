@@ -54,24 +54,6 @@ def load_jsonl(path: str) -> Dataset:
     return Dataset.from_list(records)
 
 
-def _is_clean(ex, tokenizer, max_length):
-    text = str(ex.get("text", "")).strip()
-    if not text:
-        return False
-    ids = tokenizer(text, add_special_tokens=False)["input_ids"]
-    # Drop if too long
-    if len(ids) > max_length:
-        return False
-    # Drop if endoftext token appears (padding leaked into text)
-    endoftext_id = tokenizer.convert_tokens_to_ids("<|endoftext|>")
-    if endoftext_id is not None and endoftext_id != tokenizer.unk_token_id and endoftext_id in ids:
-        return False
-    # Drop if the assistant turn has no real content (empty think block / empty response)
-    if "<think>\n\n</think>" in text and text.rstrip().endswith("</think>"):
-        return False
-    return True
-
-
 def load_and_format_dataset(
     jsonl_path: str,
     tokenizer,
@@ -79,7 +61,6 @@ def load_and_format_dataset(
     system_prompt: str,
     split: str = "train",
     max_samples: int = None,
-    max_length: int = None,
 ) -> Dataset:
     """
     Load JSONL data, apply chat template formatting, and cache to disk.
@@ -99,10 +80,6 @@ def load_and_format_dataset(
         if cached_key == current_key:
             print(f"Loading cached formatted {split} dataset from {cache_dir}")
             dataset = load_from_disk(cache_dir)
-            if max_length is not None:
-                before = len(dataset)
-                dataset = dataset.filter(lambda ex: _is_clean(ex, tokenizer, max_length))
-                print(f"Filtered {split} dataset by max_length={max_length}: {before} → {len(dataset)} ({before - len(dataset)} removed)")
             if max_samples is not None and len(dataset) > max_samples:
                 print(f"Subsampling {split} dataset: {len(dataset)} → {max_samples}")
                 dataset = dataset.shuffle(seed=42).select(range(max_samples))
@@ -137,21 +114,12 @@ def load_and_format_dataset(
     print(f"Formatting {split} dataset ({len(dataset)} records)...")
     dataset = dataset.map(format_example)
 
-    # Save to cache (full dataset, before any filtering/subsampling)
+    # Save to cache (full dataset, before subsampling)
     print(f"Caching formatted {split} dataset to {cache_dir}")
     os.makedirs(cache_dir, exist_ok=True)
     dataset.save_to_disk(cache_dir)
     with open(key_file, "w") as f:
         f.write(current_key)
-
-    # Filter by token length after caching so the cache is reusable for any max_length
-    if max_length is not None:
-        before = len(dataset)
-        dataset = dataset.filter(lambda ex: bool(str(ex.get("text", "")).strip()))
-        dataset = dataset.filter(
-            lambda ex: len(tokenizer(ex["text"], add_special_tokens=False)["input_ids"]) <= max_length
-        )
-        print(f"Filtered {split} dataset by max_length={max_length}: {before} → {len(dataset)} ({before - len(dataset)} removed)")
 
     # Apply max_samples after caching so the cache is reusable for any sample count
     if max_samples is not None and len(dataset) > max_samples:
