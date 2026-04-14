@@ -29,10 +29,16 @@ codes/inference/results/
 │       └── multi_value/
 │           ├── best_guard/              # Qwen3Guard-4B as single guard
 │           │   └── <Production-Model>/
-│           │       ├── metrics.json
-│           │       ├── per_dialect.json
+│           │       ├── metrics.json     # overall (all datasets, all dialects)
+│           │       ├── per_dialect.json # by dialect (all datasets)
+│           │       ├── categories/
+│           │       │   ├── toxicity_safety/{metrics,per_dialect}.json
+│           │       │   ├── prompt_injection/{metrics,per_dialect}.json
+│           │       │   └── code_generation/{metrics,per_dialect}.json
 │           │       └── datasets/
-│           │           └── <Dataset>/...
+│           │           └── <Dataset>/
+│           │               ├── metrics.json
+│           │               └── per_dialect.json
 │           ├── worst_guard/             # HarmBench-Llama as single guard
 │           ├── majority_vote/           # Top-5 guards, ≥3 agree (low-stakes)
 │           └── any_guard/               # Top-5 guards, any flags (high-stakes)

@@ -1,0 +1,27 @@
+{
+  "production_model": "GPT-OSS-20B",
+  "defense_config": "majority_vote",
+  "prompt_type": "multi_value",
+  "shot": "zero-shot",
+  "metric": "attack_success",
+  "category": "Code Generation",
+  "category_slug": "code_generation",
+  "datasets_included": [
+    "cyberseceval",
+    "llmseceval",
+    "securityeval"
+  ],
+  "n_datasets": 3,
+  "n_dialects": 50,
+  "overall": {
+    "gbr_sae": 99.25,
+    "gbr_dialect": 99.17,
+    "pbr_sae": 95.39,
+    "pbr_dialect": 95.69,
+    "asr_sae": 95.15,
+    "asr_dialect": 95.37,
+    "iarr_sae": 4.13,
+    "iarr_dialect": 3.83,
+    "support": 42000
+  }
+}

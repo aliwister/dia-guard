@@ -1,0 +1,30 @@
+{
+  "production_model": "Ministral-14B",
+  "defense_config": "majority_vote",
+  "prompt_type": "multi_value",
+  "shot": "zero-shot",
+  "metric": "attack_success",
+  "category": "Toxicity/Safety",
+  "category_slug": "toxicity_safety",
+  "datasets_included": [
+    "Salad_Bench",
+    "Simple_Safety_Tests",
+    "Toxic_Text",
+    "Toxicity_Jigsaw",
+    "forbiddent_questions",
+    "harmBench"
+  ],
+  "n_datasets": 6,
+  "n_dialects": 48,
+  "overall": {
+    "gbr_sae": 12.01,
+    "gbr_dialect": 22.63,
+    "pbr_sae": 23.61,
+    "pbr_dialect": 40.76,
+    "asr_sae": 9.77,
+    "asr_dialect": 20.07,
+    "iarr_sae": 18.65,
+    "iarr_dialect": 11.31,
+    "support": 28424
+  }
+}

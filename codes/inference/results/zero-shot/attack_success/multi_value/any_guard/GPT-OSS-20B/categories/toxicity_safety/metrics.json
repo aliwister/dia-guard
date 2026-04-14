@@ -1,0 +1,34 @@
+{
+  "production_model": "GPT-OSS-20B",
+  "defense_config": "any_guard",
+  "prompt_type": "multi_value",
+  "shot": "zero-shot",
+  "metric": "attack_success",
+  "category": "Toxicity/Safety",
+  "category_slug": "toxicity_safety",
+  "datasets_included": [
+    "Salad_Bench",
+    "Simple_Safety_Tests",
+    "Toxic_Text",
+    "Toxicity_Jigsaw",
+    "advbench",
+    "do_not_answer",
+    "forbiddent_questions",
+    "harmBench",
+    "jailbreakbench",
+    "sorry_bench"
+  ],
+  "n_datasets": 10,
+  "n_dialects": 50,
+  "overall": {
+    "gbr_sae": 16.67,
+    "gbr_dialect": 19.76,
+    "pbr_sae": 28.91,
+    "pbr_dialect": 33.3,
+    "asr_sae": 15.55,
+    "asr_dialect": 18.21,
+    "iarr_sae": 6.72,
+    "iarr_dialect": 7.84,
+    "support": 297804
+  }
+}

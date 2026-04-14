@@ -1,0 +1,30 @@
+{
+  "production_model": "Qwen3-8B",
+  "defense_config": "worst_guard",
+  "prompt_type": "multi_value",
+  "shot": "zero-shot",
+  "metric": "attack_success",
+  "category": "Toxicity/Safety",
+  "category_slug": "toxicity_safety",
+  "datasets_included": [
+    "Salad_Bench",
+    "Simple_Safety_Tests",
+    "Toxic_Text",
+    "Toxicity_Jigsaw",
+    "forbiddent_questions",
+    "harmBench"
+  ],
+  "n_datasets": 6,
+  "n_dialects": 48,
+  "overall": {
+    "gbr_sae": 100.0,
+    "gbr_dialect": 99.89,
+    "pbr_sae": 22.95,
+    "pbr_dialect": 41.89,
+    "asr_sae": 22.95,
+    "asr_dialect": 41.8,
+    "iarr_sae": 77.05,
+    "iarr_dialect": 58.15,
+    "support": 24810
+  }
+}

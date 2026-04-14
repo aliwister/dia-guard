@@ -1,0 +1,26 @@
+{
+  "production_model": "GPT-OSS-20B",
+  "defense_config": "majority_vote",
+  "prompt_type": "multi_value",
+  "shot": "zero-shot",
+  "metric": "attack_success",
+  "category": "Prompt Injection",
+  "category_slug": "prompt_injection",
+  "datasets_included": [
+    "bipia",
+    "injecagent"
+  ],
+  "n_datasets": 2,
+  "n_dialects": 50,
+  "overall": {
+    "gbr_sae": 89.0,
+    "gbr_dialect": 83.51,
+    "pbr_sae": 75.97,
+    "pbr_dialect": 76.02,
+    "asr_sae": 75.97,
+    "asr_dialect": 72.64,
+    "iarr_sae": 14.64,
+    "iarr_dialect": 13.02,
+    "support": 57250
+  }
+}
