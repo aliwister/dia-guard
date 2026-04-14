@@ -1,0 +1,34 @@
+{
+  "model": "Qwen3Guard-Gen-8B",
+  "method": "KD-BASELINE",
+  "teacher": "none",
+  "scenario": "oob-teacher",
+  "test_n": 181874,
+  "overall": {
+    "accuracy": 0.6857,
+    "precision": 0.7875,
+    "recall": 0.7097,
+    "f1": 0.6697,
+    "support": 181874
+  },
+  "confusion_matrix": {
+    "tp": 42365,
+    "tn": 82337,
+    "fp": 803,
+    "fn": 56369
+  },
+  "per_class": {
+    "safe": {
+      "precision": 0.5936,
+      "recall": 0.9903,
+      "f1": 0.7423,
+      "support": 83140
+    },
+    "unsafe": {
+      "precision": 0.9814,
+      "recall": 0.4291,
+      "f1": 0.5971,
+      "support": 98734
+    }
+  }
+}

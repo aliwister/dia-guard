@@ -182,6 +182,43 @@ def table_kd_s2():
 # ─────────────────────────────────────────────────────────────────────────────
 # Table: Per-dialect for top models (Holdout)
 # ─────────────────────────────────────────────────────────────────────────────
+def table_teachers():
+    """Teacher models — off-the-shelf (OOB) vs DIA-GUARD LoRA-CE fine-tuned (FT), on Holdout and SAE."""
+    teachers = ["Qwen3-4B-SafeRL", "Qwen3Guard-Gen-8B"]
+    dirs = [
+        ("OOB",  "Holdout", "Baseline"),
+        ("OOB",  "SAE",     "Baseline-SAE"),
+        ("FT",   "Holdout", "Teacher-FT-PEFT-CE"),
+        ("FT",   "SAE",     "Teacher-FT-PEFT-CE-SAE"),
+    ]
+    lines = [
+        "\\begin{table*}[t]",
+        "\\centering",
+        "\\small",
+        "\\begin{tabular}{llccccc}",
+        "\\toprule",
+        "Teacher & Variant & Split & Accuracy & Precision & Recall & ASR & F1 \\\\",
+        "\\midrule",
+    ]
+    for teacher in teachers:
+        for variant, split, dirn in dirs:
+            m = load(ROOT / dirn / teacher / "metrics.json")
+            if m is None:
+                continue
+            o = m["overall"]; cm = m["confusion_matrix"]
+            asr = cm["tp"]/(cm["tp"]+cm["fn"])*100 if (cm["tp"]+cm["fn"]) else 0
+            lines.append(f"{teacher} & {variant} & {split} & {o['accuracy']:.4f} & {o['precision']:.4f} & {o['recall']:.4f} & {asr:.2f}\\% & {o['f1']:.4f} \\\\")
+    lines += [
+        "\\bottomrule",
+        "\\end{tabular}",
+        "\\caption{Teacher models used in Scenarios 1 \\& 2 KD, evaluated on the dialect Holdout (181{,}874) and SAE (36{,}050) test sets. `OOB' = off-the-shelf, `FT' = LoRA-CE fine-tuned on DIA-GUARD.}",
+        "\\label{tab:teachers}",
+        "\\end{table*}",
+    ]
+    (OUT / "teachers.tex").write_text("\n".join(lines))
+    print("  wrote teachers.tex")
+
+
 def table_per_dialect():
     # Pick the top 5 by holdout accuracy
     candidates = [
@@ -304,6 +341,8 @@ def main():
     table_kd_s2()
     # Table 6: Per-dialect
     table_per_dialect()
+    # Table 7: Teachers (OOB vs FT × Holdout vs SAE)
+    table_teachers()
 
     print("\nAll tables written to", OUT)
 

@@ -1,0 +1,20 @@
+\begin{table*}[t]
+\centering
+\small
+\begin{tabular}{llccccc}
+\toprule
+Teacher & Variant & Split & Accuracy & Precision & Recall & ASR & F1 \\
+\midrule
+Qwen3-4B-SafeRL & OOB & Holdout & 0.5429 & 0.7214 & 0.5000 & 100.00\% & 0.3520 \\
+Qwen3-4B-SafeRL & OOB & SAE & 0.5370 & 0.7685 & 0.5000 & 100.00\% & 0.3494 \\
+Qwen3-4B-SafeRL & FT & Holdout & 0.9692 & 0.9720 & 0.9668 & 99.45\% & 0.9688 \\
+Qwen3-4B-SafeRL & FT & SAE & 0.9716 & 0.9740 & 0.9697 & 99.51\% & 0.9714 \\
+Qwen3Guard-Gen-8B & OOB & Holdout & 0.6857 & 0.7875 & 0.7097 & 42.91\% & 0.6697 \\
+Qwen3Guard-Gen-8B & OOB & SAE & 0.7156 & 0.8007 & 0.7344 & 48.01\% & 0.7038 \\
+Qwen3Guard-Gen-8B & FT & Holdout & 0.5432 & 0.5596 & 0.5005 & 99.83\% & 0.3545 \\
+Qwen3Guard-Gen-8B & FT & SAE & 0.5381 & 0.6423 & 0.5013 & 99.89\% & 0.3532 \\
+\bottomrule
+\end{tabular}
+\caption{Teacher models used in Scenarios 1 \& 2 KD, evaluated on the dialect Holdout (181{,}874) and SAE (36{,}050) test sets. `OOB' = off-the-shelf, `FT' = LoRA-CE fine-tuned on DIA-GUARD.}
+\label{tab:teachers}
+\end{table*}
