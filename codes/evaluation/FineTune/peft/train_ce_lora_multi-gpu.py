@@ -312,8 +312,8 @@ def train(cfg: dict):
     class DiagnosticTrainer(SFTTrainer):
         def compute_loss(self, model, inputs, **kwargs):
             loss = super().compute_loss(model, inputs, **kwargs)
-            if not torch.isfinite(loss) or loss.item() > 50:
-                print(f"[LossGuard] skipping bad batch (loss={loss.item():.1f})")
+            if not torch.isfinite(loss):
+                print(f"[LossGuard] non-finite loss ({loss.item()}) — skipping backward")
                 return torch.zeros((), requires_grad=True, device=loss.device, dtype=loss.dtype)
             return loss
 
