@@ -309,7 +309,25 @@ def train(cfg: dict):
     _train_check_done = False
     _eval_check_done = False
 
+    _high_loss_log = os.path.join(output_dir, "high_loss_batches.jsonl")
+    _HIGH_LOSS_THRESHOLD = 5.0
+
     class DiagnosticTrainer(SFTTrainer):
+        def compute_loss(self, model, inputs, **kwargs):
+            loss = super().compute_loss(model, inputs, **kwargs)
+            if torch.isfinite(loss) and loss.item() > _HIGH_LOSS_THRESHOLD and "input_ids" in inputs:
+                local_rank = int(os.environ.get("LOCAL_RANK", 0))
+                if local_rank == 0:
+                    import json as _json
+                    with open(_high_loss_log, "a") as _f:
+                        for ids in inputs["input_ids"]:
+                            _f.write(_json.dumps({
+                                "loss": round(loss.item(), 4),
+                                "text": tokenizer.decode(ids.tolist(), skip_special_tokens=False),
+                            }) + "\n")
+                    print(f"[HighLoss] loss={loss.item():.2f} — logged {len(inputs['input_ids'])} examples to {_high_loss_log}")
+            return loss
+
         def training_step(self, model, inputs, *args, **kwargs):
             nonlocal _train_check_done
             if "labels" in inputs:
