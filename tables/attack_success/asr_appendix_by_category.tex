@@ -1,0 +1,63 @@
+\begin{table*}[t]
+\centering
+\scriptsize
+\caption{Appendix: End-to-End Attack Success Rate (\%) by threat category, grouped by defense setting. Each cell shows ASR$_\text{SAE}$ / ASR$_\text{Dia}$ / $\Delta$. Negative $\Delta$ = more attacks succeed under dialect (safety degraded). \textbf{Bold} = best per column within each defense block. Toxicity/Safety covers 10 benchmarks (Jigsaw, SaladBench, HarmBench, AdvBench, etc.); Prompt Injection covers BIPIA + InjecAgent; Code Generation covers CyberSecEval + LLMSecEval + SecurityEval.}
+\label{tab:appendix_asr_by_category}
+\resizebox{\textwidth}{!}{%
+\begin{tabular}{l ccc ccc ccc}
+\toprule
+ & \multicolumn{3}{c}{\textbf{Toxicity/Safety}} & \multicolumn{3}{c}{\textbf{Prompt Injection}} & \multicolumn{3}{c}{\textbf{Code Generation}} \\
+\cmidrule(lr){2-4} \cmidrule(lr){5-7} \cmidrule(lr){8-10}
+\textbf{Production Model} & \textbf{SAE} & \textbf{Dia} & \textbf{$\Delta$} & \textbf{SAE} & \textbf{Dia} & \textbf{$\Delta$} & \textbf{SAE} & \textbf{Dia} & \textbf{$\Delta$} \\
+\midrule
+\multicolumn{10}{l}{\textbf{\textit{Single-Model Defense: Best Guard (Qwen3Guard-4B)}}} \\
+GPT-OSS-20B & \textbf{2.7} & \textbf{6.0} & \textbf{$-$3.3} & --- & --- & --- & --- & --- & --- \\
+Ministral-14B & 15.9 & 34.1 & $-$18.3 & --- & --- & --- & --- & --- & --- \\
+Qwen3-8B & 16.2 & 35.1 & $-$18.9 & --- & --- & --- & --- & --- & --- \\
+Mistral-3-Large-675B & 4.1 & 11.0 & $-$7.0 & --- & --- & --- & --- & --- & --- \\
+Llama-4-Maverick-17B & 4.4 & 11.3 & $-$6.9 & --- & --- & --- & --- & --- & --- \\
+Qwen3-32B & 3.7 & 10.0 & $-$6.3 & --- & --- & --- & --- & --- & --- \\
+Gemma-3-27B & 4.0 & 9.4 & $-$5.3 & --- & --- & --- & --- & --- & --- \\
+GPT-OSS-120B & 4.3 & 11.6 & $-$7.3 & --- & --- & --- & --- & --- & --- \\
+Claude-Opus & 4.1 & 12.2 & $-$8.1 & --- & --- & --- & --- & --- & --- \\
+Claude-Sonnet & 4.4 & 12.2 & $-$7.7 & --- & --- & --- & --- & --- & --- \\
+\midrule
+\multicolumn{10}{l}{\textbf{\textit{Single-Model Defense: Worst Guard (HarmBench-Llama)}}} \\
+GPT-OSS-20B & 26.6 & 31.1 & $-$4.5 & \textbf{76.0} & \textbf{76.0} & $-$0.0 & 94.9 & 95.3 & $-$0.3 \\
+Ministral-14B & 19.8 & 36.4 & $-$16.6 & --- & --- & --- & --- & --- & --- \\
+Qwen3-8B & 22.9 & 41.8 & $-$18.9 & --- & --- & --- & --- & --- & --- \\
+Mistral-3-Large-675B & 5.9 & 8.1 & $-$2.2 & 98.2 & 98.6 & $-$0.4 & 91.5 & 90.4 & \textbf{$+$1.2} \\
+Llama-4-Maverick-17B & 6.5 & 8.0 & $-$1.5 & 100.0 & 99.4 & $+$0.6 & 98.2 & 98.4 & $-$0.1 \\
+Qwen3-32B & 5.7 & 5.4 & \textbf{$+$0.3} & 97.0 & 98.1 & $-$1.1 & 93.9 & 93.0 & $+$0.8 \\
+Gemma-3-27B & \textbf{3.6} & \textbf{3.5} & $+$0.1 & 93.0 & 87.5 & \textbf{$+$5.6} & \textbf{78.0} & \textbf{78.1} & $-$0.1 \\
+GPT-OSS-120B & 10.5 & 14.1 & $-$3.6 & 90.2 & 89.7 & $+$0.5 & 95.5 & 96.1 & $-$0.6 \\
+Claude-Opus & 11.1 & 13.9 & $-$2.8 & 100.0 & 97.4 & $+$2.6 & 94.7 & 96.0 & $-$1.3 \\
+Claude-Sonnet & 14.4 & 17.4 & $-$3.1 & 100.0 & 100.0 & $+$0.0 & 98.7 & 98.7 & $+$0.0 \\
+\midrule
+\multicolumn{10}{l}{\textbf{\textit{Ensemble Defense: Majority Vote (Low-Stakes)}}} \\
+GPT-OSS-20B & 23.1 & 26.6 & $-$3.4 & \textbf{76.0} & \textbf{72.6} & $+$3.3 & 95.2 & 95.4 & $-$0.2 \\
+Ministral-14B & 9.8 & 20.1 & $-$10.3 & --- & --- & --- & --- & --- & --- \\
+Qwen3-8B & 10.0 & 20.7 & $-$10.8 & --- & --- & --- & --- & --- & --- \\
+Mistral-3-Large-675B & 5.1 & 8.7 & $-$3.7 & 91.1 & 88.8 & $+$2.3 & 91.5 & 90.4 & \textbf{$+$1.2} \\
+Llama-4-Maverick-17B & 5.6 & 8.9 & $-$3.3 & 92.0 & 89.3 & $+$2.7 & 98.0 & 98.3 & $-$0.2 \\
+Qwen3-32B & 5.3 & 7.5 & $-$2.2 & 89.0 & 88.1 & $+$0.9 & 93.7 & 92.9 & $+$0.7 \\
+Gemma-3-27B & \textbf{4.4} & \textbf{6.5} & \textbf{$-$2.2} & 87.0 & 81.1 & \textbf{$+$5.9} & \textbf{78.0} & \textbf{78.1} & $-$0.1 \\
+GPT-OSS-120B & 6.0 & 10.3 & $-$4.3 & 88.3 & 86.1 & $+$2.2 & 95.5 & 96.0 & $-$0.5 \\
+Claude-Opus & 6.7 & 10.9 & $-$4.2 & 92.1 & 88.9 & $+$3.2 & 94.0 & 95.3 & $-$1.4 \\
+Claude-Sonnet & 7.3 & 11.2 & $-$3.9 & 92.0 & 89.5 & $+$2.5 & 97.8 & 97.9 & $-$0.1 \\
+\midrule
+\multicolumn{10}{l}{\textbf{\textit{Ensemble Defense: Any-Guard (High-Stakes)}}} \\
+GPT-OSS-20B & 15.5 & 18.2 & \textbf{$-$2.7} & \textbf{43.2} & \textbf{51.8} & $-$8.6 & \textbf{39.3} & \textbf{35.3} & $+$3.9 \\
+Ministral-14B & 6.8 & 11.3 & $-$4.5 & --- & --- & --- & --- & --- & --- \\
+Qwen3-8B & 6.8 & 11.6 & $-$4.8 & --- & --- & --- & --- & --- & --- \\
+Mistral-3-Large-675B & 2.4 & 6.1 & $-$3.7 & 60.1 & 66.3 & $-$6.3 & 60.0 & 55.0 & $+$5.1 \\
+Llama-4-Maverick-17B & 2.4 & 6.2 & $-$3.9 & 61.0 & 66.7 & $-$5.7 & 62.0 & 57.2 & $+$4.8 \\
+Qwen3-32B & \textbf{2.2} & 5.7 & $-$3.5 & 61.0 & 66.6 & $-$5.6 & 61.2 & 56.4 & $+$4.8 \\
+Gemma-3-27B & 2.4 & \textbf{5.5} & $-$3.2 & 57.0 & 61.9 & \textbf{$-$4.9} & 53.3 & 48.7 & $+$4.6 \\
+GPT-OSS-120B & 2.4 & 6.3 & $-$4.0 & 60.5 & 66.1 & $-$5.7 & 62.0 & 57.2 & $+$4.8 \\
+Claude-Opus & 2.5 & 6.7 & $-$4.3 & 61.3 & 66.4 & $-$5.1 & 61.1 & 55.9 & \textbf{$+$5.2} \\
+Claude-Sonnet & 2.4 & 6.5 & $-$4.1 & 61.0 & 67.0 & $-$6.0 & 62.0 & 57.0 & $+$5.0 \\
+\bottomrule
+\end{tabular}
+}
+\end{table*}
