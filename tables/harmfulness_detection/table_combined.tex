@@ -1,0 +1,43 @@
+\begin{table}[t]
+\centering
+\scriptsize
+\begin{tabular}{lcccccccc}
+\toprule
+ & \multicolumn{2}{c}{\textbf{0-shot}} & \multicolumn{2}{c}{\textbf{2-shot}} & \multicolumn{2}{c}{\textbf{4-shot}} & \multicolumn{2}{c}{\textbf{8-shot}} \\
+\cmidrule(lr){2-3} \cmidrule(lr){4-5} \cmidrule(lr){6-7} \cmidrule(lr){8-9}
+\textbf{Model} & \textbf{Acc$_d$} & \textbf{$\Delta$} & \textbf{Acc$_d$} & \textbf{$\Delta$} & \textbf{Acc$_d$} & \textbf{$\Delta$} & \textbf{Acc$_d$} & \textbf{$\Delta$} \\
+\midrule
+\multicolumn{9}{l}{\textbf{\textit{Safety-Grade Guards}}} \\
+ShieldGemma-2-4B & \textcolor{blue}{[XX]} & \textcolor{blue}{[XX]} & \textcolor{blue}{[XX]} & \textcolor{blue}{[XX]} & \textcolor{blue}{[XX]} & \textcolor{blue}{[XX]} & \textcolor{blue}{[XX]} & \textcolor{blue}{[XX]} \\
+\textbf{ShieldGemma-9B} & \textcolor{blue}{\textbf{[XX]}} & \textcolor{blue}{\textbf{[XX]}} & \textcolor{blue}{\textbf{[XX]}} & \textcolor{blue}{\textbf{[XX]}} & \textcolor{blue}{\textbf{[XX]}} & \textcolor{blue}{\textbf{[XX]}} & \textcolor{blue}{\textbf{[XX]}} & \textcolor{blue}{\textbf{[XX]}} \\
+\textbf{Qwen3Guard-8B} & \textbf{64.3} & \textbf{$-$18.5} & \textcolor{blue}{\textbf{[XX]}} & \textcolor{blue}{\textbf{[XX]}} & \textcolor{blue}{\textbf{[XX]}} & \textcolor{blue}{\textbf{[XX]}} & \textcolor{blue}{\textbf{[XX]}} & \textcolor{blue}{\textbf{[XX]}} \\
+Qwen3-4B-SafeRL & 61.7 & $-$15.4 & \textcolor{blue}{[XX]} & \textcolor{blue}{[XX]} & \textcolor{blue}{[XX]} & \textcolor{blue}{[XX]} & \textcolor{blue}{[XX]} & \textcolor{blue}{[XX]} \\
+GPT-OSS-SafeGuard-20B & 49.5 & $-$6.5 & 58.1 & $-$6.0 & 62.3 & $-$6.2 & 66.9 & $-$5.9 \\
+GPT-OSS-SafeGuard-120B & 44.9 & $-$6.5 & 51.4 & $-$6.1 & 56.8 & $-$6.1 & 62.2 & $-$5.6 \\
+\midrule[\lightrulewidth]
+\multicolumn{9}{l}{\textbf{\textit{General Purpose LLMs}}} \\
+Mistral-7B & 37.5 & $-$7.8 & 46.4 & $-$5.6 & 49.3 & $-$5.5 & 52.9 & $-$5.3 \\
+\textbf{Ministral-14B} & \textbf{66.0} & \textbf{$+$2.1} & \textbf{73.0} & \textbf{$+$1.5} & \textbf{78.2} & \textbf{$+$0.9} & \textbf{84.0} & \textbf{$+$0.7} \\
+Mistral-3-Large-675B & 53.5 & $-$5.5 & 60.7 & $-$4.2 & 69.4 & $-$3.2 & 77.4 & $-$2.5 \\
+\textbf{Llama-3.1-8B} & \textcolor{blue}{\textbf{[XX]}} & \textcolor{blue}{\textbf{[XX]}} & \textcolor{blue}{\textbf{[XX]}} & \textcolor{blue}{\textbf{[XX]}} & \textcolor{blue}{\textbf{[XX]}} & \textcolor{blue}{\textbf{[XX]}} & \textcolor{blue}{\textbf{[XX]}} & \textcolor{blue}{\textbf{[XX]}} \\
+Llama-4-Maverick-17B & 50.9 & $-$5.6 & 59.5 & $-$5.1 & 68.5 & $-$4.8 & 74.9 & $-$4.6 \\
+\textbf{Gemma-3-1B} & \textcolor{blue}{\textbf{[XX]}} & \textcolor{blue}{\textbf{[XX]}} & \textcolor{blue}{\textbf{[XX]}} & \textcolor{blue}{\textbf{[XX]}} & \textcolor{blue}{\textbf{[XX]}} & \textcolor{blue}{\textbf{[XX]}} & \textcolor{blue}{\textbf{[XX]}} & \textcolor{blue}{\textbf{[XX]}} \\
+Gemma-3-27B & 59.7 & $-$4.5 & 76.5 & $-$3.5 & 81.6 & $-$2.7 & 85.9 & $-$2.2 \\
+Qwen3-8B & 53.5 & $-$18.9 & \textcolor{blue}{[XX]} & \textcolor{blue}{[XX]} & \textcolor{blue}{[XX]} & \textcolor{blue}{[XX]} & \textcolor{blue}{[XX]} & \textcolor{blue}{[XX]} \\
+Qwen3-Coder-Instruct-30B & 57.8 & $-$4.6 & 67.0 & $-$2.9 & 73.9 & $-$3.3 & 79.5 & $-$3.6 \\
+Qwen3-235B & 61.7 & $+$1.1 & 71.1 & $+$1.8 & 76.0 & $+$1.7 & 80.8 & $+$1.5 \\
+GPT-OSS-20B & 53.4 & $-$6.4 & 61.0 & $-$6.0 & 63.8 & $-$5.8 & 66.3 & $-$5.2 \\
+GPT-OSS-120B & 51.4 & $-$6.1 & 59.3 & $-$5.5 & 65.0 & $-$5.2 & 70.2 & $-$5.2 \\
+\midrule[\lightrulewidth]
+\multicolumn{9}{l}{\textbf{\textit{Proprietary LLMs}}} \\
+Claude-Opus & 48.8 & $-$5.5 & 57.8 & $-$5.5 & 65.7 & $-$4.6 & 74.3 & $-$4.0 \\
+Claude-Sonnet & 45.5 & $-$5.7 & 49.5 & $-$5.0 & 57.4 & $-$4.8 & 68.3 & $-$5.1 \\
+\midrule
+\multicolumn{9}{l}{\textbf{\textit{Proposed Defense}}} \\
+\diaguard{}-4B & \textcolor{blue}{[XX]} & \textcolor{blue}{[XX]} & \textcolor{blue}{[XX]} & \textcolor{blue}{[XX]} & \textcolor{blue}{[XX]} & \textcolor{blue}{[XX]} & \textcolor{blue}{[XX]} & \textcolor{blue}{[XX]} \\
+\diaguard{}-3B & \textcolor{blue}{[XX]} & \textcolor{blue}{[XX]} & \textcolor{blue}{[XX]} & \textcolor{blue}{[XX]} & \textcolor{blue}{[XX]} & \textcolor{blue}{[XX]} & \textcolor{blue}{[XX]} & \textcolor{blue}{[XX]} \\
+\bottomrule
+\end{tabular}
+\caption{Dialectal accuracy and gap ($\Delta$, \%) under zero-shot and few-shot in-context learning settings. Lower $\Delta$ indicates greater robustness to dialectal variation.}
+\label{tab:icl_results}
+\end{table}
