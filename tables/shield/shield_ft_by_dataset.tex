@@ -1,0 +1,34 @@
+\begin{table*}[t]
+\centering
+\footnotesize
+\begin{tabular}{llcccccc}
+\toprule
+\multirow{2}{*}{Model} & \multirow{2}{*}{Method} & \multicolumn{2}{c}{Accuracy} & \multicolumn{2}{c}{F1} & \multicolumn{2}{c}{ASR} \\
+& & Holdout & SAE & Holdout & SAE & Holdout & SAE \\
+\midrule
+Gemma-3-270m & Baseline & 0.5690 & 0.5817 & 0.5362 & 0.5513 & 27.90\% & 29.93\% \\
+Gemma-3-270m & PEFT-CE & 0.9257 & 0.9406 & 0.9239 & 0.9397 & 99.22\% & 99.25\% \\
+Gemma-3-270m & Full-FT-CE & 0.9654 & 0.9774 & 0.9650 & 0.9772 & 98.75\% & 98.73\% \\
+Qwen3Guard-Gen-0.6B & Baseline & 0.6078 & 0.6473 & 0.5697 & 0.6201 & 28.60\% & 35.34\% \\
+Qwen3Guard-Gen-0.6B & PEFT-CE & 0.7533 & 0.7650 & 0.7296 & 0.7456 & 96.64\% & 96.95\% \\
+Qwen3Guard-Gen-0.6B & Full-FT-CE & 0.5432 & 0.5383 & 0.3545 & 0.3535 & 99.83\% & 99.89\% \\
+Qwen3.5-0.8B & Baseline & 0.7534 & 0.7405 & 0.7516 & 0.7361 & 61.54\% & 56.93\% \\
+Qwen3.5-0.8B & PEFT-CE & 0.9409 & 0.9510 & 0.9406 & 0.9508 & 92.36\% & 93.90\% \\
+Qwen3.5-0.8B & Full-FT-CE & 0.9608 & 0.9570 & 0.9607 & 0.9569 & 93.13\% & 92.30\% \\
+Gemma-3-1B & Baseline & 0.7217 & 0.7151 & 0.7200 & 0.7145 & 73.73\% & 70.59\% \\
+Gemma-3-1B & PEFT-CE & 0.9405 & 0.9533 & 0.9395 & 0.9527 & 98.79\% & 98.71\% \\
+Gemma-3-1B & Full-FT-CE & 0.9670 & 0.9655 & 0.9669 & 0.9654 & 94.65\% & 94.08\% \\
+Llama-3.2-1B & Baseline & 0.6115 & 0.6048 & 0.5109 & 0.5039 & 98.09\% & 98.30\% \\
+Llama-3.2-1B & PEFT-CE & 0.8811 & 0.8811 & 0.8810 & 0.8809 & 78.62\% & 78.28\% \\
+Llama-3.2-1B & Full-FT-CE & 0.9644 & 0.9582 & 0.9642 & 0.9581 & 93.80\% & 92.53\% \\
+Qwen3-1.7B & Baseline & 0.5429 & 0.5371 & 0.3520 & 0.3496 & 100.00\% & 100.00\% \\
+Qwen3-1.7B & PEFT-CE & 0.9271 & 0.9442 & 0.9256 & 0.9435 & 98.64\% & 98.23\% \\
+Qwen3-1.7B & Full-FT-CE & 0.7868 & 0.7711 & 0.7837 & 0.7659 & 61.46\% & 57.98\% \\
+SmolLM2-1.7B & Baseline & 0.6165 & 0.6077 & 0.5626 & 0.5619 & 89.14\% & 86.67\% \\
+SmolLM2-1.7B & PEFT-CE & 0.9742 & 0.9765 & 0.9741 & 0.9764 & 96.12\% & 96.41\% \\
+SmolLM2-1.7B & Full-FT-CE & 0.7481 & 0.7284 & 0.7467 & 0.7235 & 62.06\% & 55.35\% \\
+\bottomrule
+\end{tabular}
+\caption{Shield fine-tuning results by model and method, comparing dialect Holdout vs SAE test sets.}
+\label{tab:shield_by_dataset}
+\end{table*}

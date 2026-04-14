@@ -1,0 +1,46 @@
+\begin{table*}[t]
+\centering
+\small
+\begin{tabular}{llllccccc}
+\toprule
+Method & Teacher & Student & Starting & Accuracy & Precision & Recall & ASR & F1 \\
+\midrule
+MINILLM & 4B-ft & QwenGuard-0.6B & PEFT & 0.7593 & 0.8122 & 0.7402 & 96.27\% & 0.7379 \\
+MINILLM & 4B-ft & Qwen3-1.7B & PEFT & 0.9238 & 0.9354 & 0.9174 & 99.16\% & 0.9220 \\
+MINILLM & 4B-ft & QwenGuard-0.6B & FULL & 0.5530 & 0.6151 & 0.5126 & 98.35\% & 0.3918 \\
+MINILLM & 4B-ft & Qwen3-1.7B & FULL & 0.7735 & 0.8306 & 0.7909 & 58.81\% & 0.7693 \\
+MINILLM & 4B-ft & QwenGuard-0.6B & BASE & 0.5291 & 0.4554 & 0.4908 & 93.76\% & 0.3813 \\
+MINILLM & 4B-ft & Qwen3-1.7B & BASE & 0.5995 & 0.6300 & 0.5711 & 90.31\% & 0.5315 \\
+MINILLM & 8B-ft & QwenGuard-0.6B & PEFT & 0.7213 & 0.8023 & 0.6973 & 97.71\% & 0.6849 \\
+MINILLM & 8B-ft & Qwen3-1.7B & PEFT & 0.9136 & 0.9284 & 0.9062 & 99.27\% & 0.9112 \\
+MINILLM & 8B-ft & QwenGuard-0.6B & FULL & 0.5608 & 0.7151 & 0.5937 & 20.90\% & 0.5057 \\
+MINILLM & 8B-ft & QwenGuard-0.6B & BASE & 0.5457 & 0.5854 & 0.5039 & 99.21\% & 0.3669 \\
+MINILLM & 8B-ft & Qwen3-1.7B & BASE & 0.4650 & 0.5030 & 0.5009 & 8.27\% & 0.3773 \\
+GKD & 4B-ft & QwenGuard-0.6B & PEFT & 0.7322 & 0.7302 & 0.7298 & 75.77\% & 0.7300 \\
+GKD & 4B-ft & Qwen3-1.7B & PEFT & 0.8311 & 0.8812 & 0.8153 & 99.98\% & 0.8194 \\
+GKD & 4B-ft & QwenGuard-0.6B & FULL & 0.5429 & 0.5309 & 0.5002 & 99.85\% & 0.3537 \\
+GKD & 4B-ft & Qwen3-1.7B & FULL & 0.7998 & 0.8429 & 0.8149 & 63.93\% & 0.7976 \\
+GKD & 4B-ft & QwenGuard-0.6B & BASE & 0.5430 & 0.5385 & 0.5004 & 99.80\% & 0.3544 \\
+GKD & 4B-ft & Qwen3-1.7B & BASE & 0.5429 & 0.7357 & 0.5001 & 100.00\% & 0.3520 \\
+GKD & 8B-ft & QwenGuard-0.6B & PEFT & 0.5436 & 0.6063 & 0.5009 & 99.87\% & 0.3549 \\
+GKD & 8B-ft & Qwen3-1.7B & PEFT & 0.9577 & 0.9601 & 0.9554 & 98.23\% & 0.9572 \\
+GKD & 8B-ft & QwenGuard-0.6B & FULL & 0.5432 & 0.5683 & 0.5005 & 99.85\% & 0.3544 \\
+GKD & 8B-ft & Qwen3-1.7B & FULL & 0.8004 & 0.8084 & 0.7920 & 88.98\% & 0.7947 \\
+GKD & 8B-ft & QwenGuard-0.6B & BASE & 0.5434 & 0.5771 & 0.5008 & 99.82\% & 0.3552 \\
+GKD & 8B-ft & Qwen3-1.7B & BASE & 0.6932 & 0.7862 & 0.6666 & 97.72\% & 0.6452 \\
+TED & 4B-ft & QwenGuard-0.6B & PEFT & 0.5430 & 0.5246 & 0.5008 & 99.25\% & 0.3601 \\
+TED & 4B-ft & Qwen3-1.7B & PEFT & 0.5595 & 0.6125 & 0.5210 & 97.05\% & 0.4172 \\
+TED & 4B-ft & QwenGuard-0.6B & FULL & 0.5418 & 0.4667 & 0.4994 & 99.47\% & 0.3551 \\
+TED & 4B-ft & Qwen3-1.7B & FULL & 0.6309 & 0.7976 & 0.5963 & 100.00\% & 0.5347 \\
+TED & 4B-ft & QwenGuard-0.6B & BASE & 0.4672 & 0.5967 & 0.5083 & 2.92\% & 0.3425 \\
+TED & 4B-ft & Qwen3-1.7B & BASE & 0.6140 & 0.7922 & 0.5778 & 100.00\% & 0.5035 \\
+TED & 8B-ft & QwenGuard-0.6B & PEFT & 0.5519 & 0.5511 & 0.5169 & 92.53\% & 0.4364 \\
+TED & 8B-ft & Qwen3-1.7B & PEFT & 0.5544 & 0.7196 & 0.5128 & 99.70\% & 0.3820 \\
+TED & 8B-ft & Qwen3-1.7B & FULL & 0.5429 & 0.6881 & 0.5000 & 100.00\% & 0.3519 \\
+TED & 8B-ft & QwenGuard-0.6B & BASE & 0.4414 & 0.4010 & 0.4212 & 65.70\% & 0.3968 \\
+TED & 8B-ft & Qwen3-1.7B & BASE & 0.5429 & 0.7715 & 0.5001 & 100.00\% & 0.3520 \\
+\bottomrule
+\end{tabular}
+\caption{Scenario 2 KD (FT teacher \& FT student) results on the DIA-GUARD holdout test set. `PEFT', `FULL', `BASE' indicate the student starting point.}
+\label{tab:kd_scenario2}
+\end{table*}

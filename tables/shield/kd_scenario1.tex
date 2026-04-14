@@ -1,0 +1,24 @@
+\begin{table*}[t]
+\centering
+\small
+\begin{tabular}{lllccccc}
+\toprule
+Student & Method & Teacher & Accuracy & Precision & Recall & ASR & F1 \\
+\midrule
+Qwen3Guard-Gen-0.6B & MINILLM & 4B & 0.5558 & 0.6849 & 0.5877 & 21.63\% & 0.5048 \\
+Qwen3Guard-Gen-0.6B & MINILLM & 8B & 0.6049 & 0.7517 & 0.6352 & 28.20\% & 0.5662 \\
+Qwen3Guard-Gen-0.6B & GKD & 4B & 0.6887 & 0.7838 & 0.7120 & 43.97\% & 0.6741 \\
+Qwen3Guard-Gen-0.6B & GKD & 8B & 0.5513 & 0.7332 & 0.5860 & 18.06\% & 0.4865 \\
+Qwen3Guard-Gen-0.6B & TED & 4B & 0.4869 & 0.6638 & 0.5264 & 6.59\% & 0.3800 \\
+Qwen3Guard-Gen-0.6B & TED & 8B & 0.5352 & 0.5743 & 0.5567 & 30.58\% & 0.5152 \\
+Qwen3-1.7B & MINILLM & 4B & 0.6288 & 0.6252 & 0.6215 & 70.67\% & 0.6216 \\
+Qwen3-1.7B & MINILLM & 8B & 0.5657 & 0.6433 & 0.5274 & 97.52\% & 0.4263 \\
+Qwen3-1.7B & GKD & 4B & 0.5435 & 0.7281 & 0.5007 & 99.99\% & 0.3535 \\
+Qwen3-1.7B & GKD & 8B & 0.5430 & 0.7715 & 0.5001 & 100.00\% & 0.3522 \\
+Qwen3-1.7B & TED & 4B & 0.5758 & 0.6299 & 0.5980 & 33.91\% & 0.5567 \\
+Qwen3-1.7B & TED & 8B & 0.5443 & 0.6358 & 0.5018 & 99.84\% & 0.3571 \\
+\bottomrule
+\end{tabular}
+\caption{Scenario 1 KD (off-the-shelf teacher and student) results on the DIA-GUARD holdout test set.}
+\label{tab:kd_scenario1}
+\end{table*}
