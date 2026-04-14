@@ -310,24 +310,28 @@ def train(cfg: dict):
     _eval_check_done = False
 
     class DiagnosticTrainer(SFTTrainer):
-        def compute_loss(self, model, inputs, **kwargs):
-            loss = super().compute_loss(model, inputs, **kwargs)
-            if not torch.isfinite(loss):
-                print(f"[LossGuard] non-finite loss ({loss.item()}) — skipping backward")
-                return torch.zeros((), requires_grad=True, device=loss.device, dtype=loss.dtype)
-            return loss
-
         def training_step(self, model, inputs, *args, **kwargs):
             nonlocal _train_check_done
             if "labels" in inputs:
+                labels = inputs["labels"]
+                # Per-example: drop sequences where the response template wasn't
+                # found (all-masked labels). These produce NaN loss which, when
+                # averaged with valid examples, NaNs the whole batch. Skipping via
+                # zero-gradient workarounds decays Adam's exp_avg_sq instead.
+                valid = (labels != -100).any(dim=-1)
+                if not valid.all():
+                    if not valid.any():
+                        return torch.tensor(0.0, device=labels.device)
+                    bs = labels.shape[0]
+                    inputs = {
+                        k: v[valid] if (isinstance(v, torch.Tensor) and v.shape[0] == bs) else v
+                        for k, v in inputs.items()
+                    }
                 if not _train_check_done:
                     first_labels = inputs["labels"][0]
                     active_ids = first_labels[first_labels != -100].tolist()
                     print(f"[LabelCheck train] {repr(tokenizer.decode(active_ids))}")
                     _train_check_done = True
-                if (inputs["labels"] == -100).all():
-                    print("[NaNGuard] all-masked batch — skipping")
-                    return torch.tensor(0.0, device=next(model.parameters()).device)
             return super().training_step(model, inputs, *args, **kwargs)
 
         def prediction_step(self, model, inputs, prediction_loss_only, ignore_keys=None):
