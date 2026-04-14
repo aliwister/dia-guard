@@ -12,7 +12,7 @@ ShieldGemma-2-4B & \textcolor{blue}{[XX]} & \textcolor{blue}{[XX]} & \textcolor{
 \textbf{ShieldGemma-9B} & \textcolor{blue}{\textbf{[XX]}} & \textcolor{blue}{\textbf{[XX]}} & \textcolor{blue}{\textbf{[XX]}} & \textcolor{blue}{\textbf{[XX]}} & \textcolor{blue}{\textbf{[XX]}} & \textcolor{blue}{\textbf{[XX]}} & \textcolor{blue}{\textbf{[XX]}} & \textcolor{blue}{\textbf{[XX]}} \\
 \textbf{Qwen3Guard-8B} & \textbf{64.3} & \textbf{$-$18.5} & \textcolor{blue}{\textbf{[XX]}} & \textcolor{blue}{\textbf{[XX]}} & \textcolor{blue}{\textbf{[XX]}} & \textcolor{blue}{\textbf{[XX]}} & \textcolor{blue}{\textbf{[XX]}} & \textcolor{blue}{\textbf{[XX]}} \\
 Qwen3-4B-SafeRL & 61.7 & $-$15.4 & \textcolor{blue}{[XX]} & \textcolor{blue}{[XX]} & \textcolor{blue}{[XX]} & \textcolor{blue}{[XX]} & \textcolor{blue}{[XX]} & \textcolor{blue}{[XX]} \\
-GPT-OSS-SafeGuard-20B & 53.7 & $-$3.5 & 62.5 & $-$2.3 & 67.0 & $-$2.1 & 71.5 & $-$1.8 \\
+GPT-OSS-SafeGuard-20B & 53.7 & $-$3.5 & 62.5 & $-$2.3 & 66.9 & $-$2.1 & 71.5 & $-$1.8 \\
 GPT-OSS-SafeGuard-120B & 49.0 & $-$3.5 & 56.0 & $-$2.4 & 61.7 & $-$2.2 & 67.3 & $-$1.4 \\
 \midrule[\lightrulewidth]
 \multicolumn{9}{l}{\textbf{\textit{General Purpose LLMs}}} \\
@@ -24,13 +24,13 @@ Llama-4-Maverick-17B & 57.8 & $-$0.9 & 65.8 & $-$0.4 & 74.5 & $-$0.0 & 80.1 & $-
 \textbf{Gemma-3-1B} & \textcolor{blue}{\textbf{[XX]}} & \textcolor{blue}{\textbf{[XX]}} & \textcolor{blue}{\textbf{[XX]}} & \textcolor{blue}{\textbf{[XX]}} & \textcolor{blue}{\textbf{[XX]}} & \textcolor{blue}{\textbf{[XX]}} & \textcolor{blue}{\textbf{[XX]}} & \textcolor{blue}{\textbf{[XX]}} \\
 Gemma-3-27B & 66.4 & $+$0.8 & 82.2 & $+$1.5 & 86.6 & $+$1.4 & 89.8 & $+$1.4 \\
 Qwen3-8B & 53.5 & $-$18.9 & \textcolor{blue}{[XX]} & \textcolor{blue}{[XX]} & \textcolor{blue}{[XX]} & \textcolor{blue}{[XX]} & \textcolor{blue}{[XX]} & \textcolor{blue}{[XX]} \\
-Qwen3-Coder-Instruct-30B & 63.9 & $+$0.7 & 73.5 & $+$3.0 & 80.5 & $+$2.3 & 85.6 & $+$1.8 \\
+Qwen3-Coder-Instruct-30B & 63.9 & $+$0.7 & 73.5 & $+$3.0 & 80.6 & $+$2.2 & 85.6 & $+$1.7 \\
 Qwen3-235B & 64.3 & $+$2.3 & 73.3 & $+$3.1 & 77.7 & $+$2.7 & 82.1 & $+$2.2 \\
-GPT-OSS-20B & 57.7 & $-$3.0 & 65.7 & $-$1.9 & 68.5 & $-$1.4 & 71.1 & $-$0.8 \\
+GPT-OSS-20B & 57.7 & $-$3.0 & 65.6 & $-$1.9 & 68.6 & $-$1.5 & 71.1 & $-$0.8 \\
 GPT-OSS-120B & 55.6 & $-$2.3 & 64.1 & $-$1.0 & 70.0 & $-$0.4 & 75.0 & $-$0.7 \\
 \midrule[\lightrulewidth]
 \multicolumn{9}{l}{\textbf{\textit{Proprietary LLMs}}} \\
-Claude-Opus & 55.4 & $-$1.6 & 64.3 & $-$0.8 & 72.1 & $+$0.1 & 80.8 & $+$0.7 \\
+Claude-Opus & 55.3 & $-$1.6 & 64.5 & $-$0.8 & 72.2 & $+$0.1 & 80.7 & $+$0.7 \\
 Claude-Sonnet & 51.5 & $-$1.9 & 55.4 & $-$0.7 & 63.5 & $-$0.5 & 74.4 & $-$0.8 \\
 \midrule
 \multicolumn{9}{l}{\textbf{\textit{Proposed Defense}}} \\
@@ -38,6 +38,6 @@ Claude-Sonnet & 51.5 & $-$1.9 & 55.4 & $-$0.7 & 63.5 & $-$0.5 & 74.4 & $-$0.8 \\
 \diaguard{}-3B & \textcolor{blue}{[XX]} & \textcolor{blue}{[XX]} & \textcolor{blue}{[XX]} & \textcolor{blue}{[XX]} & \textcolor{blue}{[XX]} & \textcolor{blue}{[XX]} & \textcolor{blue}{[XX]} & \textcolor{blue}{[XX]} \\
 \bottomrule
 \end{tabular}
-\caption{Dialectal accuracy and gap ($\Delta$, \%) on Multi-VALUE rule-transformed dialectal data, under zero-shot and few-shot ICL.}
+\caption{Dialectal accuracy and gap ($\Delta$, \%) on Multi-VALUE rule-transformed data under zero-shot and few-shot ICL.}
 \label{tab:icl_results_mv}
 \end{table}
