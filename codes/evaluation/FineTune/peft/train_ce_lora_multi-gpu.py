@@ -194,6 +194,19 @@ def train(cfg: dict):
     model = get_peft_model(model, lora_config)
     model.print_trainable_parameters()
 
+    # Register gradient hooks on all trainable parameters to replace NaN
+    # gradients with zero during backprop, before they reach the optimizer.
+    # This prevents a single unstable batch from corrupting Adam's state.
+    _nan_grad_count = [0]
+    for p in model.parameters():
+        if p.requires_grad:
+            def _nan_hook(grad, counter=_nan_grad_count):
+                if torch.isnan(grad).any():
+                    counter[0] += 1
+                    return torch.zeros_like(grad)
+                return grad
+            p.register_hook(_nan_hook)
+
     # --- Dataset (with disk caching) ---
     train_path = cfg.get("train_data")
     eval_path = cfg.get("eval_data")
