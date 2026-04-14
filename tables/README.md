@@ -9,7 +9,8 @@ tables/
 ├── README.md                                   # (this file)
 ├── harmfulness_detection/
 │   ├── guard_classifier_accuracy.tex           # Table 1 — Overall Acc on SAE vs dialect, MV / DL columns
-│   └── category_accuracy.tex                   # Table 2 — Accuracy disaggregated by threat category
+│   ├── category_accuracy.tex                   # Table 2 — Accuracy disaggregated by threat category
+│   └── per_dialect_guards.tex                  # Table (appendix) — Safety Guard detection rate by dialect & region
 └── attack_success/
     └── end_to_end_asr.tex                      # Table 3 — End-to-end ASR grouped by defense setting
 ```
@@ -28,6 +29,18 @@ Overall harmfulness-detection accuracy per guard model on Standard American Engl
 | `Δ` (MV) | `accuracy_dialect − accuracy_sae` |
 | `Acc_SAE` (DL) | aggregate over `llm_basic/<model>/metrics.json` and `llm_coi/<model>/metrics.json` |
 | `Acc_Dial` (DL) | same aggregate → `accuracy_dialect` |
+
+### `harmfulness_detection/per_dialect_guards.tex`
+Safety-guard harmfulness detection rate (%) for every one of the 50 dialects, grouped by region (US, UK, Africa, Asia-Pacific, Caribbean/Atlantic, Other). Column headers use compact model abbreviations (LG-1 = LlamaGuard-1, QG-4B = Qwen3Guard-4B, PG-86M = PromptGuard-86M, etc.).
+
+| Column | Source |
+|---|---|
+| `<Model>` for a dialect row | `zero-shot/harmfulness_detection/multi_value/<Model>/per_dialect.json` → `<dialect>.accuracy_dialect × 100` |
+| `SAE (baseline)` row | same file → `<dialect>.accuracy_sae × 100` (identical across dialects for the same model) |
+| `Dialect Avg` row | support-weighted mean of the column across all dialects |
+| `Δ (Dia − SAE)` row | `Dialect Avg − SAE baseline` |
+
+Markers: $^\blacktriangle$ = best dialect for that model, $^\blacktriangledown$ = worst dialect for that model.
 
 ### `harmfulness_detection/category_accuracy.tex`
 Same accuracy broken down by **threat category** (Toxicity/Safety, Prompt Injection, Code Generation).
