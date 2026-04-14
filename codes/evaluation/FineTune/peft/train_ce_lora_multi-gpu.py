@@ -201,7 +201,7 @@ def train(cfg: dict):
     for p in model.parameters():
         if p.requires_grad:
             def _nan_hook(grad, counter=_nan_grad_count):
-                if torch.isnan(grad).any():
+                if not torch.isfinite(grad).all():  # catches both NaN and inf
                     counter[0] += 1
                     return torch.zeros_like(grad)
                 return grad
