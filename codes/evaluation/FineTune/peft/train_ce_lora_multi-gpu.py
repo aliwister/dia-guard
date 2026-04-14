@@ -310,6 +310,13 @@ def train(cfg: dict):
     _eval_check_done = False
 
     class DiagnosticTrainer(SFTTrainer):
+        def compute_loss(self, model, inputs, **kwargs):
+            loss = super().compute_loss(model, inputs, **kwargs)
+            if not torch.isfinite(loss) or loss.item() > 50:
+                print(f"[LossGuard] skipping bad batch (loss={loss.item():.1f})")
+                return torch.zeros((), requires_grad=True, device=loss.device, dtype=loss.dtype)
+            return loss
+
         def training_step(self, model, inputs, *args, **kwargs):
             nonlocal _train_check_done
             if "labels" in inputs:
@@ -319,7 +326,7 @@ def train(cfg: dict):
                     print(f"[LabelCheck train] {repr(tokenizer.decode(active_ids))}")
                     _train_check_done = True
                 if (inputs["labels"] == -100).all():
-                    print("[NaNGuard] all-masked batch — skipping to avoid NaN optimizer state")
+                    print("[NaNGuard] all-masked batch — skipping")
                     return torch.tensor(0.0, device=next(model.parameters()).device)
             return super().training_step(model, inputs, *args, **kwargs)
 
