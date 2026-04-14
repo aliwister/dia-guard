@@ -274,15 +274,24 @@ def train(cfg: dict):
     # template so loss is computed only on "Safety: Safe/Unsafe..." tokens.
     is_guard_model = "guard" in cfg["model_name"].lower()
     if is_guard_model:
-        response_template = "</think>\n\n"
+        # Extract token IDs from a real formatted sequence so they match what the
+        # tokenizer produces in context (BPE splits differ when tokenizing in isolation).
+        _dummy = tokenizer.apply_chat_template(
+            [{"role": "user", "content": "x"}],
+            tokenize=False,
+            add_generation_prompt=True,
+        )
+        _dummy_ids = tokenizer.encode(_dummy, add_special_tokens=False)
+        _suffix_len = len(tokenizer.encode("</think>\n\n", add_special_tokens=False))
+        response_template = _dummy_ids[-_suffix_len:]
     else:
-        response_template = "<|im_start|>assistant\n"
+        response_template = tokenizer.encode("<|im_start|>assistant\n", add_special_tokens=False)
 
     data_collator = DataCollatorForCompletionOnlyLM(
         response_template=response_template,
         tokenizer=tokenizer,
     )
-    print(f"[DataCollator] response_template={repr(response_template)}")
+    print(f"[DataCollator] response_template={repr(tokenizer.decode(response_template))}")
 
     _train_check_done = False
     _eval_check_done = False
@@ -290,11 +299,15 @@ def train(cfg: dict):
     class DiagnosticTrainer(SFTTrainer):
         def training_step(self, model, inputs, *args, **kwargs):
             nonlocal _train_check_done
-            if "labels" in inputs and not _train_check_done:
-                first_labels = inputs["labels"][0]
-                active_ids = first_labels[first_labels != -100].tolist()
-                print(f"[LabelCheck train] {repr(tokenizer.decode(active_ids))}")
-                _train_check_done = True
+            if "labels" in inputs:
+                if not _train_check_done:
+                    first_labels = inputs["labels"][0]
+                    active_ids = first_labels[first_labels != -100].tolist()
+                    print(f"[LabelCheck train] {repr(tokenizer.decode(active_ids))}")
+                    _train_check_done = True
+                if (inputs["labels"] == -100).all():
+                    print("[NaNGuard] all-masked batch — skipping to avoid NaN optimizer state")
+                    return torch.tensor(0.0, device=next(model.parameters()).device)
             return super().training_step(model, inputs, *args, **kwargs)
 
         def prediction_step(self, model, inputs, prediction_loss_only, ignore_keys=None):
