@@ -1,0 +1,76 @@
+\begin{table*}[t]
+\centering
+\scriptsize
+\caption{SQ2 Guard $\Delta$ by Threat Category -- \textbf{Code Generation}: Per-dialect detection rate change (\%) from \sae{} baseline for each guard model. Negative = more vulnerable. $^\blacktriangle$Smallest gap (most robust). $^\blacktriangledown$Largest gap.}
+\label{tab:app_sq2_delta_cg}
+\begin{tabular}{llccccccccccccccccc}
+\toprule
+\textbf{Region} & \textbf{Dialect} & \textbf{LG-1} & \textbf{LG-2} & \textbf{LG-3} & \textbf{LG-3-1B} & \textbf{PolyG} & \textbf{WG} & \textbf{QG-8B} & \textbf{QG-4B} & \textbf{Q4B-SRL} & \textbf{Q3-8B} & \textbf{PG-86M} & \textbf{PG-22M} & \textbf{HB-Mis} & \textbf{HB-Lla} & \textbf{DuoG} & \textbf{GPT-OSS-SG} & \textbf{GPT-OSS-20B} \\
+\midrule
+\multicolumn{19}{l}{\textit{\textbf{U.S. Varieties (9 dialects)}}} \\
+US & Earlier AAVE & $+$0.0$^\blacktriangledown$ & $+$1.4 & $+$6.2 & $+$3.9 & $+$0.1 & $+$0.2 & \textcolor{blue}{[XX]} & \textcolor{blue}{[XX]} & \textcolor{blue}{[XX]} & \textcolor{blue}{[XX]} & $+$0.1 & $-$0.1$^\blacktriangledown$ & $+$0.0$^\blacktriangle$$^\blacktriangledown$ & $-$0.1 & $+$0.0$^\blacktriangle$$^\blacktriangledown$ & $+$0.1 & $-$0.7 \\
+US & Rural AAVE & $+$0.0 & $+$2.4 & $+$3.2 & $+$3.6 & $-$0.1 & $+$0.2 & \textcolor{blue}{[XX]} & \textcolor{blue}{[XX]} & \textcolor{blue}{[XX]} & \textcolor{blue}{[XX]} & $+$0.0$^\blacktriangledown$ & $-$0.1 & $+$0.0 & $+$0.1$^\blacktriangle$ & $+$0.0 & $-$0.4 & $+$0.0 \\
+US & Urban AAVE & $+$0.0 & $+$1.2 & $+$6.7 & $+$2.7 & $+$0.0 & $+$0.6$^\blacktriangle$ & \textcolor{blue}{[XX]} & \textcolor{blue}{[XX]} & \textcolor{blue}{[XX]} & \textcolor{blue}{[XX]} & $+$0.1 & $+$0.0 & $+$0.0 & $+$0.0 & $+$0.0 & $+$0.1 & $+$0.8$^\blacktriangle$ \\
+US & Appalachian English & $+$0.0 & $+$1.4 & $+$5.6 & $+$3.0 & $+$0.4$^\blacktriangle$ & $+$0.2 & \textcolor{blue}{[XX]} & \textcolor{blue}{[XX]} & \textcolor{blue}{[XX]} & \textcolor{blue}{[XX]} & $+$0.0 & $+$0.0 & $+$0.0 & $-$0.2$^\blacktriangledown$ & $+$0.0 & $-$0.2 & $+$0.7 \\
+US & Chicano English & $+$0.0 & $+$0.4$^\blacktriangledown$ & $+$3.2 & $+$3.3 & $+$0.1 & $+$0.0 & \textcolor{blue}{[XX]} & \textcolor{blue}{[XX]} & \textcolor{blue}{[XX]} & \textcolor{blue}{[XX]} & $+$0.0 & $+$0.0 & $+$0.0 & $-$0.1 & $+$0.0 & $+$0.4 & $+$0.6 \\
+US & Colloquial American & $+$0.0 & $+$2.0 & $+$5.1 & $+$4.2 & $+$0.0 & $+$0.1 & \textcolor{blue}{[XX]} & \textcolor{blue}{[XX]} & \textcolor{blue}{[XX]} & \textcolor{blue}{[XX]} & $+$0.1 & $+$0.0 & $+$0.0 & $+$0.0 & $+$0.0 & $-$0.1 & $-$0.1 \\
+US & Ozark English & $+$0.0 & $+$0.8 & $+$4.5 & $+$3.8 & $+$0.0 & $+$0.2 & \textcolor{blue}{[XX]} & \textcolor{blue}{[XX]} & \textcolor{blue}{[XX]} & \textcolor{blue}{[XX]} & $+$0.0 & $+$0.0 & $+$0.0 & $-$0.1 & $+$0.0 & $-$0.2 & $-$0.2 \\
+US & SE American Enclave & $+$0.0 & $+$1.3 & $+$4.8 & $+$4.0 & $+$0.0 & $+$0.2 & \textcolor{blue}{[XX]} & \textcolor{blue}{[XX]} & \textcolor{blue}{[XX]} & \textcolor{blue}{[XX]} & $+$0.1 & $+$0.0 & $+$0.0 & $+$0.0 & $+$0.0 & $-$0.5 & $-$1.2 \\
+US & Newfoundland English & $+$0.0 & $+$2.6 & $+$6.7 & $+$3.6 & $+$0.0 & $+$0.1 & \textcolor{blue}{[XX]} & \textcolor{blue}{[XX]} & \textcolor{blue}{[XX]} & \textcolor{blue}{[XX]} & $+$0.2$^\blacktriangle$ & $-$0.1 & $+$0.0 & $+$0.1 & $+$0.0 & $-$0.2 & $-$0.5 \\
+\midrule
+\multicolumn{19}{l}{\textit{\textbf{British/UK Varieties (10 dialects)}}} \\
+UK & N. England English & $+$0.1$^\blacktriangle$ & $+$1.8 & $+$3.1 & $+$3.0 & $-$0.2$^\blacktriangledown$ & $+$0.0 & \textcolor{blue}{[XX]} & \textcolor{blue}{[XX]} & \textcolor{blue}{[XX]} & \textcolor{blue}{[XX]} & $+$0.0 & $+$0.0 & $+$0.0 & $+$0.1 & $+$0.0 & $+$0.7$^\blacktriangle$ & $+$0.5 \\
+UK & SE England English & $+$0.0 & $+$0.6 & $+$4.0 & $+$3.8 & $-$0.1 & $+$0.0 & \textcolor{blue}{[XX]} & \textcolor{blue}{[XX]} & \textcolor{blue}{[XX]} & \textcolor{blue}{[XX]} & $+$0.0 & $+$0.0 & $+$0.0 & $-$0.1 & $+$0.0 & $-$0.1 & $+$0.0 \\
+UK & SW England English & $+$0.0 & $+$1.0 & $+$4.6 & $+$4.0 & $+$0.0 & $+$0.2 & \textcolor{blue}{[XX]} & \textcolor{blue}{[XX]} & \textcolor{blue}{[XX]} & \textcolor{blue}{[XX]} & $+$0.1 & $-$0.1 & $+$0.0 & $+$0.1 & $+$0.0 & $+$0.4 & $+$0.1 \\
+UK & East Anglian English & $+$0.0 & $+$0.7 & $+$7.0 & $+$3.7 & $+$0.1 & $+$0.2 & \textcolor{blue}{[XX]} & \textcolor{blue}{[XX]} & \textcolor{blue}{[XX]} & \textcolor{blue}{[XX]} & $+$0.0 & $+$0.0 & $+$0.0 & $+$0.0 & $+$0.0 & $+$0.0 & $+$0.5 \\
+UK & Scottish English & $+$0.0 & $+$2.6 & $+$2.6 & $+$2.6 & $+$0.0 & $+$0.1 & \textcolor{blue}{[XX]} & \textcolor{blue}{[XX]} & \textcolor{blue}{[XX]} & \textcolor{blue}{[XX]} & $+$0.0 & $+$0.0 & $+$0.0 & $-$0.1 & $+$0.0 & $-$0.1 & $-$0.8 \\
+UK & Irish English & $+$0.0 & $+$2.4 & $+$2.4 & $+$3.3 & $+$0.1 & $+$0.0 & \textcolor{blue}{[XX]} & \textcolor{blue}{[XX]} & \textcolor{blue}{[XX]} & \textcolor{blue}{[XX]} & $+$0.0 & $+$0.0 & $+$0.0 & $-$0.1 & $+$0.0 & $+$0.0 & $-$0.7 \\
+UK & Welsh English & $+$0.0 & $+$2.6 & $+$3.1 & $+$4.0 & $-$0.1 & $+$0.0 & \textcolor{blue}{[XX]} & \textcolor{blue}{[XX]} & \textcolor{blue}{[XX]} & \textcolor{blue}{[XX]} & $+$0.0 & $+$0.0 & $+$0.0 & $+$0.0 & $+$0.0 & $-$0.6 & $-$0.6 \\
+UK & Channel Islands English & $+$0.0 & $+$1.0 & $+$3.5 & $+$3.1 & $+$0.0 & $+$0.0 & \textcolor{blue}{[XX]} & \textcolor{blue}{[XX]} & \textcolor{blue}{[XX]} & \textcolor{blue}{[XX]} & $+$0.0 & $+$0.0 & $+$0.0 & $+$0.1 & $+$0.0 & $-$0.1 & $+$0.1 \\
+UK & Manx English & $+$0.0 & $+$2.6 & $+$5.4 & $+$4.0 & $-$0.2 & $+$0.1 & \textcolor{blue}{[XX]} & \textcolor{blue}{[XX]} & \textcolor{blue}{[XX]} & \textcolor{blue}{[XX]} & $+$0.1 & $-$0.1 & $+$0.0 & $-$0.1 & $+$0.0 & $-$0.2 & $-$1.0 \\
+UK & Orkney/Shetland English & $+$0.1 & $+$3.3$^\blacktriangle$ & $+$3.0 & $+$3.2 & $-$0.1 & $+$0.1 & \textcolor{blue}{[XX]} & \textcolor{blue}{[XX]} & \textcolor{blue}{[XX]} & \textcolor{blue}{[XX]} & $+$0.0 & $+$0.0 & $+$0.0 & $-$0.1 & $+$0.0 & $-$0.4 & $-$1.3$^\blacktriangledown$ \\
+\midrule
+\multicolumn{19}{l}{\textit{\textbf{Africa (11 dialects)}}} \\
+Africa & Nigerian English & $+$0.0 & $+$0.8 & $+$3.8 & $+$2.9 & $+$0.0 & $+$0.1 & \textcolor{blue}{[XX]} & \textcolor{blue}{[XX]} & \textcolor{blue}{[XX]} & \textcolor{blue}{[XX]} & $+$0.0 & $+$0.0 & $+$0.0 & $+$0.1 & $+$0.0 & $+$0.0 & $-$0.6 \\
+Africa & Ghanaian English & $+$0.0 & $+$2.1 & $+$3.6 & $+$3.7 & $+$0.1 & $+$0.0 & \textcolor{blue}{[XX]} & \textcolor{blue}{[XX]} & \textcolor{blue}{[XX]} & \textcolor{blue}{[XX]} & $+$0.0 & $+$0.0 & $+$0.0 & $+$0.1 & $+$0.0 & $+$0.0 & $-$0.1 \\
+Africa & Cameroon English & $+$0.0 & $+$2.3 & $+$4.3 & $+$2.6 & $-$0.1 & $+$0.1 & \textcolor{blue}{[XX]} & \textcolor{blue}{[XX]} & \textcolor{blue}{[XX]} & \textcolor{blue}{[XX]} & $+$0.0 & $+$0.1$^\blacktriangle$ & $+$0.0 & $-$0.1 & $+$0.0 & $-$0.1 & $-$0.5 \\
+Africa & Kenyan English & $+$0.0 & $+$2.0 & $+$2.4 & $+$3.2 & $+$0.0 & $+$0.1 & \textcolor{blue}{[XX]} & \textcolor{blue}{[XX]} & \textcolor{blue}{[XX]} & \textcolor{blue}{[XX]} & $+$0.0 & $+$0.0 & $+$0.0 & $-$0.1 & $+$0.0 & $+$0.1 & $-$0.7 \\
+Africa & Ugandan English & $+$0.0 & $+$1.2 & $-$0.7 & $+$4.2 & $+$0.1 & $+$0.0 & \textcolor{blue}{[XX]} & \textcolor{blue}{[XX]} & \textcolor{blue}{[XX]} & \textcolor{blue}{[XX]} & $+$0.0 & $+$0.1 & $+$0.0 & $+$0.0 & $+$0.0 & $-$0.6 & $+$0.0 \\
+Africa & Tanzanian English & $+$0.0 & $+$1.5 & $-$2.0$^\blacktriangledown$ & $+$3.3 & $+$0.1 & $+$0.2 & \textcolor{blue}{[XX]} & \textcolor{blue}{[XX]} & \textcolor{blue}{[XX]} & \textcolor{blue}{[XX]} & $+$0.0 & $+$0.1 & $+$0.0 & $+$0.0 & $+$0.0 & $-$0.1 & $+$0.0 \\
+Africa & Black S. African English & $+$0.0 & $+$2.4 & $+$6.3 & $+$4.5 & $-$0.2 & $+$0.4 & \textcolor{blue}{[XX]} & \textcolor{blue}{[XX]} & \textcolor{blue}{[XX]} & \textcolor{blue}{[XX]} & $+$0.2 & $+$0.0 & $+$0.0 & $-$0.1 & $+$0.0 & $-$0.5 & $-$0.2 \\
+Africa & Indian S. African English & $+$0.0 & $+$1.2 & $+$3.8 & $+$4.3 & $+$0.2 & $+$0.0 & \textcolor{blue}{[XX]} & \textcolor{blue}{[XX]} & \textcolor{blue}{[XX]} & \textcolor{blue}{[XX]} & $+$0.0 & $-$0.1 & $+$0.0 & $-$0.2 & $+$0.0 & $+$0.1 & $-$1.1 \\
+Africa & White S. African English & $+$0.0 & $+$1.9 & $+$0.1 & $+$3.2 & $-$0.1 & $+$0.1 & \textcolor{blue}{[XX]} & \textcolor{blue}{[XX]} & \textcolor{blue}{[XX]} & \textcolor{blue}{[XX]} & $+$0.0 & $+$0.0 & $+$0.0 & $+$0.0 & $+$0.0 & $+$0.1 & $+$0.2 \\
+Africa & Cape Flats English & $+$0.0 & $+$1.0 & $+$6.9 & $+$3.7 & $+$0.1 & $+$0.0 & \textcolor{blue}{[XX]} & \textcolor{blue}{[XX]} & \textcolor{blue}{[XX]} & \textcolor{blue}{[XX]} & $+$0.0 & $-$0.1 & $+$0.0 & $+$0.1 & $+$0.0 & $-$0.4 & $-$1.1 \\
+Africa & Liberian Settler English & $+$0.0 & $+$0.6 & $+$6.3 & $+$4.4 & $+$0.1 & $+$0.1 & \textcolor{blue}{[XX]} & \textcolor{blue}{[XX]} & \textcolor{blue}{[XX]} & \textcolor{blue}{[XX]} & $+$0.0 & $-$0.1 & $+$0.0 & $-$0.2 & $+$0.0 & $+$0.0 & $+$0.0 \\
+\midrule
+\multicolumn{19}{l}{\textit{\textbf{Asia-Pacific (12 dialects)}}} \\
+Asia-P & Indian English & $+$0.0 & $+$1.4 & $+$3.7 & $+$2.6 & $+$0.1 & $+$0.1 & \textcolor{blue}{[XX]} & \textcolor{blue}{[XX]} & \textcolor{blue}{[XX]} & \textcolor{blue}{[XX]} & $+$0.0 & $+$0.1 & $+$0.0 & $-$0.1 & $+$0.0 & $-$0.2 & $-$0.6 \\
+Asia-P & Pakistani English & $+$0.0 & $+$1.2 & $+$2.5 & $+$4.8$^\blacktriangle$ & $+$0.0 & $+$0.2 & \textcolor{blue}{[XX]} & \textcolor{blue}{[XX]} & \textcolor{blue}{[XX]} & \textcolor{blue}{[XX]} & $+$0.0 & $+$0.1 & $+$0.0 & $+$0.1 & $+$0.0 & $-$0.1 & $+$0.2 \\
+Asia-P & Sri Lankan English & $+$0.0 & $+$1.7 & $+$1.4 & $+$2.7 & $+$0.0 & $+$0.1 & \textcolor{blue}{[XX]} & \textcolor{blue}{[XX]} & \textcolor{blue}{[XX]} & \textcolor{blue}{[XX]} & $+$0.0 & $+$0.0 & $+$0.0 & $-$0.1 & $+$0.0 & $-$0.6 & $-$0.7 \\
+Asia-P & Colloquial Singapore & $+$0.0 & $+$0.5 & $+$5.4 & $+$3.1 & $+$0.2 & $+$0.2 & \textcolor{blue}{[XX]} & \textcolor{blue}{[XX]} & \textcolor{blue}{[XX]} & \textcolor{blue}{[XX]} & $+$0.0 & $-$0.1 & $+$0.0 & $+$0.0 & $+$0.0 & $+$0.4 & $-$0.7 \\
+Asia-P & Malaysian English & $+$0.0 & $+$0.6 & $+$3.3 & $+$3.1 & $+$0.1 & $+$0.1 & \textcolor{blue}{[XX]} & \textcolor{blue}{[XX]} & \textcolor{blue}{[XX]} & \textcolor{blue}{[XX]} & $+$0.0 & $+$0.0 & $+$0.0 & $-$0.2 & $+$0.0 & $+$0.1 & $+$0.4 \\
+Asia-P & Philippine English & $+$0.0 & $+$1.8 & $+$3.0 & $+$3.6 & $+$0.0 & $+$0.1 & \textcolor{blue}{[XX]} & \textcolor{blue}{[XX]} & \textcolor{blue}{[XX]} & \textcolor{blue}{[XX]} & $+$0.0 & $-$0.1 & $+$0.0 & $+$0.0 & $+$0.0 & $-$0.2 & $-$0.8 \\
+Asia-P & Hong Kong English & $+$0.0 & $+$1.3 & $+$5.5 & $+$4.2 & $+$0.0 & $+$0.1 & \textcolor{blue}{[XX]} & \textcolor{blue}{[XX]} & \textcolor{blue}{[XX]} & \textcolor{blue}{[XX]} & $+$0.0 & $+$0.0 & $+$0.0 & $-$0.1 & $+$0.0 & $+$0.0 & $-$0.6 \\
+Asia-P & Australian English & $+$0.0 & $+$1.7 & $+$4.2 & $+$3.0 & $+$0.0 & $+$0.1 & \textcolor{blue}{[XX]} & \textcolor{blue}{[XX]} & \textcolor{blue}{[XX]} & \textcolor{blue}{[XX]} & $+$0.0 & $-$0.1 & $+$0.0 & $+$0.0 & $+$0.0 & $-$0.4 & $+$0.5 \\
+Asia-P & Australian Vernacular & $+$0.0 & $+$1.7 & $+$4.3 & $+$3.3 & $+$0.2 & $+$0.1 & \textcolor{blue}{[XX]} & \textcolor{blue}{[XX]} & \textcolor{blue}{[XX]} & \textcolor{blue}{[XX]} & $+$0.0 & $+$0.0 & $+$0.0 & $-$0.1 & $+$0.0 & $+$0.1 & $-$0.1 \\
+Asia-P & New Zealand English & $+$0.1 & $+$2.0 & $+$3.2 & $+$3.5 & $+$0.0 & $+$0.0 & \textcolor{blue}{[XX]} & \textcolor{blue}{[XX]} & \textcolor{blue}{[XX]} & \textcolor{blue}{[XX]} & $+$0.0 & $-$0.1 & $+$0.0 & $-$0.1 & $+$0.0 & $+$0.1 & $-$1.0 \\
+Asia-P & Acrolectal Fiji English & $+$0.0 & $+$1.3 & $-$0.6 & $+$2.6$^\blacktriangledown$ & $+$0.1 & $+$0.0 & \textcolor{blue}{[XX]} & \textcolor{blue}{[XX]} & \textcolor{blue}{[XX]} & \textcolor{blue}{[XX]} & $+$0.0 & $+$0.0 & $+$0.0 & $+$0.1 & $+$0.0 & $-$0.7$^\blacktriangledown$ & $+$0.0 \\
+Asia-P & Pure Fiji English & $+$0.1 & $+$1.7 & $+$3.7 & $+$3.5 & $+$0.2 & $+$0.1 & \textcolor{blue}{[XX]} & \textcolor{blue}{[XX]} & \textcolor{blue}{[XX]} & \textcolor{blue}{[XX]} & $+$0.1 & $-$0.1 & $+$0.0 & $+$0.0 & $+$0.0 & $+$0.1 & $-$1.1 \\
+\midrule
+\multicolumn{19}{l}{\textit{\textbf{Caribbean/Atlantic (5 dialects)}}} \\
+Carib & Bahamian English & $+$0.0 & $+$1.7 & $+$7.7 & $+$3.0 & $+$0.2 & $+$0.2 & \textcolor{blue}{[XX]} & \textcolor{blue}{[XX]} & \textcolor{blue}{[XX]} & \textcolor{blue}{[XX]} & $+$0.2 & $+$0.1 & $+$0.0 & $+$0.0 & $+$0.0 & $+$0.1 & $-$0.2 \\
+Carib & Jamaican English & $+$0.0 & $+$1.7 & $+$4.4 & $+$4.6 & $+$0.1 & $+$0.1 & \textcolor{blue}{[XX]} & \textcolor{blue}{[XX]} & \textcolor{blue}{[XX]} & \textcolor{blue}{[XX]} & $+$0.0 & $+$0.0 & $+$0.0 & $+$0.0 & $+$0.0 & $-$0.2 & $-$0.2 \\
+Carib & Tristan da Cunha English & $+$0.0 & $+$1.3 & $+$6.0 & $+$3.7 & $+$0.2 & $+$0.2 & \textcolor{blue}{[XX]} & \textcolor{blue}{[XX]} & \textcolor{blue}{[XX]} & \textcolor{blue}{[XX]} & $+$0.0 & $+$0.0 & $+$0.0 & $-$0.2 & $+$0.0 & $+$0.0 & $-$0.6 \\
+Carib & Falkland Islands English & $+$0.0 & $+$0.6 & $+$2.9 & $+$3.3 & $+$0.0 & $+$0.0 & \textcolor{blue}{[XX]} & \textcolor{blue}{[XX]} & \textcolor{blue}{[XX]} & \textcolor{blue}{[XX]} & $+$0.0 & $+$0.0 & $+$0.0 & $+$0.0 & $+$0.0 & $-$0.5 & $+$0.2 \\
+Carib & St. Helena English & $+$0.0 & $+$1.2 & $+$8.7$^\blacktriangle$ & $+$3.9 & $+$0.1 & $+$0.5 & \textcolor{blue}{[XX]} & \textcolor{blue}{[XX]} & \textcolor{blue}{[XX]} & \textcolor{blue}{[XX]} & $+$0.1 & $-$0.1 & $+$0.0 & $+$0.0 & $+$0.0 & $+$0.5 & $+$0.4 \\
+\midrule
+\multicolumn{19}{l}{\textit{\textbf{Other (3 dialects)}}} \\
+Other & Aboriginal English & $+$0.0 & $+$1.8 & $+$6.9 & $+$4.2 & $+$0.2 & $+$0.2 & \textcolor{blue}{[XX]} & \textcolor{blue}{[XX]} & \textcolor{blue}{[XX]} & \textcolor{blue}{[XX]} & $+$0.0 & $-$0.1 & $+$0.0 & $-$0.2 & $+$0.0 & $+$0.4 & $-$1.0 \\
+Other & Maltese English & $+$0.0 & $+$1.8 & $+$4.3 & $+$4.6 & $-$0.1 & $-$0.1$^\blacktriangledown$ & \textcolor{blue}{[XX]} & \textcolor{blue}{[XX]} & \textcolor{blue}{[XX]} & \textcolor{blue}{[XX]} & $+$0.1 & $+$0.0 & $+$0.0 & $+$0.1 & $+$0.0 & $-$0.5 & $-$0.7 \\
+Other & White Zimbabwean English & $+$0.0 & $+$1.5 & $+$3.5 & $+$3.2 & $+$0.0 & $+$0.1 & \textcolor{blue}{[XX]} & \textcolor{blue}{[XX]} & \textcolor{blue}{[XX]} & \textcolor{blue}{[XX]} & $+$0.0 & $+$0.0 & $+$0.0 & $-$0.2 & $+$0.0 & $+$0.1 & $-$0.4 \\
+\midrule
+\multicolumn{19}{l}{\textit{\textbf{Summary}}} \\
+-- & \textbf{Avg $\Delta$} & \textbf{$+$0.0} & \textbf{$+$1.5} & \textbf{$+$4.1} & \textbf{$+$3.6} & \textbf{$+$0.0} & \textbf{$+$0.1} & \textcolor{blue}{[XX]} & \textcolor{blue}{[XX]} & \textcolor{blue}{[XX]} & \textcolor{blue}{[XX]} & \textbf{$+$0.0} & \textbf{$-$0.0} & \textbf{$+$0.0} & \textbf{$-$0.0} & \textbf{$+$0.0} & \textbf{$-$0.1} & \textbf{$-$0.3} \\
+\bottomrule
+\end{tabular}
+\end{table*}

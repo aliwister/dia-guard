@@ -10,7 +10,11 @@ tables/
 ├── harmfulness_detection/
 │   ├── guard_classifier_accuracy.tex           # Table 1 — Overall Acc on SAE vs dialect, MV / DL columns
 │   ├── category_accuracy.tex                   # Table 2 — Accuracy disaggregated by threat category
-│   └── per_dialect_guards.tex                  # Table (appendix) — Safety Guard detection rate by dialect & region
+│   ├── per_dialect_guards.tex                  # Appendix — Safety Guard detection rate by dialect & region
+│   ├── sq2_guard_category_per_dialect.tex      # Appendix — Avg guard vulnerability by dialect × category (Tox/PI/CG)
+│   ├── sq2_delta_toxicity_per_dialect.tex      # Appendix — Per-model Δ for Toxicity/Safety category
+│   ├── sq2_delta_prompt_injection_per_dialect.tex # Appendix — Per-model Δ for Prompt Injection
+│   └── sq2_delta_code_generation_per_dialect.tex  # Appendix — Per-model Δ for Code Generation
 └── attack_success/
     └── end_to_end_asr.tex                      # Table 3 — End-to-end ASR grouped by defense setting
 ```

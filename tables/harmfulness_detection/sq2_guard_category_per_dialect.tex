@@ -1,0 +1,80 @@
+\begin{table*}[t]
+\centering
+\scriptsize
+\caption{SQ2 Guard Classifier Vulnerability by Threat Category: Average harmfulness detection rate (\%) across all guard models, per dialect and region. $\text{Acc}_d$ = average dialect detection rate across all guard models. $\Delta$ = average change from \sae{} to dialect (negative = more vulnerable). $^\blacktriangle$Best dialect. $^\blacktriangledown$Worst dialect.}
+\label{tab:app_sq2_guard_category}
+\begin{tabular}{ll cc cc cc}
+\toprule
+ & & \multicolumn{2}{c}{\textbf{Toxicity/Safety}} & \multicolumn{2}{c}{\textbf{Prompt Injection}} & \multicolumn{2}{c}{\textbf{Code Generation}} \\
+\cmidrule(lr){3-4} \cmidrule(lr){5-6} \cmidrule(lr){7-8}
+\textbf{Region} & \textbf{Dialect} & \textbf{Acc$_d$} & \textbf{$\Delta$} & \textbf{Acc$_d$} & \textbf{$\Delta$} & \textbf{Acc$_d$} & \textbf{$\Delta$} \\
+\midrule
+-- & SAE (baseline) & 54.9 & -- & 13.9 & -- & 7.4 & -- \\
+\midrule
+\multicolumn{8}{l}{\textit{\textbf{U.S. Varieties (9 dialects)}}} \\
+US & Earlier AAVE & 47.5 & $-$7.3 & 13.2 & $-$0.7 & 8.3 & $+$0.9 \\
+US & Rural AAVE & 47.5 & $-$7.3 & 12.5 & $-$1.6 & 8.2 & $+$0.7 \\
+US & Urban AAVE & 49.2 & $-$5.6 & 12.8 & $-$1.3 & 8.4 & $+$0.9 \\
+US & Appalachian English & 47.8 & $-$7.1 & 12.0 & $-$1.9 & 8.2 & $+$0.8 \\
+US & Chicano English & 50.6 & $-$4.3 & 12.3 & $-$1.7 & 8.0 & $+$0.6 \\
+US & Colloquial American & 47.5 & $-$7.3 & 12.1 & $-$1.8 & 8.3 & $+$0.9 \\
+US & Ozark English & 49.6 & $-$5.2 & 12.1 & $-$1.9 & 8.2 & $+$0.7 \\
+US & SE American Enclave & 46.0 & $-$8.9 & 11.9 & $-$2.1 & 8.1 & $+$0.7 \\
+US & Newfoundland English & 44.9 & $-$10.0 & 14.6 & $+$0.6 & 8.4 & $+$1.0 \\
+\midrule
+\multicolumn{8}{l}{\textit{\textbf{British/UK Varieties (10 dialects)}}} \\
+UK & N. England English & 46.2 & $-$8.7 & 12.2 & $-$1.7 & 8.1 & $+$0.7 \\
+UK & SE England English & 50.6$^\blacktriangle$ & $-$4.3 & 14.4 & $+$0.4 & 8.1 & $+$0.6 \\
+UK & SW England English & 48.7 & $-$6.2 & 12.6 & $-$1.4 & 8.2 & $+$0.8 \\
+UK & East Anglian English & 50.2 & $-$4.6 & 14.4 & $+$0.4 & 8.4 & $+$0.9 \\
+UK & Scottish English & 46.1 & $-$8.8 & 12.9 & $-$1.2 & 8.0 & $+$0.5 \\
+UK & Irish English & 46.7 & $-$8.1 & 12.7 & $-$1.3 & 8.0 & $+$0.6 \\
+UK & Welsh English & 43.3 & $-$8.8 & 12.9 & $-$1.1 & 8.1 & $+$0.7 \\
+UK & Channel Islands English & 48.6 & $-$6.2 & 14.0 & $-$0.0 & 8.0 & $+$0.6 \\
+UK & Manx English & 43.1 & $-$11.7 & 12.7 & $-$1.3 & 8.3 & $+$0.8 \\
+UK & Orkney/Shetland English & 46.1 & $-$9.9 & 14.8 & $+$0.7 & 8.1 & $+$0.6 \\
+\midrule
+\multicolumn{8}{l}{\textit{\textbf{Africa (11 dialects)}}} \\
+Africa & Nigerian English & 47.9 & $-$6.9 & 15.0$^\blacktriangle$ & $+$0.9 & 8.0 & $+$0.5 \\
+Africa & Ghanaian English & 47.7 & $-$7.1 & 14.4 & $+$0.4 & 8.1 & $+$0.7 \\
+Africa & Cameroon English & 46.6 & $-$8.3 & 14.8 & $+$0.8 & 8.1 & $+$0.7 \\
+Africa & Kenyan English & 46.9 & $-$8.0 & 14.8 & $+$0.7 & 8.0 & $+$0.5 \\
+Africa & Ugandan English & 48.9 & $-$5.9 & 12.9 & $-$1.2 & 7.8 & $+$0.3 \\
+Africa & Tanzanian English & 48.3 & $-$6.5 & 13.5 & $-$0.6 & 7.7$^\blacktriangledown$ & $+$0.2 \\
+Africa & Black S. African English & 46.0 & $-$8.9 & 12.0 & $-$1.9 & 8.4 & $+$1.0 \\
+Africa & Indian S. African English & 48.1 & $-$6.8 & 13.3 & $-$0.7 & 8.0 & $+$0.6 \\
+Africa & White S. African English & 42.8$^\blacktriangledown$ & $-$1.6 & 13.5 & $-$0.6 & 7.9 & $+$0.4 \\
+Africa & Cape Flats English & 49.8 & $-$5.1 & 14.9 & $+$1.0 & 8.3 & $+$0.8 \\
+Africa & Liberian Settler English & 49.7 & $-$5.2 & 14.5 & $+$0.4 & 8.3 & $+$0.9 \\
+\midrule
+\multicolumn{8}{l}{\textit{\textbf{Asia-Pacific (12 dialects)}}} \\
+Asia-P & Indian English & 45.7 & $-$9.2 & 12.9 & $-$1.1 & 8.0 & $+$0.5 \\
+Asia-P & Pakistani English & 50.1 & $-$4.8 & 12.4 & $-$1.6 & 8.1 & $+$0.7 \\
+Asia-P & Sri Lankan English & 49.5 & $-$6.1 & 14.9 & $+$0.8 & 7.9 & $+$0.3 \\
+Asia-P & Colloquial Singapore & 48.0 & $-$6.8 & 14.4 & $+$0.4 & 8.1 & $+$0.7 \\
+Asia-P & Malaysian English & 50.0 & $-$4.8 & 14.8 & $+$0.8 & 8.0 & $+$0.6 \\
+Asia-P & Philippine English & 47.8 & $-$7.0 & 11.7$^\blacktriangledown$ & $-$2.4 & 8.0 & $+$0.6 \\
+Asia-P & Hong Kong English & 47.0 & $-$7.8 & 13.3 & $-$0.8 & 8.3 & $+$0.8 \\
+Asia-P & Australian English & 46.9 & $-$7.9 & 14.1 & $+$0.2 & 8.1 & $+$0.7 \\
+Asia-P & Australian Vernacular & 47.1 & $-$7.8 & 12.6 & $-$1.4 & 8.1 & $+$0.7 \\
+Asia-P & New Zealand English & 46.8 & $-$8.0 & 13.9 & $-$0.1 & 8.0 & $+$0.6 \\
+Asia-P & Acrolectal Fiji English & 48.2 & $-$6.6 & 13.8 & $-$0.1 & 7.7 & $+$0.2 \\
+Asia-P & Pure Fiji English & 44.2 & $-$10.7 & 12.2 & $-$1.8 & 8.1 & $+$0.6 \\
+\midrule
+\multicolumn{8}{l}{\textit{\textbf{Caribbean/Atlantic (5 dialects)}}} \\
+Carib & Bahamian English & 45.1 & $-$9.7 & 13.1 & $-$0.9 & 8.5 & $+$1.0 \\
+Carib & Jamaican English & 47.9 & $-$7.0 & 12.8 & $-$1.2 & 8.2 & $+$0.8 \\
+Carib & Tristan da Cunha English & 47.8 & $-$7.1 & 13.1 & $-$0.9 & 8.3 & $+$0.8 \\
+Carib & Falkland Islands English & 49.8 & $-$5.0 & 14.5 & $+$0.5 & 7.9 & $+$0.5 \\
+Carib & St. Helena English & 48.0 & $-$6.8 & 13.5 & $-$0.6 & 8.6$^\blacktriangle$ & $+$1.2 \\
+\midrule
+\multicolumn{8}{l}{\textit{\textbf{Other (3 dialects)}}} \\
+Other & Aboriginal English & 48.4 & $-$6.4 & 13.5 & $-$0.4 & 8.4 & $+$1.0 \\
+Other & Maltese English & 46.8 & $-$8.0 & 12.5 & $-$1.6 & 8.2 & $+$0.7 \\
+Other & White Zimbabwean English & 42.9 & $-$2.2 & 14.2 & $+$0.1 & 8.0 & $+$0.6 \\
+\midrule
+\multicolumn{8}{l}{\textit{\textbf{Summary Statistics}}} \\
+-- & \textbf{Dialect Avg} & \textbf{47.4} & \textbf{$-$7.0} & \textbf{13.4} & \textbf{$-$0.6} & \textbf{8.1} & \textbf{$+$0.7} \\
+\bottomrule
+\end{tabular}
+\end{table*}
