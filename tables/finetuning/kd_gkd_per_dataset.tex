@@ -1,0 +1,34 @@
+\begin{table*}[t]
+\centering
+\tiny
+\caption{Appendix: Per-dataset F1 score (\%) for KD-GKD. Generalized Knowledge Distillation. Each cell shows OOB$\rightarrow$KD-FT.}
+\label{tab:appendix_kd_gkd_per_dataset}
+\resizebox{\textwidth}{!}{%
+\begin{tabular}{rl c c c c c c c c}
+\toprule
+\textbf{\#} & \textbf{Dataset} & \textbf{4B$\rightarrow$Q1.7B-F} & \textbf{4B$\rightarrow$Q1.7B-P} & \textbf{4B$\rightarrow$QG-F} & \textbf{4B$\rightarrow$QG-P} & \textbf{8B$\rightarrow$Q1.7B-F} & \textbf{8B$\rightarrow$Q1.7B-P} & \textbf{8B$\rightarrow$QG-F} & \textbf{8B$\rightarrow$QG-P} \\
+\midrule
+\multicolumn{10}{l}{\textit{\textbf{Toxicity/Safety}}} \\
+1 & Salad\_Bench & 35.1$\rightarrow$91.4 & 35.1$\rightarrow$74.5 & 57.2$\rightarrow$35.1 & 57.2$\rightarrow$75.2 & 35.1$\rightarrow$80.3 & 35.1$\rightarrow$94.7 & 57.2$\rightarrow$35.1 & 57.2$\rightarrow$35.2 \\
+2 & Simple\_Safety\_Tests & 34.9$\rightarrow$96.1 & 34.9$\rightarrow$73.9 & 80.4$\rightarrow$34.9 & 80.4$\rightarrow$78.3 & 34.9$\rightarrow$83.6 & 34.9$\rightarrow$95.1 & 80.4$\rightarrow$34.9 & 80.4$\rightarrow$35.0 \\
+3 & Toxic\_Text & 34.5$\rightarrow$99.7 & 34.5$\rightarrow$90.8 & 81.1$\rightarrow$34.5 & 81.1$\rightarrow$75.7 & 34.5$\rightarrow$92.0 & 34.5$\rightarrow$98.8 & 81.1$\rightarrow$34.5 & 81.1$\rightarrow$34.7 \\
+4 & Toxicity\_Jigsaw & 34.5$\rightarrow$36.5 & 34.5$\rightarrow$56.9 & 34.5$\rightarrow$34.5 & 34.5$\rightarrow$54.8 & 34.5$\rightarrow$51.9 & 34.5$\rightarrow$84.1 & 34.5$\rightarrow$34.5 & 34.5$\rightarrow$34.9 \\
+5 & advbench & 35.9$\rightarrow$99.9 & 35.9$\rightarrow$91.9 & 79.2$\rightarrow$35.9 & 79.2$\rightarrow$74.6 & 35.9$\rightarrow$94.5 & 35.9$\rightarrow$99.5 & 79.2$\rightarrow$35.9 & 79.2$\rightarrow$36.1 \\
+6 & jailbreakbench & 34.7$\rightarrow$89.1 & 34.7$\rightarrow$87.4 & 59.2$\rightarrow$34.7 & 59.2$\rightarrow$78.8 & 34.7$\rightarrow$86.7 & 34.7$\rightarrow$96.9 & 59.2$\rightarrow$34.7 & 59.2$\rightarrow$35.2 \\
+7 & sorry\_bench & 35.1$\rightarrow$91.4 & 35.1$\rightarrow$83.9 & 79.3$\rightarrow$35.9 & 79.3$\rightarrow$65.3 & 35.1$\rightarrow$78.1 & 35.1$\rightarrow$98.2 & 79.3$\rightarrow$36.3 & 79.3$\rightarrow$35.4 \\
+8 & do\_not\_answer & 34.8$\rightarrow$72.2 & 34.8$\rightarrow$67.8 & 42.6$\rightarrow$34.8 & 42.6$\rightarrow$75.9 & 34.8$\rightarrow$76.3 & 34.8$\rightarrow$91.4 & 42.6$\rightarrow$34.8 & 42.6$\rightarrow$35.1 \\
+9 & forbiddent\_questions & 35.8$\rightarrow$92.4 & 35.8$\rightarrow$81.5 & 53.9$\rightarrow$35.8 & 53.9$\rightarrow$80.2 & 35.8$\rightarrow$79.0 & 35.8$\rightarrow$97.0 & 53.9$\rightarrow$35.8 & 53.9$\rightarrow$36.1 \\
+10 & harmBench & 34.8$\rightarrow$96.6 & 34.8$\rightarrow$87.1 & 73.7$\rightarrow$34.8 & 73.7$\rightarrow$75.4 & 34.8$\rightarrow$87.6 & 34.8$\rightarrow$97.9 & 73.7$\rightarrow$34.8 & 73.7$\rightarrow$35.1 \\
+\midrule
+\multicolumn{10}{l}{\textit{\textbf{Prompt Injection}}} \\
+11 & bipia & 34.8$\rightarrow$55.0 & 34.8$\rightarrow$79.8 & 56.9$\rightarrow$38.1 & 56.9$\rightarrow$73.4 & 34.8$\rightarrow$56.4 & 34.8$\rightarrow$80.4 & 56.9$\rightarrow$39.4 & 56.9$\rightarrow$37.0 \\
+12 & injecagent & 34.8$\rightarrow$31.9 & 34.8$\rightarrow$72.2 & 31.8$\rightarrow$34.8 & 31.8$\rightarrow$77.1 & 34.8$\rightarrow$71.2 & 34.8$\rightarrow$94.4 & 31.8$\rightarrow$34.8 & 31.8$\rightarrow$35.2 \\
+\midrule
+\multicolumn{10}{l}{\textit{\textbf{Code Generation}}} \\
+13 & cyberseceval & 36.0$\rightarrow$67.4 & 36.0$\rightarrow$93.2 & 31.4$\rightarrow$36.0 & 31.4$\rightarrow$70.4 & 36.0$\rightarrow$74.1 & 36.0$\rightarrow$99.1 & 31.4$\rightarrow$36.1 & 31.4$\rightarrow$36.2 \\
+14 & llmseceval & 34.9$\rightarrow$31.7 & 34.9$\rightarrow$93.8 & 31.7$\rightarrow$34.9 & 31.7$\rightarrow$74.8 & 34.9$\rightarrow$73.1 & 34.9$\rightarrow$99.7 & 31.7$\rightarrow$34.9 & 31.7$\rightarrow$35.1 \\
+15 & securityeval & 35.8$\rightarrow$37.4 & 35.8$\rightarrow$86.7 & 31.6$\rightarrow$36.6 & 31.6$\rightarrow$49.8 & 35.8$\rightarrow$79.4 & 35.8$\rightarrow$97.9 & 31.6$\rightarrow$36.5 & 31.6$\rightarrow$36.2 \\
+\bottomrule
+\end{tabular}
+}
+\end{table*}

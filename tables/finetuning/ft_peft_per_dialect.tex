@@ -1,0 +1,75 @@
+\begin{table*}[t]
+\centering
+\scriptsize
+\caption{Appendix: Per-dialect F1 score (\%) for Parameter-Efficient Fine-Tuning (PEFT-FT, LoRA adapters trained with cross-entropy on \dataset{}). Each cell shows OOB$\rightarrow$PEFT-FT.}
+\label{tab:appendix_peft_per_dialect}
+\resizebox{\textwidth}{!}{%
+\begin{tabular}{rll c c c c c c c}
+\toprule
+\textbf{\#} & \textbf{Region} & \textbf{Dialect} & \textbf{Q-1.7B} & \textbf{SM-1.7B} & \textbf{L-1B} & \textbf{G-1B} & \textbf{Q-0.8B} & \textbf{QG-0.6B} & \textbf{G-270M} \\
+\midrule
+\multicolumn{10}{l}{\textit{\textbf{U.S. Varieties}}} \\
+1 & US & Earlier AAVE & 36.5$\rightarrow$93.7 & 53.0$\rightarrow$97.6 & 53.7$\rightarrow$86.9 & 73.2$\rightarrow$95.2 & 75.0$\rightarrow$95.1 & 54.8$\rightarrow$82.7 & 53.9$\rightarrow$93.7 \\
+2 & US & Rural AAVE & 36.4$\rightarrow$91.6 & 51.7$\rightarrow$97.5 & 49.2$\rightarrow$87.2 & 69.6$\rightarrow$93.2 & 75.4$\rightarrow$93.4 & 55.4$\rightarrow$74.1 & 52.4$\rightarrow$90.6 \\
+3 & US & Urban AAVE & 36.4$\rightarrow$93.6 & 55.1$\rightarrow$97.3 & 46.9$\rightarrow$86.9 & 70.7$\rightarrow$94.8 & 75.8$\rightarrow$94.8 & 57.6$\rightarrow$75.5 & 53.1$\rightarrow$92.7 \\
+4 & US & Appalachian & 36.5$\rightarrow$93.7 & 56.0$\rightarrow$97.4 & 55.5$\rightarrow$87.1 & 73.7$\rightarrow$95.3 & 76.0$\rightarrow$94.9 & 55.6$\rightarrow$77.3 & 54.3$\rightarrow$94.4 \\
+5 & US & Chicano & 33.1$\rightarrow$90.5 & 53.7$\rightarrow$97.8 & 48.3$\rightarrow$88.9 & 73.4$\rightarrow$92.5 & 75.9$\rightarrow$94.9 & 63.5$\rightarrow$68.4 & 59.0$\rightarrow$90.1 \\
+6 & US & Colloq American & 36.5$\rightarrow$91.8 & 58.1$\rightarrow$97.2 & 50.0$\rightarrow$87.4 & 74.6$\rightarrow$92.9 & 75.9$\rightarrow$93.5 & 56.4$\rightarrow$72.4 & 53.2$\rightarrow$91.7 \\
+7 & US & Ozark & 36.4$\rightarrow$91.7 & 53.9$\rightarrow$96.8 & 48.2$\rightarrow$86.8 & 70.2$\rightarrow$92.9 & 76.1$\rightarrow$93.2 & 58.1$\rightarrow$72.7 & 53.8$\rightarrow$90.3 \\
+8 & US & SE Amer Enclave & 36.4$\rightarrow$91.1 & 57.5$\rightarrow$96.9 & 51.3$\rightarrow$87.5 & 73.3$\rightarrow$91.7 & 74.0$\rightarrow$93.4 & 53.0$\rightarrow$70.5 & 52.2$\rightarrow$90.2 \\
+9 & US & Newfoundland & 35.3$\rightarrow$95.8 & 56.1$\rightarrow$97.9 & 51.1$\rightarrow$88.7 & 72.6$\rightarrow$97.1 & 76.0$\rightarrow$95.5 & 54.3$\rightarrow$81.6 & 54.2$\rightarrow$95.7 \\
+\midrule
+\multicolumn{10}{l}{\textit{\textbf{UK}}} \\
+10 & UK & N England & 30.8$\rightarrow$93.4 & 48.5$\rightarrow$97.9 & 46.9$\rightarrow$89.7 & 72.9$\rightarrow$96.3 & 76.4$\rightarrow$95.7 & 58.2$\rightarrow$81.3 & 57.7$\rightarrow$94.7 \\
+11 & UK & SE England & 31.8$\rightarrow$92.6 & 61.0$\rightarrow$97.9 & 49.1$\rightarrow$89.4 & 74.2$\rightarrow$95.2 & 77.9$\rightarrow$95.2 & 63.9$\rightarrow$74.5 & 59.1$\rightarrow$93.7 \\
+12 & UK & SW England & 33.9$\rightarrow$93.5 & 59.6$\rightarrow$97.9 & 49.2$\rightarrow$88.0 & 72.5$\rightarrow$95.0 & 76.3$\rightarrow$94.9 & 58.1$\rightarrow$83.5 & 55.3$\rightarrow$94.3 \\
+13 & UK & E Anglian & 30.7$\rightarrow$93.6 & 48.5$\rightarrow$97.9 & 47.7$\rightarrow$89.5 & 73.4$\rightarrow$96.5 & 76.9$\rightarrow$95.4 & 63.7$\rightarrow$81.1 & 59.7$\rightarrow$94.2 \\
+14 & UK & Scottish & 36.4$\rightarrow$94.8 & 54.7$\rightarrow$97.8 & 53.3$\rightarrow$88.0 & 74.0$\rightarrow$96.7 & 73.8$\rightarrow$95.7 & 55.1$\rightarrow$78.9 & 52.5$\rightarrow$96.0 \\
+15 & UK & Irish & 30.8$\rightarrow$91.8 & 52.9$\rightarrow$97.9 & 45.5$\rightarrow$89.9 & 70.8$\rightarrow$92.8 & 78.5$\rightarrow$94.6 & 59.4$\rightarrow$72.5 & 55.1$\rightarrow$90.4 \\
+16 & UK & Welsh & 36.7$\rightarrow$94.8 & 52.3$\rightarrow$97.3 & 72.2$\rightarrow$86.6 & 64.8$\rightarrow$93.9 & 69.1$\rightarrow$94.4 & 52.0$\rightarrow$60.0 & 51.9$\rightarrow$94.8 \\
+17 & UK & Channel Isl & 39.7$\rightarrow$93.5 & 58.7$\rightarrow$97.1 & 55.8$\rightarrow$86.1 & 71.5$\rightarrow$95.3 & 71.6$\rightarrow$94.1 & 53.8$\rightarrow$74.9 & 48.7$\rightarrow$93.8 \\
+18 & UK & Manx & 30.7$\rightarrow$92.9 & 53.5$\rightarrow$98.3 & 49.0$\rightarrow$90.7 & 69.3$\rightarrow$94.8 & 72.8$\rightarrow$95.8 & 57.1$\rightarrow$67.2 & 55.7$\rightarrow$93.4 \\
+19 & UK & Orkney/Shet & 36.4$\rightarrow$96.4 & 44.3$\rightarrow$97.8 & 50.4$\rightarrow$88.9 & 71.2$\rightarrow$97.0 & 70.4$\rightarrow$95.9 & 53.3$\rightarrow$84.8 & 51.2$\rightarrow$96.9 \\
+\midrule
+\multicolumn{10}{l}{\textit{\textbf{Africa}}} \\
+20 & Africa & Nigerian & 36.4$\rightarrow$95.1 & 52.5$\rightarrow$97.6 & 50.0$\rightarrow$88.9 & 71.7$\rightarrow$96.2 & 72.2$\rightarrow$94.2 & 55.6$\rightarrow$83.2 & 52.5$\rightarrow$95.1 \\
+21 & Africa & Ghanaian & 36.5$\rightarrow$91.2 & 57.4$\rightarrow$97.5 & 47.1$\rightarrow$88.0 & 69.7$\rightarrow$93.6 & 72.5$\rightarrow$92.6 & 55.1$\rightarrow$80.2 & 50.4$\rightarrow$92.6 \\
+22 & Africa & Cameroon & 39.8$\rightarrow$93.0 & 56.2$\rightarrow$96.5 & 52.2$\rightarrow$85.6 & 70.2$\rightarrow$94.5 & 70.9$\rightarrow$93.2 & 50.3$\rightarrow$75.5 & 48.1$\rightarrow$93.1 \\
+23 & Africa & Kenyan & 36.4$\rightarrow$94.4 & 51.7$\rightarrow$97.5 & 60.9$\rightarrow$88.5 & 72.7$\rightarrow$94.6 & 71.2$\rightarrow$93.3 & 54.5$\rightarrow$57.9 & 49.8$\rightarrow$94.1 \\
+24 & Africa & Ugandan & 36.5$\rightarrow$91.7 & 57.1$\rightarrow$96.6 & 47.1$\rightarrow$87.2 & 70.2$\rightarrow$92.2 & 74.5$\rightarrow$92.9 & 56.7$\rightarrow$61.1 & 51.5$\rightarrow$90.7 \\
+25 & Africa & Tanzanian & 31.5$\rightarrow$93.1 & 49.1$\rightarrow$97.8 & 50.8$\rightarrow$88.4 & 71.0$\rightarrow$93.8 & 73.8$\rightarrow$95.4 & 61.9$\rightarrow$57.2 & 54.9$\rightarrow$92.7 \\
+26 & Africa & Black SA & 50.0$\rightarrow$49.7 & 47.4$\rightarrow$49.0 & 49.6$\rightarrow$43.8 & 42.8$\rightarrow$49.8 & 38.0$\rightarrow$48.1 & 20.5$\rightarrow$49.0 & 21.3$\rightarrow$49.8 \\
+27 & Africa & Indian SA & 30.7$\rightarrow$89.1 & 61.0$\rightarrow$97.9 & 49.0$\rightarrow$90.5 & 73.5$\rightarrow$91.2 & 78.8$\rightarrow$94.1 & 62.8$\rightarrow$65.7 & 57.7$\rightarrow$88.3 \\
+28 & Africa & White SA & 50.0$\rightarrow$50.0 & 47.0$\rightarrow$50.0 & 49.7$\rightarrow$48.3 & 37.2$\rightarrow$50.0 & 41.8$\rightarrow$49.6 & 21.4$\rightarrow$49.3 & 31.1$\rightarrow$50.0 \\
+29 & Africa & Cape Flats & 39.7$\rightarrow$92.6 & 51.9$\rightarrow$97.0 & 54.6$\rightarrow$85.0 & 71.1$\rightarrow$94.3 & 68.9$\rightarrow$93.6 & 51.5$\rightarrow$77.9 & 50.0$\rightarrow$92.3 \\
+30 & Africa & Liberian & 36.4$\rightarrow$93.5 & 53.5$\rightarrow$97.4 & 48.2$\rightarrow$87.9 & 69.6$\rightarrow$95.1 & 74.4$\rightarrow$94.1 & 59.4$\rightarrow$84.1 & 52.9$\rightarrow$94.1 \\
+\midrule
+\multicolumn{10}{l}{\textit{\textbf{Asia-Pacific}}} \\
+31 & Asia-P & Indian & 30.7$\rightarrow$86.0 & 57.0$\rightarrow$96.9 & 44.4$\rightarrow$89.0 & 69.7$\rightarrow$85.5 & 78.0$\rightarrow$91.5 & 59.2$\rightarrow$60.9 & 55.2$\rightarrow$84.6 \\
+32 & Asia-P & Pakistani & 30.8$\rightarrow$89.1 & 55.0$\rightarrow$97.4 & 41.3$\rightarrow$90.1 & 67.9$\rightarrow$89.6 & 77.5$\rightarrow$93.4 & 64.7$\rightarrow$61.3 & 57.4$\rightarrow$87.0 \\
+33 & Asia-P & Sri Lankan & 36.4$\rightarrow$90.1 & 61.9$\rightarrow$96.5 & 49.3$\rightarrow$86.6 & 71.1$\rightarrow$90.5 & 75.0$\rightarrow$91.8 & 57.2$\rightarrow$62.2 & 50.6$\rightarrow$86.3 \\
+34 & Asia-P & Singapore & 36.5$\rightarrow$91.9 & 56.4$\rightarrow$96.3 & 51.7$\rightarrow$85.8 & 75.2$\rightarrow$93.7 & 76.4$\rightarrow$89.3 & 55.1$\rightarrow$72.0 & 52.8$\rightarrow$92.0 \\
+35 & Asia-P & Malaysian & 36.4$\rightarrow$94.6 & 52.1$\rightarrow$97.5 & 56.5$\rightarrow$87.0 & 72.8$\rightarrow$95.7 & 75.2$\rightarrow$94.9 & 58.5$\rightarrow$69.6 & 52.8$\rightarrow$94.4 \\
+36 & Asia-P & Philippine & 33.1$\rightarrow$87.4 & 52.9$\rightarrow$96.4 & 46.7$\rightarrow$89.1 & 70.1$\rightarrow$87.8 & 76.9$\rightarrow$92.3 & 58.4$\rightarrow$54.2 & 55.3$\rightarrow$85.4 \\
+37 & Asia-P & Hong Kong & 36.4$\rightarrow$90.1 & 54.1$\rightarrow$96.5 & 46.0$\rightarrow$86.2 & 72.1$\rightarrow$94.1 & 73.9$\rightarrow$92.8 & 54.8$\rightarrow$73.1 & 50.9$\rightarrow$92.1 \\
+38 & Asia-P & Australian & 36.5$\rightarrow$95.5 & 64.2$\rightarrow$97.7 & 51.8$\rightarrow$87.4 & 75.2$\rightarrow$96.5 & 75.9$\rightarrow$95.0 & 54.0$\rightarrow$78.3 & 51.5$\rightarrow$95.1 \\
+39 & Asia-P & Aus Vernac & 44.5$\rightarrow$93.5 & 61.9$\rightarrow$95.3 & 62.8$\rightarrow$79.0 & 70.4$\rightarrow$94.5 & 63.6$\rightarrow$90.0 & 42.1$\rightarrow$79.6 & 41.8$\rightarrow$93.2 \\
+40 & Asia-P & NZ & 30.7$\rightarrow$90.5 & 58.1$\rightarrow$98.1 & 48.7$\rightarrow$90.3 & 74.1$\rightarrow$93.6 & 79.6$\rightarrow$95.6 & 61.0$\rightarrow$63.4 & 56.7$\rightarrow$92.0 \\
+41 & Asia-P & Acrolectal Fiji & 36.5$\rightarrow$93.9 & 63.5$\rightarrow$97.5 & 55.0$\rightarrow$88.0 & 72.7$\rightarrow$94.8 & 75.6$\rightarrow$93.8 & 56.2$\rightarrow$71.6 & 51.1$\rightarrow$92.8 \\
+42 & Asia-P & Pure Fiji & 36.4$\rightarrow$92.1 & 54.6$\rightarrow$97.1 & 49.1$\rightarrow$88.6 & 68.4$\rightarrow$94.4 & 74.9$\rightarrow$93.3 & 53.8$\rightarrow$71.4 & 51.6$\rightarrow$91.3 \\
+\midrule
+\multicolumn{10}{l}{\textit{\textbf{Caribbean}}} \\
+43 & Carib & Bahamian & 50.0$\rightarrow$49.7 & 47.3$\rightarrow$49.1 & 49.3$\rightarrow$44.0 & 42.6$\rightarrow$49.7 & 37.9$\rightarrow$47.9 & 18.8$\rightarrow$49.1 & 20.9$\rightarrow$49.8 \\
+44 & Carib & Jamaican & 34.3$\rightarrow$94.7 & 50.8$\rightarrow$97.5 & 46.2$\rightarrow$87.4 & 68.0$\rightarrow$95.6 & 73.7$\rightarrow$94.2 & 58.0$\rightarrow$83.5 & 53.7$\rightarrow$93.6 \\
+45 & Carib & Tristan da Cunha & 36.4$\rightarrow$90.9 & 56.7$\rightarrow$96.4 & 49.2$\rightarrow$87.4 & 73.8$\rightarrow$91.8 & 76.2$\rightarrow$92.6 & 54.7$\rightarrow$65.5 & 50.9$\rightarrow$89.8 \\
+46 & Carib & Falkland & 36.5$\rightarrow$91.1 & 61.9$\rightarrow$96.8 & 47.7$\rightarrow$86.8 & 72.0$\rightarrow$92.6 & 72.3$\rightarrow$92.1 & 57.5$\rightarrow$76.9 & 50.9$\rightarrow$92.4 \\
+47 & Carib & St Helena & 30.8$\rightarrow$90.5 & 55.7$\rightarrow$97.6 & 44.8$\rightarrow$90.6 & 72.2$\rightarrow$91.6 & 78.6$\rightarrow$94.0 & 59.7$\rightarrow$66.1 & 55.1$\rightarrow$90.5 \\
+\midrule
+\multicolumn{10}{l}{\textit{\textbf{Other}}} \\
+48 & Other & Aboriginal & 30.7$\rightarrow$96.2 & 58.1$\rightarrow$97.7 & 56.8$\rightarrow$89.3 & 71.6$\rightarrow$96.7 & 77.9$\rightarrow$94.4 & 60.2$\rightarrow$81.5 & 58.8$\rightarrow$95.8 \\
+49 & Other & Maltese & 30.8$\rightarrow$89.4 & 58.1$\rightarrow$97.8 & 49.5$\rightarrow$89.3 & 74.1$\rightarrow$92.7 & 78.6$\rightarrow$94.4 & 60.6$\rightarrow$65.1 & 57.7$\rightarrow$90.1 \\
+50 & Other & White Zim & 50.0$\rightarrow$50.0 & 46.5$\rightarrow$50.0 & 49.6$\rightarrow$48.5 & 37.4$\rightarrow$50.0 & 42.5$\rightarrow$49.6 & 16.7$\rightarrow$49.2 & 29.2$\rightarrow$50.0 \\
+\bottomrule
+\end{tabular}
+}
+\end{table*}

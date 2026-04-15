@@ -1,0 +1,34 @@
+\begin{table*}[t]
+\centering
+\tiny
+\caption{Appendix: Per-dataset F1 score (\%) for KD-MINILLM. MiniLLM (reverse KL distillation). Each cell shows OOB$\rightarrow$KD-FT.}
+\label{tab:appendix_kd_minillm_per_dataset}
+\resizebox{\textwidth}{!}{%
+\begin{tabular}{rl c c c c c c c c}
+\toprule
+\textbf{\#} & \textbf{Dataset} & \textbf{4B$\rightarrow$Q1.7B-F} & \textbf{4B$\rightarrow$Q1.7B-P} & \textbf{4B$\rightarrow$QG-F} & \textbf{4B$\rightarrow$QG-P} & \textbf{8B$\rightarrow$Q1.7B-F} & \textbf{8B$\rightarrow$Q1.7B-P} & \textbf{8B$\rightarrow$QG-F} & \textbf{8B$\rightarrow$QG-P} \\
+\midrule
+\multicolumn{10}{l}{\textit{\textbf{Toxicity/Safety}}} \\
+1 & Salad\_Bench & 35.1$\rightarrow$89.5 & 35.1$\rightarrow$89.2 & 57.2$\rightarrow$36.7 & 57.2$\rightarrow$68.1 & 35.1$\rightarrow$90.1 & 35.1$\rightarrow$87.5 & 57.2$\rightarrow$49.0 & 57.2$\rightarrow$63.6 \\
+2 & Simple\_Safety\_Tests & 34.9$\rightarrow$94.1 & 34.9$\rightarrow$90.0 & 80.4$\rightarrow$36.0 & 80.4$\rightarrow$67.5 & 34.9$\rightarrow$95.7 & 34.9$\rightarrow$88.1 & 80.4$\rightarrow$49.2 & 80.4$\rightarrow$62.7 \\
+3 & Toxic\_Text & 34.5$\rightarrow$99.3 & 34.5$\rightarrow$97.7 & 81.1$\rightarrow$34.8 & 81.1$\rightarrow$78.5 & 34.5$\rightarrow$92.2 & 34.5$\rightarrow$97.2 & 81.1$\rightarrow$44.5 & 81.1$\rightarrow$74.4 \\
+4 & Toxicity\_Jigsaw & 34.5$\rightarrow$35.8 & 34.5$\rightarrow$75.3 & 34.5$\rightarrow$36.6 & 34.5$\rightarrow$58.2 & 34.5$\rightarrow$59.5 & 34.5$\rightarrow$72.5 & 34.5$\rightarrow$36.5 & 34.5$\rightarrow$54.9 \\
+5 & advbench & 35.9$\rightarrow$99.8 & 35.9$\rightarrow$98.0 & 79.2$\rightarrow$36.3 & 79.2$\rightarrow$80.3 & 35.9$\rightarrow$93.5 & 35.9$\rightarrow$97.4 & 79.2$\rightarrow$48.0 & 79.2$\rightarrow$76.5 \\
+6 & jailbreakbench & 34.7$\rightarrow$85.7 & 34.7$\rightarrow$95.0 & 59.2$\rightarrow$35.2 & 59.2$\rightarrow$77.2 & 34.7$\rightarrow$89.7 & 34.7$\rightarrow$94.2 & 59.2$\rightarrow$47.1 & 59.2$\rightarrow$72.2 \\
+7 & sorry\_bench & 35.1$\rightarrow$90.5 & 35.1$\rightarrow$89.4 & 79.3$\rightarrow$52.6 & 79.3$\rightarrow$72.4 & 35.1$\rightarrow$82.9 & 35.1$\rightarrow$89.0 & 79.3$\rightarrow$79.5 & 79.3$\rightarrow$69.1 \\
+8 & do\_not\_answer & 34.8$\rightarrow$69.3 & 34.8$\rightarrow$85.4 & 42.6$\rightarrow$35.3 & 42.6$\rightarrow$64.7 & 34.8$\rightarrow$79.0 & 34.8$\rightarrow$83.4 & 42.6$\rightarrow$36.6 & 42.6$\rightarrow$59.8 \\
+9 & forbiddent\_questions & 35.8$\rightarrow$87.6 & 35.8$\rightarrow$93.6 & 53.9$\rightarrow$36.2 & 53.9$\rightarrow$72.9 & 35.8$\rightarrow$91.8 & 35.8$\rightarrow$92.2 & 53.9$\rightarrow$48.4 & 53.9$\rightarrow$68.0 \\
+10 & harmBench & 34.8$\rightarrow$93.8 & 34.8$\rightarrow$96.0 & 73.7$\rightarrow$35.0 & 73.7$\rightarrow$78.6 & 34.8$\rightarrow$94.9 & 34.8$\rightarrow$95.1 & 73.7$\rightarrow$63.5 & 73.7$\rightarrow$74.5 \\
+\midrule
+\multicolumn{10}{l}{\textit{\textbf{Prompt Injection}}} \\
+11 & bipia & 34.8$\rightarrow$44.3 & 34.8$\rightarrow$83.1 & 56.9$\rightarrow$54.4 & 56.9$\rightarrow$63.6 & 34.8$\rightarrow$41.4 & 34.8$\rightarrow$83.0 & 56.9$\rightarrow$62.4 & 56.9$\rightarrow$62.5 \\
+12 & injecagent & 34.8$\rightarrow$37.1 & 34.8$\rightarrow$89.9 & 31.8$\rightarrow$35.2 & 31.8$\rightarrow$64.5 & 34.8$\rightarrow$56.2 & 34.8$\rightarrow$87.8 & 31.8$\rightarrow$32.0 & 31.8$\rightarrow$60.5 \\
+\midrule
+\multicolumn{10}{l}{\textit{\textbf{Code Generation}}} \\
+13 & cyberseceval & 36.0$\rightarrow$50.0 & 36.0$\rightarrow$98.0 & 31.4$\rightarrow$46.7 & 31.4$\rightarrow$89.2 & 36.0$\rightarrow$83.8 & 36.0$\rightarrow$97.9 & 31.4$\rightarrow$60.0 & 31.4$\rightarrow$80.7 \\
+14 & llmseceval & 34.9$\rightarrow$35.9 & 34.9$\rightarrow$99.2 & 31.7$\rightarrow$40.7 & 31.7$\rightarrow$92.4 & 34.9$\rightarrow$52.8 & 34.9$\rightarrow$99.0 & 31.7$\rightarrow$43.4 & 31.7$\rightarrow$74.4 \\
+15 & securityeval & 35.8$\rightarrow$41.4 & 35.8$\rightarrow$96.4 & 31.6$\rightarrow$40.0 & 31.6$\rightarrow$58.8 & 35.8$\rightarrow$81.6 & 35.8$\rightarrow$95.7 & 31.6$\rightarrow$31.1 & 31.6$\rightarrow$57.9 \\
+\bottomrule
+\end{tabular}
+}
+\end{table*}

@@ -1,0 +1,34 @@
+\begin{table*}[t]
+\centering
+\scriptsize
+\caption{Appendix: Per-dataset F1 score (\%) for Full Fine-Tuning (Full-FT, all parameters trained with cross-entropy on \dataset{}). Each cell shows OOB$\rightarrow$Full-FT.}
+\label{tab:appendix_full_per_dataset}
+\resizebox{\textwidth}{!}{%
+\begin{tabular}{rl c c c c c c c}
+\toprule
+\textbf{\#} & \textbf{Dataset} & \textbf{Q-1.7B} & \textbf{SM-1.7B} & \textbf{L-1B} & \textbf{G-1B} & \textbf{Q-0.8B} & \textbf{QG-0.6B} & \textbf{G-270M} \\
+\midrule
+\multicolumn{9}{l}{\textit{\textbf{Toxicity/Safety}}} \\
+1 & Salad\_Bench & 35.1$\rightarrow$91.3 & 57.5$\rightarrow$83.8 & 52.5$\rightarrow$97.6 & 83.0$\rightarrow$98.1 & 82.8$\rightarrow$96.9 & 57.2$\rightarrow$35.1 & 54.2$\rightarrow$96.4 \\
+2 & Simple\_Safety\_Tests & 34.9$\rightarrow$95.7 & 57.6$\rightarrow$89.6 & 54.2$\rightarrow$99.7 & 83.6$\rightarrow$99.4 & 89.5$\rightarrow$99.7 & 80.4$\rightarrow$34.9 & 41.4$\rightarrow$97.3 \\
+3 & Toxic\_Text & 34.5$\rightarrow$99.6 & 58.5$\rightarrow$79.2 & 52.5$\rightarrow$99.8 & 90.7$\rightarrow$99.8 & 94.4$\rightarrow$99.8 & 81.1$\rightarrow$34.5 & 51.7$\rightarrow$99.3 \\
+4 & Toxicity\_Jigsaw & 34.5$\rightarrow$36.2 & 50.6$\rightarrow$47.3 & 54.4$\rightarrow$73.1 & 48.2$\rightarrow$83.8 & 72.0$\rightarrow$75.0 & 34.5$\rightarrow$34.5 & 58.7$\rightarrow$88.4 \\
+5 & advbench & 35.9$\rightarrow$99.8 & 62.4$\rightarrow$84.2 & 56.3$\rightarrow$100.0 & 92.2$\rightarrow$99.9 & 95.8$\rightarrow$99.9 & 79.2$\rightarrow$35.9 & 41.1$\rightarrow$99.5 \\
+6 & jailbreakbench & 34.7$\rightarrow$88.9 & 55.7$\rightarrow$78.1 & 49.6$\rightarrow$90.4 & 83.8$\rightarrow$93.6 & 74.6$\rightarrow$92.0 & 59.2$\rightarrow$34.7 & 52.4$\rightarrow$99.3 \\
+7 & sorry\_bench & 35.1$\rightarrow$91.8 & 58.3$\rightarrow$72.5 & 49.3$\rightarrow$99.4 & 80.3$\rightarrow$98.4 & 80.3$\rightarrow$99.0 & 79.3$\rightarrow$36.7 & 58.0$\rightarrow$90.6 \\
+8 & do\_not\_answer & 34.8$\rightarrow$70.7 & 50.9$\rightarrow$75.9 & 51.4$\rightarrow$99.0 & 74.5$\rightarrow$97.5 & 62.5$\rightarrow$96.9 & 42.6$\rightarrow$34.8 & 41.1$\rightarrow$95.3 \\
+9 & forbiddent\_questions & 35.8$\rightarrow$87.0 & 57.4$\rightarrow$78.0 & 49.8$\rightarrow$95.8 & 81.2$\rightarrow$98.2 & 69.4$\rightarrow$96.3 & 53.9$\rightarrow$35.8 & 52.9$\rightarrow$98.4 \\
+10 & harmBench & 34.8$\rightarrow$96.7 & 58.6$\rightarrow$80.3 & 52.9$\rightarrow$99.7 & 88.1$\rightarrow$99.7 & 91.4$\rightarrow$99.5 & 73.7$\rightarrow$34.8 & 65.3$\rightarrow$97.5 \\
+\midrule
+\multicolumn{9}{l}{\textit{\textbf{Prompt Injection}}} \\
+11 & bipia & 34.8$\rightarrow$50.0 & 48.5$\rightarrow$47.0 & 53.9$\rightarrow$76.5 & 52.1$\rightarrow$77.7 & 35.2$\rightarrow$72.4 & 56.9$\rightarrow$39.3 & 54.4$\rightarrow$86.2 \\
+12 & injecagent & 34.8$\rightarrow$31.8 & 38.6$\rightarrow$41.4 & 48.4$\rightarrow$99.8 & 56.5$\rightarrow$98.9 & 38.4$\rightarrow$97.0 & 31.8$\rightarrow$34.8 & 32.1$\rightarrow$95.9 \\
+\midrule
+\multicolumn{9}{l}{\textit{\textbf{Code Generation}}} \\
+13 & cyberseceval & 36.0$\rightarrow$60.4 & 63.6$\rightarrow$79.2 & 43.8$\rightarrow$99.8 & 42.5$\rightarrow$94.9 & 79.9$\rightarrow$99.6 & 31.4$\rightarrow$36.0 & 71.3$\rightarrow$98.0 \\
+14 & llmseceval & 34.9$\rightarrow$31.7 & 45.4$\rightarrow$71.6 & 42.6$\rightarrow$97.9 & 37.5$\rightarrow$99.8 & 35.1$\rightarrow$97.9 & 31.7$\rightarrow$34.9 & 36.0$\rightarrow$99.2 \\
+15 & securityeval & 35.8$\rightarrow$35.9 & 42.0$\rightarrow$44.7 & 55.7$\rightarrow$99.3 & 40.4$\rightarrow$96.8 & 39.0$\rightarrow$99.4 & 31.6$\rightarrow$36.5 & 33.3$\rightarrow$97.7 \\
+\bottomrule
+\end{tabular}
+}
+\end{table*}
