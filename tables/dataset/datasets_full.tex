@@ -9,35 +9,35 @@
 \textbf{Dataset} & \textbf{Harm. Taxonomy} & \textbf{Attack Type} & \textbf{SAE} & \textbf{Basic} & \textbf{CoI} & \textbf{MV} & \textbf{MV-CH} & \textbf{LLM-CH} \\
 \midrule
 \multicolumn{9}{l}{\textbf{\textit{Jailbreaking \& Toxicity Benchmarks}}} \\
-Toxicity Jigsaw~\cite{jigsaw2018toxic}                  & Toxic (6 cats.)      & Direct toxic      & 6,975  & 9,594  & 9,594  & 32,181  & 32,181 & 15,367 \\
-SaladBench~\cite{li-etal-2024-salad}                    & Multi-cat. harm      & Jailbreak         & 3,041  & 9,588  & 9,591  & 84,215  & 84,215 & 13,934 \\
-HarmBench~\cite{mazeika-etal-2024-harmbench}            & Multi-cat. (7)       & Red-teaming       & 1,529  & 9,598  & 9,600  & 19,008  & 19,008 & 14,393 \\
-Do-Not-Answer~\cite{wang-etal-2024-answer}              & Risk tax. (5/12)     & Direct queries    & 939    & 9,597  & 9,600  & 45,912  & 45,912 & 16,298 \\
-AdvBench~\cite{zou2023universal}                        & Harmful instr.       & Adv. suffix       & 520    & 9,600  & 9,600  & 26,000  & 26,000 & 15,685 \\
-Toxic Text~\cite{hada-etal-2021-ruddit}                 & Toxic content        & Direct toxic      & 520    & 9,399  & 9,400  & 24,299  & 24,299 & 13,367 \\
-SORRY-Bench~\cite{xie2024sorrybench}                    & Fine-grained (45)    & Ling. mutation    & 450    & 9,591  & 9,600  & 30,318  & 30,318 & 15,713 \\
-Forbidden Questions~\cite{shen-etal-2024-doanythingnow} & Harmful content      & Jailbreak         & 390    & 9,599  & 9,600  & 18,576  & 18,576 & 14,360 \\
-Simple Safety Tests~\cite{vidgen2024simplesafetytests}  & Harmful content      & Direct queries    & 100    & 4,799  & 4,800  & 4,539   & 4,539  & 5,021 \\
+Toxicity Jigsaw~\cite{jigsaw2018toxic}                  & Toxic (6 cats.)      & Direct toxic      & 7.0k   & 9.6k  & 9.6k  & 32.2k  & 32.2k & 15.4k \\
+SaladBench~\cite{li-etal-2024-salad}                    & Multi-cat. harm      & Jailbreak         & 3.0k   & 9.6k  & 9.6k  & 84.2k  & 84.2k & 13.9k \\
+HarmBench~\cite{mazeika-etal-2024-harmbench}            & Multi-cat. (7)       & Red-teaming       & 1.5k   & 9.6k  & 9.6k  & 19.0k  & 19.0k & 14.4k \\
+Do-Not-Answer~\cite{wang-etal-2024-answer}              & Risk tax. (5/12)     & Direct queries    & 939    & 9.6k  & 9.6k  & 45.9k  & 45.9k & 16.3k \\
+AdvBench~\cite{zou2023universal}                        & Harmful instr.       & Adv. suffix       & 520    & 9.6k  & 9.6k  & 26.0k  & 26.0k & 15.7k \\
+Toxic Text~\cite{hada-etal-2021-ruddit}                 & Toxic content        & Direct toxic      & 520    & 9.4k  & 9.4k  & 24.3k  & 24.3k & 13.4k \\
+SORRY-Bench~\cite{xie2024sorrybench}                    & Fine-grained (45)    & Ling. mutation    & 450    & 9.6k  & 9.6k  & 30.3k  & 30.3k & 15.7k \\
+Forbidden Questions~\cite{shen-etal-2024-doanythingnow} & Harmful content      & Jailbreak         & 390    & 9.6k  & 9.6k  & 18.6k  & 18.6k & 14.4k \\
+Simple Safety Tests~\cite{vidgen2024simplesafetytests}  & Harmful content      & Direct queries    & 100    & 4.8k  & 4.8k  & 4.5k   & 4.5k  & 5.0k \\
 \midrule
 \multicolumn{9}{l}{\textbf{\textit{Prompt Injection Attack Benchmarks}}} \\
-BIPIA~\cite{yi2024bipia}                                & Multi-task inj.      & Indirect PI       & 11,250 & 4,368  & 4,368  & 4,550   & 4,550  & 7,751 \\
-InjecAgent~\cite{zhan-etal-2024-injecagent}             & Tool manip./theft    & Indirect PI       & 1,054  & 9,600  & 9,600  & 51,706  & 51,706 & 16,543 \\
+BIPIA~\cite{yi2024bipia}                                & Multi-task inj.      & Indirect PI       & 11.2k  & 4.4k  & 4.4k  & 4.5k   & 4.5k  & 7.8k \\
+InjecAgent~\cite{zhan-etal-2024-injecagent}             & Tool manip./theft    & Indirect PI       & 1.1k   & 9.6k  & 9.6k  & 51.7k  & 51.7k & 16.5k \\
 \midrule
 \multicolumn{9}{l}{\textbf{\textit{Code Generation / Security Benchmarks}}} \\
-CyberSecEval~\cite{bhatt2023cyberseceval}               & Insecure code/CWE    & Code gen. attack  & 1,916  & 9,600  & 9,600  & 28,450  & 28,450 & 16,711 \\
-LLMSecEval~\cite{tony2023llmseceval}                    & CWE (top 25)         & Code gen. attack  & 150    & 7,200  & 7,200  & 7,500   & 7,500  & 12,274 \\
-SecurityEval~\cite{siddiq2022securityeval}              & CWE (75 types)       & Code gen. attack  & 130    & 5,808  & 5,808  & 6,050   & 6,050  & 9,920 \\
+CyberSecEval~\cite{bhatt2023cyberseceval}               & Insecure code/CWE    & Code gen. attack  & 1.9k   & 9.6k  & 9.6k  & 28.5k  & 28.5k & 16.7k \\
+LLMSecEval~\cite{tony2023llmseceval}                    & CWE (top 25)         & Code gen. attack  & 150    & 7.2k  & 7.2k  & 7.5k   & 7.5k  & 12.3k \\
+SecurityEval~\cite{siddiq2022securityeval}              & CWE (75 types)       & Code gen. attack  & 130    & 5.8k  & 5.8k  & 6.0k   & 6.0k  & 9.9k \\
 \midrule
 \multicolumn{9}{l}{\textbf{\textit{Hybrid / Cross-Cutting}}} \\
-JailbreakBench~\cite{chao2024jailbreakbench}            & Multi-cat. (10)      & Multi-method JB   & 100    & 9,596  & 9,600  & 10,000  & 10,000 & 15,394 \\
+JailbreakBench~\cite{chao2024jailbreakbench}            & Multi-cat. (10)      & Multi-method JB   & 100    & 9.6k  & 9.6k  & 10.0k  & 10.0k & 15.4k \\
 \midrule
-\textbf{Total} & & & \textbf{29,064} & \textbf{127,537} & \textbf{127,561} & \textbf{393,304} & \textbf{393,304} & \textbf{202,731} \\
+\textbf{Total} & & & \textbf{29.1k} & \textbf{127.5k} & \textbf{127.6k} & \textbf{393.3k} & \textbf{393.3k} & \textbf{202.7k} \\
 \midrule
-\multicolumn{3}{l}{\textbf{Unsafe corpus} (MV $+$ Basic $+$ CoI)} & \multicolumn{6}{r}{\textbf{648,402}} \\
-\multicolumn{3}{l}{\textbf{Safe corpus} (MV-CH $+$ LLM-CH)}       & \multicolumn{6}{r}{\textbf{596,035}} \\
-\multicolumn{3}{l}{\textbf{Full \dataset{} corpus}}               & \multicolumn{6}{r}{\textbf{1,244,437}} \\
+\multicolumn{3}{l}{\textbf{Unsafe corpus} (MV $+$ Basic $+$ CoI)} & \multicolumn{6}{r}{\textbf{648.4k}} \\
+\multicolumn{3}{l}{\textbf{Safe corpus} (MV-CH $+$ LLM-CH)}       & \multicolumn{6}{r}{\textbf{596.0k}} \\
+\multicolumn{3}{l}{\textbf{Full \dataset{} corpus}}               & \multicolumn{6}{r}{\textbf{1.24M}} \\
 \bottomrule
 \end{tabular}
-\caption{Source datasets and transformation totals across 50 dialects $\times$ 15 benchmarks. \textbf{SAE} = Standard American English source samples (original benchmark size); \textbf{Basic} / \textbf{CoI} = \dllm{} LLM-based dialect transforms of harmful seeds (Unsafe class); \textbf{MV} = Multi-VALUE rule-based transforms (Unsafe class); \textbf{MV-CH} / \textbf{LLM-CH} = Counterharm (Safe class) benign paraphrases generated via Multi-VALUE and \dllm{} (LLM-CH $=$ CH-Basic $+$ CH-CoI). \textbf{Full corpus: 1,244,437 samples} (Unsafe: 648,402; Safe: 596,035). BIPIA reflects the email QA test subset. See Table~\ref{tab:shield_comparison} for comparison and Appendix~\ref{app:datasets} for per-dialect breakdown.}
+\caption{Source datasets and transformation totals across 50 dialects $\times$ 15 benchmarks (values in thousands; M $=$ millions). \textbf{SAE} = Standard American English source samples (original benchmark size); \textbf{Basic} / \textbf{CoI} = \dllm{} LLM-based dialect transforms of harmful seeds (Unsafe class); \textbf{MV} = Multi-VALUE rule-based transforms (Unsafe class); \textbf{MV-CH} / \textbf{LLM-CH} = Counterharm (Safe class) benign paraphrases generated via Multi-VALUE and \dllm{} (LLM-CH $=$ CH-Basic $+$ CH-CoI). \textbf{Full corpus: 1.24M samples} (Unsafe: 648.4k; Safe: 596.0k). BIPIA reflects the email QA test subset. See Table~\ref{tab:shield_comparison} for comparison and Appendix~\ref{app:datasets} for per-dialect breakdown.}
 \label{tab:datasets_full}
 \end{table}
