@@ -4,12 +4,30 @@
 \setlength{\tabcolsep}{3pt}
 \begin{tabular}{llrrrrrr}
 \toprule
-\textbf{Threat Category} & \textbf{\#DS} & \textbf{SAE} & \textbf{LLM-B} & \textbf{LLM-C} & \textbf{MV} & \textbf{MV-CH} & \textbf{LLM-CH} \\
+\textbf{Threat Category / Dataset} & \textbf{\#DS} & \textbf{SAE} & \textbf{LLM-B} & \textbf{LLM-C} & \textbf{MV} & \textbf{MV-CH} & \textbf{LLM-CH} \\
 \midrule
-Jailbreaking \& Toxicity     & 9  & 14,464  & 81,365  & 81,385  & 285,048  & 285,048  & 124,138 \\
-Prompt Injection             & 2  & 12,304  & 13,968  & 13,968  & 56,256   & 56,256   & 24,294  \\
-Code Generation / Security   & 3  & 2,196   & 22,608  & 22,608  & 42,000   & 42,000   & 38,905  \\
-Hybrid / Cross-Cutting       & 1  & 100     & 9,596   & 9,600   & 10,000   & 10,000   & 15,394  \\
+\textbf{Jailbreaking \& Toxicity}     & \textbf{9}  & \textbf{14,464}  & \textbf{81,365}  & \textbf{81,385}  & \textbf{285,048}  & \textbf{285,048}  & \textbf{124,138} \\
+\quad Toxicity Jigsaw~\cite{jigsaw2018toxic}              & -- & 6,975  & 9,594 & 9,594 & 32,181 & 32,181 & 15,367 \\
+\quad SaladBench~\cite{li-etal-2024-salad}                & -- & 3,041  & 9,588 & 9,591 & 84,215 & 84,215 & 13,934 \\
+\quad HarmBench~\cite{mazeika-etal-2024-harmbench}        & -- & 1,529  & 9,598 & 9,600 & 19,008 & 19,008 & 14,393 \\
+\quad Do-Not-Answer~\cite{wang-etal-2024-answer}          & -- & 939    & 9,597 & 9,600 & 45,912 & 45,912 & 16,298 \\
+\quad AdvBench~\cite{zou2023universal}                    & -- & 520    & 9,600 & 9,600 & 26,000 & 26,000 & 15,685 \\
+\quad Toxic Text~\cite{hada-etal-2021-ruddit}             & -- & 520    & 9,399 & 9,400 & 24,299 & 24,299 & 13,367 \\
+\quad SORRY-Bench~\cite{xie2024sorrybench}                & -- & 450    & 9,591 & 9,600 & 30,318 & 30,318 & 15,713 \\
+\quad Forbidden Qs~\cite{shen-etal-2024-doanythingnow}    & -- & 390    & 9,599 & 9,600 & 18,576 & 18,576 & 14,360 \\
+\quad Simple Safety Tests~\cite{vidgen2024simplesafetytests} & -- & 100 & 4,799 & 4,800 & 4,539  & 4,539  & 5,021  \\
+\midrule
+\textbf{Prompt Injection}             & \textbf{2}  & \textbf{12,304}  & \textbf{13,968}  & \textbf{13,968}  & \textbf{56,256}   & \textbf{56,256}   & \textbf{24,294}  \\
+\quad BIPIA~\cite{yi2024bipia}                            & -- & 11,250 & 4,368 & 4,368 & 4,550  & 4,550  & 7,751  \\
+\quad InjecAgent~\cite{zhan-etal-2024-injecagent}         & -- & 1,054  & 9,600 & 9,600 & 51,706 & 51,706 & 16,543 \\
+\midrule
+\textbf{Code Generation / Security}   & \textbf{3}  & \textbf{2,196}   & \textbf{22,608}  & \textbf{22,608}  & \textbf{42,000}   & \textbf{42,000}   & \textbf{38,905}  \\
+\quad CyberSecEval~\cite{bhatt2023cyberseceval}           & -- & 1,916  & 9,600 & 9,600 & 28,450 & 28,450 & 16,711 \\
+\quad LLMSecEval~\cite{tony2023llmseceval}                & -- & 150    & 7,200 & 7,200 & 7,500  & 7,500  & 12,274 \\
+\quad SecurityEval~\cite{siddiq2022securityeval}          & -- & 130    & 5,808 & 5,808 & 6,050  & 6,050  & 9,920  \\
+\midrule
+\textbf{Hybrid / Cross-Cutting}       & \textbf{1}  & \textbf{100}     & \textbf{9,596}   & \textbf{9,600}   & \textbf{10,000}   & \textbf{10,000}   & \textbf{15,394}  \\
+\quad JailbreakBench~\cite{chao2024jailbreakbench}        & -- & 100    & 9,596 & 9,600 & 10,000 & 10,000 & 15,394 \\
 \midrule
 \textbf{Total}               & \textbf{15} & \textbf{29,064} & \textbf{127,537} & \textbf{127,561} & \textbf{393,304} & \textbf{393,304} & \textbf{202,731} \\
 \midrule
@@ -18,6 +36,6 @@ Hybrid / Cross-Cutting       & 1  & 100     & 9,596   & 9,600   & 10,000   & 10,
 \multicolumn{6}{l}{\textbf{Full \dataset{} corpus} (Unsafe $+$ Safe) $\times$ 50 dialects} & \multicolumn{2}{r}{\textbf{1,244,437}} \\
 \bottomrule
 \end{tabular}
-\caption{\textbf{\dataset{} dataset composition aggregated by threat category.} \textbf{\#DS} = number of source benchmarks in the category; \textbf{SAE} = Standard American English source samples (original benchmark sizes); \textbf{LLM-B} / \textbf{LLM-C} = \dllm{} Basic / Chain-of-Interaction dialect transforms of harmful seeds across 50 dialects (Unsafe class); \textbf{MV} = Multi-VALUE rule-based transforms (Unsafe class); \textbf{MV-CH} / \textbf{LLM-CH} = Counterharm benign paraphrases (Safe class), generated via Multi-VALUE and \dllm{} respectively. Full corpus: \textbf{1,244,437} samples (648k Unsafe $+$ 596k Safe). See Table~\ref{tab:app_datasets_full} in the appendix for per-dataset counts.}
+\caption{\textbf{\dataset{} dataset composition by threat category and source benchmark.} Bold rows aggregate per category; indented rows list contributing datasets. \textbf{\#DS} = number of source benchmarks; \textbf{SAE} = Standard American English source samples (original benchmark size); \textbf{LLM-B} / \textbf{LLM-C} = \dllm{} Basic / Chain-of-Interaction dialect transforms of harmful seeds across 50 dialects (Unsafe class); \textbf{MV} = Multi-VALUE rule-based transforms (Unsafe class); \textbf{MV-CH} / \textbf{LLM-CH} = Counterharm benign paraphrases (Safe class), generated via Multi-VALUE and \dllm{} respectively. Full corpus: \textbf{1,244,437} samples (648k Unsafe $+$ 596k Safe). BIPIA reflects the email QA test subset. See Table~\ref{tab:app_datasets_full} in the appendix for extended per-dataset metadata.}
 \label{tab:datasets_full}
 \end{table}
