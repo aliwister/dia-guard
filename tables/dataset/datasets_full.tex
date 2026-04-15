@@ -1,43 +1,23 @@
 \begin{table}[t]
 \centering
 \scriptsize
-\setlength{\tabcolsep}{2.5pt}
-\begin{tabular}{lll r rr r rr}
+\setlength{\tabcolsep}{3pt}
+\begin{tabular}{llrrrrrr}
 \toprule
- & & & & \multicolumn{2}{c}{\textbf{Unsafe (\dllm{})}} & \textbf{Unsafe} & \multicolumn{2}{c}{\textbf{Safe (Counterharm)}} \\
-\cmidrule(lr){5-6}\cmidrule(lr){8-9}
-\textbf{Dataset} & \textbf{Harm. Taxonomy} & \textbf{Attack Type} & \textbf{SAE} & \textbf{Basic} & \textbf{CoI} & \textbf{MV} & \textbf{MV-CH} & \textbf{LLM-CH} \\
+\textbf{Threat Category} & \textbf{\#DS} & \textbf{SAE} & \textbf{LLM-B} & \textbf{LLM-C} & \textbf{MV} & \textbf{MV-CH} & \textbf{LLM-CH} \\
 \midrule
-\multicolumn{9}{l}{\textbf{\textit{Jailbreaking \& Toxicity Benchmarks}}} \\
-Toxicity Jigsaw~\cite{jigsaw2018toxic}                  & Toxic (6 cats.)      & Direct toxic      & 7.0k   & 9.6k  & 9.6k  & 32.2k  & 32.2k & 15.4k \\
-SaladBench~\cite{li-etal-2024-salad}                    & Multi-cat. harm      & Jailbreak         & 3.0k   & 9.6k  & 9.6k  & 84.2k  & 84.2k & 13.9k \\
-HarmBench~\cite{mazeika-etal-2024-harmbench}            & Multi-cat. (7)       & Red-teaming       & 1.5k   & 9.6k  & 9.6k  & 19.0k  & 19.0k & 14.4k \\
-Do-Not-Answer~\cite{wang-etal-2024-answer}              & Risk tax. (5/12)     & Direct queries    & 939    & 9.6k  & 9.6k  & 45.9k  & 45.9k & 16.3k \\
-AdvBench~\cite{zou2023universal}                        & Harmful instr.       & Adv. suffix       & 520    & 9.6k  & 9.6k  & 26.0k  & 26.0k & 15.7k \\
-Toxic Text~\cite{hada-etal-2021-ruddit}                 & Toxic content        & Direct toxic      & 520    & 9.4k  & 9.4k  & 24.3k  & 24.3k & 13.4k \\
-SORRY-Bench~\cite{xie2024sorrybench}                    & Fine-grained (45)    & Ling. mutation    & 450    & 9.6k  & 9.6k  & 30.3k  & 30.3k & 15.7k \\
-Forbidden Questions~\cite{shen-etal-2024-doanythingnow} & Harmful content      & Jailbreak         & 390    & 9.6k  & 9.6k  & 18.6k  & 18.6k & 14.4k \\
-Simple Safety Tests~\cite{vidgen2024simplesafetytests}  & Harmful content      & Direct queries    & 100    & 4.8k  & 4.8k  & 4.5k   & 4.5k  & 5.0k \\
+Jailbreaking \& Toxicity     & 9  & 14,464  & 81,365  & 81,385  & 285,048  & 285,048  & 124,138 \\
+Prompt Injection             & 2  & 12,304  & 13,968  & 13,968  & 56,256   & 56,256   & 24,294  \\
+Code Generation / Security   & 3  & 2,196   & 22,608  & 22,608  & 42,000   & 42,000   & 38,905  \\
+Hybrid / Cross-Cutting       & 1  & 100     & 9,596   & 9,600   & 10,000   & 10,000   & 15,394  \\
 \midrule
-\multicolumn{9}{l}{\textbf{\textit{Prompt Injection Attack Benchmarks}}} \\
-BIPIA~\cite{yi2024bipia}                                & Multi-task inj.      & Indirect PI       & 11.2k  & 4.4k  & 4.4k  & 4.5k   & 4.5k  & 7.8k \\
-InjecAgent~\cite{zhan-etal-2024-injecagent}             & Tool manip./theft    & Indirect PI       & 1.1k   & 9.6k  & 9.6k  & 51.7k  & 51.7k & 16.5k \\
+\textbf{Total}               & \textbf{15} & \textbf{29,064} & \textbf{127,537} & \textbf{127,561} & \textbf{393,304} & \textbf{393,304} & \textbf{202,731} \\
 \midrule
-\multicolumn{9}{l}{\textbf{\textit{Code Generation / Security Benchmarks}}} \\
-CyberSecEval~\cite{bhatt2023cyberseceval}               & Insecure code/CWE    & Code gen. attack  & 1.9k   & 9.6k  & 9.6k  & 28.5k  & 28.5k & 16.7k \\
-LLMSecEval~\cite{tony2023llmseceval}                    & CWE (top 25)         & Code gen. attack  & 150    & 7.2k  & 7.2k  & 7.5k   & 7.5k  & 12.3k \\
-SecurityEval~\cite{siddiq2022securityeval}              & CWE (75 types)       & Code gen. attack  & 130    & 5.8k  & 5.8k  & 6.0k   & 6.0k  & 9.9k \\
-\midrule
-\multicolumn{9}{l}{\textbf{\textit{Hybrid / Cross-Cutting}}} \\
-JailbreakBench~\cite{chao2024jailbreakbench}            & Multi-cat. (10)      & Multi-method JB   & 100    & 9.6k  & 9.6k  & 10.0k  & 10.0k & 15.4k \\
-\midrule
-\textbf{Total} & & & \textbf{29.1k} & \textbf{127.5k} & \textbf{127.6k} & \textbf{393.3k} & \textbf{393.3k} & \textbf{202.7k} \\
-\midrule
-\multicolumn{3}{l}{\textbf{Unsafe corpus} (MV $+$ Basic $+$ CoI)} & \multicolumn{6}{r}{\textbf{648.4k}} \\
-\multicolumn{3}{l}{\textbf{Safe corpus} (MV-CH $+$ LLM-CH)}       & \multicolumn{6}{r}{\textbf{596.0k}} \\
-\multicolumn{3}{l}{\textbf{Full \dataset{} corpus}}               & \multicolumn{6}{r}{\textbf{1.24M}} \\
+\multicolumn{6}{l}{\textbf{Unsafe corpus} (MV $+$ LLM-Basic $+$ LLM-CoI)}       & \multicolumn{2}{r}{\textbf{648,402}} \\
+\multicolumn{6}{l}{\textbf{Safe corpus} (MV-CH $+$ LLM-CH)}                    & \multicolumn{2}{r}{\textbf{596,035}} \\
+\multicolumn{6}{l}{\textbf{Full \dataset{} corpus} (Unsafe $+$ Safe) $\times$ 50 dialects} & \multicolumn{2}{r}{\textbf{1,244,437}} \\
 \bottomrule
 \end{tabular}
-\caption{Source datasets and transformation totals across 50 dialects $\times$ 15 benchmarks (values in thousands; M $=$ millions). \textbf{SAE} = Standard American English source samples (original benchmark size); \textbf{Basic} / \textbf{CoI} = \dllm{} LLM-based dialect transforms of harmful seeds (Unsafe class); \textbf{MV} = Multi-VALUE rule-based transforms (Unsafe class); \textbf{MV-CH} / \textbf{LLM-CH} = Counterharm (Safe class) benign paraphrases generated via Multi-VALUE and \dllm{} (LLM-CH $=$ CH-Basic $+$ CH-CoI). \textbf{Full corpus: 1.24M samples} (Unsafe: 648.4k; Safe: 596.0k). BIPIA reflects the email QA test subset. See Table~\ref{tab:shield_comparison} for comparison and Appendix~\ref{app:datasets} for per-dialect breakdown.}
+\caption{\textbf{\dataset{} dataset composition aggregated by threat category.} \textbf{\#DS} = number of source benchmarks in the category; \textbf{SAE} = Standard American English source samples (original benchmark sizes); \textbf{LLM-B} / \textbf{LLM-C} = \dllm{} Basic / Chain-of-Interaction dialect transforms of harmful seeds across 50 dialects (Unsafe class); \textbf{MV} = Multi-VALUE rule-based transforms (Unsafe class); \textbf{MV-CH} / \textbf{LLM-CH} = Counterharm benign paraphrases (Safe class), generated via Multi-VALUE and \dllm{} respectively. Full corpus: \textbf{1,244,437} samples (648k Unsafe $+$ 596k Safe). See Table~\ref{tab:app_datasets_full} in the appendix for per-dataset counts.}
 \label{tab:datasets_full}
 \end{table}
