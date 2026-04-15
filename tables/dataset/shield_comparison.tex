@@ -1,0 +1,46 @@
+\begin{table}[t]
+\centering
+\scriptsize
+\setlength{\tabcolsep}{4pt}
+\begin{tabular}{l l c c r r r}
+\toprule
+\multirow{3}{*}{\textbf{Dataset}} &
+\multirow{3}{*}{\textbf{Cat.}} &
+\multicolumn{2}{c}{\textbf{Variety}} &
+\multirow{3}{*}{\textbf{SAE}} &
+\multicolumn{2}{c}{\textbf{SAE Dial.\ Var.}} \\
+\cmidrule(lr){3-4}\cmidrule(lr){6-7}
+ & &
+\textbf{\#SV} & \textbf{\#Dia} & &
+\textbf{\mvs} & \textbf{\ais} \\
+\midrule
+\multicolumn{7}{l}{\cellcolor{sechead}\bfseries\itshape Jailbreaking \& Toxicity} \\
+Toxicity Jigsaw~\cite{jigsaw2018toxic} & \textsc{Tx}(6) & \cmark & \xmark & 224K+ & \xmark & \xmark \\
+SaladBench~\cite{li-etal-2024-salad} & \textsc{Mh}(7) & \cmark & \xmark & 30K+ & \xmark & \xmark \\
+HarmBench~\cite{mazeika-etal-2024-harmbench} & \textsc{Mh}(7) & \cmark & \xmark & 1K+ & \xmark & \xmark \\
+Do-Not-Answer~\cite{wang-etal-2024-answer} & \textsc{Rk}(12) & \cmark & \xmark & 939 & \xmark & \xmark \\
+AdvBench~\cite{zou2023universal} & \textsc{Hi}(1) & \cmark & \xmark & 520 & \xmark & \xmark \\
+Toxic Text~\cite{hada-etal-2021-ruddit} & \textsc{Tx}(1) & \cmark & \xmark & 6K+ & \xmark & \xmark \\
+SORRY-Bench~\cite{xie2024sorrybench} & \textsc{Fg}(45) & \cmark & \xmark & 450 & \xmark & \xmark \\
+Forbidden Questions~\cite{shen-etal-2024-doanythingnow} & \textsc{Hc}(1) & \cmark & \xmark & 390 & \xmark & \xmark \\
+Simple Safety Tests~\cite{vidgen2024simplesafetytests} & \textsc{Hc}(1) & \cmark & \xmark & 100 & \xmark & \xmark \\
+\midrule
+\multicolumn{7}{l}{\cellcolor{sechead}\bfseries\itshape Prompt Injection} \\
+BIPIA~\cite{yi2024bipia}$^\dagger$ & \textsc{Pi}(5) & \cmark & \xmark & 86K+ & \xmark & \xmark \\
+InjecAgent~\cite{zhan-etal-2024-injecagent} & \textsc{Tm}(2) & \cmark & \xmark & 1K+ & \xmark & \xmark \\
+\midrule
+\multicolumn{7}{l}{\cellcolor{sechead}\bfseries\itshape Code Security} \\
+CyberSecEval~\cite{bhatt2023cyberseceval}$^\ddagger$ & \textsc{Cs}(75) & \cmark & \xmark & 8K+ & \xmark & \xmark \\
+LLMSecEval~\cite{tony2023llmseceval} & \textsc{Cs}(25) & \cmark & \xmark & 150 & \xmark & \xmark \\
+SecurityEval~\cite{siddiq2022securityeval} & \textsc{Cs}(75) & \cmark & \xmark & 130 & \xmark & \xmark \\
+\midrule
+\multicolumn{7}{l}{\cellcolor{sechead}\bfseries\itshape Hybrid / Cross-Cutting} \\
+JailbreakBench~\cite{chao2024jailbreakbench} & \textsc{Jb}(10) & \cmark & \xmark & 100 & \xmark & \xmark \\
+\midrule
+\rowcolor{shieldrow}
+\textbf{\textsc{Shield} (Ours)} & \textbf{All (165+)} & \cmark(1) & \cmark(\textbf{50}) & \textbf{29K+} & \textbf{393K+} & \textbf{255K+} \\
+\bottomrule
+\end{tabular}
+\caption{Comparison of \textsc{Shield} against prior safety benchmarks. \textbf{Category codes} (sub-category count in parentheses): \textsc{Tx}=Toxic; \textsc{Mh}=Multi-harm; \textsc{Rk}=Risk taxonomy; \textsc{Hi}=Harmful instr.; \textsc{Fg}=Fine-grained; \textsc{Hc}=Harmful content; \textsc{Pi}=Prompt injection; \textsc{Tm}=Tool manip.; \textsc{Cs}=Code sec./CWE; \textsc{Jb}=Jailbreak. \textbf{\#SV}=standard varieties; \textbf{\#Dia}=non-standard dialects (\textsc{Shield}=50); \textbf{SAE}=source size; \textbf{\mvs}=Multi-VALUE rule-based dialect samples; \textbf{\ais}=\dllm{} AI-generated samples (Basic + CoI). $^\\dagger$BIPIA full=86K+; \\textsc{Shield} uses email QA subset. $^\\ddagger$CyberSecEval insecure code subset.}
+\label{tab:shield_comparison}
+\end{table}

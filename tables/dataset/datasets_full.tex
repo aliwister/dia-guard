@@ -1,0 +1,37 @@
+\begin{table}[t]
+\centering
+\scriptsize
+\setlength{\tabcolsep}{2.5pt}
+\begin{tabular}{llllrrr}
+\toprule
+\textbf{Dataset} & \textbf{Harm. Taxonomy} & \textbf{Attack Type} & \textbf{SAE} & \textbf{LLM} & \textbf{MV} \\
+\midrule
+\multicolumn{6}{l}{\textbf{\textit{Jailbreaking \& Toxicity Benchmarks}}} \\
+Toxicity Jigsaw~\cite{jigsaw2018toxic}                  & Toxic (6 cats.)      & Direct toxic      & 6,975  & 9,594  & 32,181 \\
+SaladBench~\cite{li-etal-2024-salad}                    & Multi-cat. harm      & Jailbreak         & 3,041  & 9,588  & 84,215 \\
+HarmBench~\cite{mazeika-etal-2024-harmbench}            & Multi-cat. (7)       & Red-teaming       & 1,529  & 9,598  & 19,008 \\
+Do-Not-Answer~\cite{wang-etal-2024-answer}              & Risk tax. (5/12)     & Direct queries    & 939    & 9,597  & 45,912 \\
+AdvBench~\cite{zou2023universal}                        & Harmful instr.       & Adv. suffix       & 520    & 9,600  & 26,000 \\
+Toxic Text~\cite{hada-etal-2021-ruddit}                 & Toxic content        & Direct toxic      & 520    & 9,399  & 24,299 \\
+SORRY-Bench~\cite{xie2024sorrybench}                    & Fine-grained (45)    & Ling. mutation    & 450    & 9,591  & 30,318 \\
+Forbidden Questions~\cite{shen-etal-2024-doanythingnow} & Harmful content      & Jailbreak         & 390    & 9,599  & 18,576 \\
+Simple Safety Tests~\cite{vidgen2024simplesafetytests}  & Harmful content      & Direct queries    & 100    & 4,799  & 4,539 \\
+\midrule
+\multicolumn{6}{l}{\textbf{\textit{Prompt Injection Attack Benchmarks}}} \\
+BIPIA~\cite{yi2024bipia}                                & Multi-task inj.      & Indirect PI       & 11,250 & 4,368  & 4,550 \\
+InjecAgent~\cite{zhan-etal-2024-injecagent}             & Tool manip./theft    & Indirect PI       & 1,054  & 9,600  & 51,706 \\
+\midrule
+\multicolumn{6}{l}{\textbf{\textit{Code Generation / Security Benchmarks}}} \\
+CyberSecEval~\cite{bhatt2023cyberseceval}               & Insecure code/CWE    & Code gen. attack  & 1,916  & 9,600  & 28,450 \\
+LLMSecEval~\cite{tony2023llmseceval}                    & CWE (top 25)         & Code gen. attack  & 150    & 7,200  & 7,500 \\
+SecurityEval~\cite{siddiq2022securityeval}              & CWE (75 types)       & Code gen. attack  & 130    & 5,808  & 6,050 \\
+\midrule
+\multicolumn{6}{l}{\textbf{\textit{Hybrid / Cross-Cutting}}} \\
+JailbreakBench~\cite{chao2024jailbreakbench}            & Multi-cat. (10)      & Multi-method JB   & 100    & 9,596  & 10,000 \\
+\midrule
+\textbf{Total}        &                     &                   & \textbf{29,064} & \textbf{127,537} & \textbf{393,304} \\
+\bottomrule
+\end{tabular}
+\caption{Source datasets and transformation totals by threat category. SAE = Standard American English source samples; LLM = \dllm{} samples per transformation method (Basic; CoI yields a near-identical count of 127,561 total); MV = Multi-VALUE samples across 50 dialects. BIPIA count reflects the email QA test subset. See Table~\ref{tab:shield_comparison} for comparison and Appendix~\ref{app:datasets} for per-dialect breakdown.}
+\label{tab:datasets_full}
+\end{table}

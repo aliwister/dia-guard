@@ -1,0 +1,20 @@
+\begin{table}[t]
+\centering
+\scriptsize
+\begin{tabular}{lccc}
+\toprule
+\textbf{Metric} & \textbf{Basic} & \textbf{CoI} & \textbf{MV} \\
+\midrule
+BERTScore & 69.51 & 76.63 & 71.31 \\
+BARTScore & 100.00 & 100.00 & 36.30 \\
+METEOR & 70.61 & 79.05 & 71.10 \\
+ROUGE-L & 55.99 & 71.07 & 64.78 \\
+DiffLib & 85.20 & 91.68 & 65.89 \\
+BLEU & 71.53 & 79.75 & 71.46 \\
+\midrule
+\textbf{Combined} & 53.33 & 67.23 & 31.85 \\
+\bottomrule
+\end{tabular}
+\caption{Per-metric pass rates (\%) by transformation method. BARTScore is the primary bottleneck for Multi-VALUE. See Table~\ref{tab:app_method_summary} for full distributions.}
+\label{tab:metric_comparison}
+\end{table}

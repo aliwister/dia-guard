@@ -1,0 +1,34 @@
+\begin{table}[t]
+\centering
+\scriptsize
+\begin{tabular}{lr}
+\toprule
+\textbf{Statistic} & \textbf{Value} \\
+\midrule
+\multicolumn{2}{l}{\textit{Source Data}} \\
+Source benchmarks & 15 \\
+SAE samples (aggregated) & 29,064 \\
+\midrule
+\multicolumn{2}{l}{\textit{Transformations (Unsafe class, across 50 dialects)}} \\
+Multi-VALUE (MV) & 393,304 \\
+\dllm{} Basic & 127,537 \\
+\dllm{} CoI & 127,561 \\
+\textbf{Total unsafe} & \textbf{648,402} \\
+\midrule
+\multicolumn{2}{l}{\textit{Counterharm (Safe class)}} \\
+MV counterharm & 393,304 \\
+\dllm{} CH-Basic & 97,807 \\
+\dllm{} CH-CoI & 104,924 \\
+\textbf{Total safe} & \textbf{596,035} \\
+\midrule
+\multicolumn{2}{l}{\textit{Dialect Coverage}} \\
+Number of dialects & 50 \\
+Geographic clusters & 6 \\
+Avg. samples per dialect & 24,888 \\
+\midrule
+\textbf{Total \dataset{} (Unsafe + Safe)} & \textbf{1,244,437} \\
+\bottomrule
+\end{tabular}
+\caption{\dataset{} corpus statistics aggregated across all 50 dialects and 15 source benchmarks.}
+\label{tab:shield_stats}
+\end{table}
