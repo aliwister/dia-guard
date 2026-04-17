@@ -33,7 +33,7 @@
 \midrule
 \multicolumn{6}{l}{\textbf{Unsafe corpus} (MV $+$ LLM-Basic $+$ LLM-CoI)}       & \multicolumn{2}{r}{\textbf{648,402}} \\
 \multicolumn{6}{l}{\textbf{Safe corpus} (MV-CH $+$ LLM-CH)}                    & \multicolumn{2}{r}{\textbf{596,035}} \\
-\multicolumn{6}{l}{\textbf{Full \dataset{} corpus} (Unsafe $+$ Safe) $\times$ 50 dialects} & \multicolumn{2}{r}{\textbf{1,244,437}} \\
+\multicolumn{6}{l}{\textbf{Full \dataset{} corpus} (Unsafe $+$ Safe across 50 dialects)} & \multicolumn{2}{r}{\textbf{1,244,437}} \\
 \bottomrule
 \end{tabular}
 \caption{\textbf{\dataset{} dataset composition by threat category and source benchmark.} Bold rows aggregate per category; indented rows list contributing datasets. \textbf{\#DS} = number of source benchmarks; \textbf{SAE} = Standard American English source samples (original benchmark size); \textbf{LLM-B} / \textbf{LLM-C} = \dllm{} Basic / Chain-of-Interaction dialect transforms of harmful seeds across 50 dialects (Unsafe class); \textbf{MV} = Multi-VALUE rule-based transforms (Unsafe class); \textbf{MV-CH} / \textbf{LLM-CH} = Counterharm benign paraphrases (Safe class), generated via Multi-VALUE and \dllm{} respectively. Full corpus: \textbf{1,244,437} samples (648k Unsafe $+$ 596k Safe). BIPIA reflects the email QA test subset. See Table~\ref{tab:app_datasets_full} in the appendix for extended per-dataset metadata.}
