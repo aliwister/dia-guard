@@ -5,7 +5,7 @@
 \centering
 \scriptsize
 \setlength{\tabcolsep}{3.5pt}
-\caption{\textbf{Models used to generate the \dataset{} corpus.} \textit{Top:} pipeline overview by transformation engine and role. \textit{Bottom:} per-model sample counts for each LLM-based generation step. Multi-VALUE uses deterministic rule-based transformation (no LLM). \dllm{} Basic and CoI transforms share a single \textit{generation\_model} per sample (one of four LLMs); counterharm generation spans 11 LLMs for \dllm{} and 7 LLMs for Multi-VALUE. Percentages are within each generation step.}
+\caption{\textbf{Models used to generate the \dataset{} corpus.} \textit{Top:} pipeline overview by transformation engine and role. \textit{Bottom:} per-model sample counts for each LLM-based generation step. Multi-VALUE uses deterministic rule-based transformation (no LLM). \dllm{} Basic and CoI transforms share a single \textit{generation\_model} per sample (one of four LLMs); counterharm generation spans 9 LLMs for \dllm{} and 7 LLMs for Multi-VALUE. GPT-5.2, Qwen3-Next-80B-A3B, and Kimi-K2-Instruct are reserved as LLM-as-Judge evaluators (Table~\ref{tab:models}) and are not used for generation. Percentages are within each generation step.}
 \label{tab:generation_models}
 \begin{tabular}{llllr}
 \toprule
@@ -17,7 +17,7 @@ Multi-VALUE & Unsafe & Dialect transform     & Rule-based (Multi-VALUE~\cite{zie
 Multi-VALUE & Safe   & Counterharm paraphrase & LLM-based (7 models)                                & 393,304 \\
 \dllm{}     & Unsafe & Basic (single-pass ICL) & LLM-based (4 models)                               & 127,537 \\
 \dllm{}     & Unsafe & Chain-of-Interaction (CoI) & LLM-based (4 models)                            & 127,561 \\
-\dllm{}     & Safe   & Counterharm (CH-orig., CH-MV, CH-Basic, CH-CoI) & LLM-based (11 models)      & 202,731 \\
+\dllm{}     & Safe   & Counterharm (CH-orig., CH-MV, CH-Basic, CH-CoI) & LLM-based (9 models)       & 202,731 \\
 \bottomrule
 \end{tabular}
 
@@ -30,10 +30,10 @@ Multi-VALUE & Safe   & Counterharm paraphrase & LLM-based (7 models)            
 \textbf{Model} & \textbf{Access} & \textbf{\#~Samples} & \textbf{\%} \\
 \midrule
 \multicolumn{4}{l}{\textit{\dllm{} Generation (Basic $+$ CoI transforms; total = 127{,}561)}} \\
-DeepSeek-V3.2       & Open     & 51,371 & 40.3 \\
-GPT-4.1             & Closed   & 33,753 & 26.5 \\
-GPT-5.2             & Closed   & 33,659 & 26.4 \\
-Kimi-K2.5           & Open     &  8,778 &  6.9 \\
+DeepSeek-V3.2            & Open     & 51,371 & 40.3 \\
+GPT-4.1                  & Closed   & 33,753 & 26.5 \\
+Qwen3-32B                & Open     & 33,659 & 26.4 \\
+Gemini-2.5-Flash-Lite    & Closed   &  8,778 &  6.9 \\
 \midrule
 \multicolumn{4}{l}{\textit{\dllm{} Counterharm (CH-orig., CH-MV, CH-Basic, CH-CoI; total = 112{,}158)}} \\
 Mistral-Large-3-675B     & Closed   & 37,061 & 33.0 \\

@@ -2,22 +2,20 @@
 \centering
 \scriptsize
 \setlength{\tabcolsep}{3pt}
-\caption{\textbf{Generation-model contributions by approach and class.} Rows: the 14 generation engines used in the \dataset{} pipeline (1 rule-based + 13 LLMs). Columns: the six approach$\times$class slots. Cells report the number of samples each engine contributed to each slot. Multi-VALUE Unsafe uses deterministic rule-based transformation~\cite{ziems-etal-2023-multi} (no LLM); all other slots are LLM-generated. Percentages (row totals over approach totals) are shown in parentheses in the totals row.}
+\caption{\textbf{Generation-model contributions by approach and class.} Rows: the 12 generation engines used in the \dataset{} pipeline (1 rule-based + 11 LLMs). Columns: the six approach$\times$class slots. Cells report the number of samples each engine contributed to each slot. Multi-VALUE Unsafe uses deterministic rule-based transformation~\cite{ziems-etal-2023-multi} (no LLM); all other slots are LLM-generated. GPT-5.2, Qwen3-Next-80B-A3B, and Kimi-K2-Instruct are reserved as LLM-as-Judge evaluators (Table~\ref{tab:models}) and are not used for generation.}
 \label{tab:generation_by_approach}
 \begin{tabular}{llrrrrrr}
 \toprule
 \textbf{Generation Engine} & \textbf{Access} & \textbf{MV Uns.} & \textbf{MV Safe} & \textbf{D-Basic Uns.} & \textbf{D-Basic Safe} & \textbf{D-CoI Uns.} & \textbf{D-CoI Safe} \\
 \midrule
-Rule-based & --- & 393,304 & -- & -- & -- & -- & -- \\
+Rule-based & --- & -- & -- & -- & -- & -- & -- \\
 DeepSeek-V3.2 & Open & -- & 24,421 & 51,347 & 8,635 & 51,371 & 9,526 \\
 GPT-4.1 & Closed & -- & -- & 33,753 & 2,037 & 33,753 & 2,211 \\
-GPT-5.2 & Closed & -- & -- & 33,659 & -- & 33,659 & -- \\
-Kimi-K2.5 & Open & -- & -- & 8,778 & -- & 8,778 & -- \\
+Qwen3-32B & Open & -- & 70,855 & 33,659 & 12,574 & 33,659 & 13,470 \\
+Gemini-2.5-Flash-Lite & Closed & -- & -- & 8,778 & 11,053 & 8,778 & 11,731 \\
 Mistral-Large-3-675B & Closed & -- & 70,645 & -- & 33,423 & -- & 35,261 \\
 Llama-4-Maverick-17B & Open & -- & 78,721 & -- & 12,273 & -- & 13,531 \\
 Llama-3.3-70B & Open & -- & 62,193 & -- & 1,505 & -- & 1,669 \\
-Qwen3-32B & Open & -- & 70,855 & -- & 12,574 & -- & 13,470 \\
-Gemini-2.5-Flash-Lite & Closed & -- & -- & -- & 11,053 & -- & 11,731 \\
 Gemini-3.1-Flash-Lite & Closed & -- & -- & -- & 2,039 & -- & 2,221 \\
 Claude-Opus-4-6 & Closed & -- & 45,210 & -- & 7,356 & -- & 8,068 \\
 Claude-Sonnet-4-6 & Closed & -- & 41,259 & -- & 6,031 & -- & 6,288 \\
